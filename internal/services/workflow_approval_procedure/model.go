@@ -1,0 +1,34 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package workflow_approval_procedure
+
+import (
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/stainless-sdks/serval-terraform/internal/apijson"
+)
+
+type WorkflowApprovalProcedureDataEnvelope struct {
+	Data WorkflowApprovalProcedureModel `json:"data"`
+}
+
+type WorkflowApprovalProcedureModel struct {
+	ID         types.String                            `tfsdk:"id" json:"id,computed"`
+	WorkflowID types.String                            `tfsdk:"workflow_id" path:"workflow_id,required"`
+	Steps      *[]*WorkflowApprovalProcedureStepsModel `tfsdk:"steps" json:"steps,optional"`
+}
+
+func (m WorkflowApprovalProcedureModel) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(m)
+}
+
+func (m WorkflowApprovalProcedureModel) MarshalJSONForUpdate(state WorkflowApprovalProcedureModel) (data []byte, err error) {
+	return apijson.MarshalForUpdate(m, state)
+}
+
+type WorkflowApprovalProcedureStepsModel struct {
+	ID                types.String    `tfsdk:"id" json:"id,optional"`
+	AllowSelfApproval types.Bool      `tfsdk:"allow_self_approval" json:"allowSelfApproval,optional"`
+	ServalGroupIDs    *[]types.String `tfsdk:"serval_group_ids" json:"servalGroupIds,optional"`
+	SpecificUserIDs   *[]types.String `tfsdk:"specific_user_ids" json:"specificUserIds,optional"`
+	StepType          types.String    `tfsdk:"step_type" json:"stepType,optional"`
+}
