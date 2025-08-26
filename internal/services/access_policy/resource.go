@@ -93,7 +93,50 @@ func (r *AccessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 }
 
 func (r *AccessPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Update is not supported for this resource
+	var data *AccessPolicyModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var state *AccessPolicyModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	dataBytes, err := data.MarshalJSONForUpdate(*state)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
+		return
+	}
+	res := new(http.Response)
+	env := AccessPolicyDataEnvelope{*data}
+	_, err = r.client.AccessPolicies.Update(
+		ctx,
+		data.ID.ValueString(),
+		serval.AccessPolicyUpdateParams{},
+		option.WithRequestBody("application/json", dataBytes),
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.UnmarshalComputed(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Data
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *AccessPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -110,7 +153,6 @@ func (r *AccessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	_, err := r.client.AccessPolicies.Get(
 		ctx,
 		data.ID.ValueString(),
-		serval.AccessPolicyGetParams{},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -146,7 +188,6 @@ func (r *AccessPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 	_, err := r.client.AccessPolicies.Delete(
 		ctx,
 		data.ID.ValueString(),
-		serval.AccessPolicyDeleteParams{},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
 	if err != nil {
@@ -178,7 +219,6 @@ func (r *AccessPolicyResource) ImportState(ctx context.Context, req resource.Imp
 	_, err := r.client.AccessPolicies.Get(
 		ctx,
 		path,
-		serval.AccessPolicyGetParams{},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
