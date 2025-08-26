@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package resource
+package access_resource
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-var _ resource.ResourceWithUpgradeState = (*ResourceResource)(nil)
+var _ resource.ResourceWithUpgradeState = (*AccessResourceResource)(nil)
 
-func (r *ResourceResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+func (r *AccessResourceResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	return map[int64]resource.StateUpgrader{}
 }

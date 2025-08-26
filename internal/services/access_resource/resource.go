@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package resource
+package access_resource
 
 import (
 	"context"
@@ -18,24 +18,24 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.ResourceWithConfigure = (*ResourceResource)(nil)
-var _ resource.ResourceWithModifyPlan = (*ResourceResource)(nil)
-var _ resource.ResourceWithImportState = (*ResourceResource)(nil)
+var _ resource.ResourceWithConfigure = (*AccessResourceResource)(nil)
+var _ resource.ResourceWithModifyPlan = (*AccessResourceResource)(nil)
+var _ resource.ResourceWithImportState = (*AccessResourceResource)(nil)
 
 func NewResource() resource.Resource {
-	return &ResourceResource{}
+	return &AccessResourceResource{}
 }
 
-// ResourceResource defines the resource implementation.
-type ResourceResource struct {
+// AccessResourceResource defines the resource implementation.
+type AccessResourceResource struct {
 	client *serval.Client
 }
 
-func (r *ResourceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_resource"
+func (r *AccessResourceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_access_resource"
 }
 
-func (r *ResourceResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *AccessResourceResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -54,8 +54,8 @@ func (r *ResourceResource) Configure(ctx context.Context, req resource.Configure
 	r.client = client
 }
 
-func (r *ResourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data *ResourceModel
+func (r *AccessResourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *AccessResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -69,7 +69,7 @@ func (r *ResourceResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 	res := new(http.Response)
-	env := ResourceDataEnvelope{*data}
+	env := AccessResourceDataEnvelope{*data}
 	_, err = r.client.Resources.New(
 		ctx,
 		serval.ResourceNewParams{},
@@ -92,8 +92,8 @@ func (r *ResourceResource) Create(ctx context.Context, req resource.CreateReques
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ResourceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data *ResourceModel
+func (r *AccessResourceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *AccessResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -101,7 +101,7 @@ func (r *ResourceResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	var state *ResourceModel
+	var state *AccessResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
@@ -115,7 +115,7 @@ func (r *ResourceResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 	res := new(http.Response)
-	env := ResourceDataEnvelope{*data}
+	env := AccessResourceDataEnvelope{*data}
 	_, err = r.client.Resources.Update(
 		ctx,
 		data.ID.ValueString(),
@@ -139,8 +139,8 @@ func (r *ResourceResource) Update(ctx context.Context, req resource.UpdateReques
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ResourceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data *ResourceModel
+func (r *AccessResourceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *AccessResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -149,7 +149,7 @@ func (r *ResourceResource) Read(ctx context.Context, req resource.ReadRequest, r
 	}
 
 	res := new(http.Response)
-	env := ResourceDataEnvelope{*data}
+	env := AccessResourceDataEnvelope{*data}
 	_, err := r.client.Resources.Get(
 		ctx,
 		data.ID.ValueString(),
@@ -176,8 +176,8 @@ func (r *ResourceResource) Read(ctx context.Context, req resource.ReadRequest, r
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ResourceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data *ResourceModel
+func (r *AccessResourceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data *AccessResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -198,8 +198,8 @@ func (r *ResourceResource) Delete(ctx context.Context, req resource.DeleteReques
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ResourceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data *ResourceModel = new(ResourceModel)
+func (r *AccessResourceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data *AccessResourceModel = new(AccessResourceModel)
 
 	path := ""
 	diags := importpath.ParseImportID(
@@ -215,7 +215,7 @@ func (r *ResourceResource) ImportState(ctx context.Context, req resource.ImportS
 	data.ID = types.StringValue(path)
 
 	res := new(http.Response)
-	env := ResourceDataEnvelope{*data}
+	env := AccessResourceDataEnvelope{*data}
 	_, err := r.client.Resources.Get(
 		ctx,
 		path,
@@ -237,6 +237,6 @@ func (r *ResourceResource) ImportState(ctx context.Context, req resource.ImportS
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ResourceResource) ModifyPlan(_ context.Context, _ resource.ModifyPlanRequest, _ *resource.ModifyPlanResponse) {
+func (r *AccessResourceResource) ModifyPlan(_ context.Context, _ resource.ModifyPlanRequest, _ *resource.ModifyPlanResponse) {
 
 }
