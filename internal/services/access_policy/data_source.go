@@ -57,18 +57,11 @@ func (d *AccessPolicyDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	params, diags := data.toReadParams(ctx)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	res := new(http.Response)
 	env := AccessPolicyDataDataSourceEnvelope{*data}
 	_, err := d.client.AccessPolicies.Get(
 		ctx,
 		data.ID.ValueString(),
-		params,
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
