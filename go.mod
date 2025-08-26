@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/terraform-plugin-framework-validators v0.17.0
 	github.com/hashicorp/terraform-plugin-go v0.28.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/stainless-sdks/serval-go v0.0.0-20250826213017-9c699e3f6e21
+	github.com/stainless-sdks/serval-go v0.0.0-20250826213044-8801a8ce6e58
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 )
