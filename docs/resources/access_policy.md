@@ -27,7 +27,6 @@ resource "serval_access_policy" "example_access_policy" {
 
 ### Optional
 
-- `access_policy_id` (String) The ID of the access policy.
 - `description` (String) A description of the access policy.
 - `max_access_minutes` (Number) The maximum number of minutes that access can be granted for (optional).
 - `name` (String) The name of the access policy.
@@ -36,16 +35,12 @@ resource "serval_access_policy" "example_access_policy" {
 
 ### Read-Only
 
-- `data` (Attributes) The access policy. (see [below for nested schema](#nestedatt--data))
-
-<a id="nestedatt--data"></a>
-### Nested Schema for `data`
-
-Read-Only:
-
-- `description` (String) A description of the access policy.
 - `id` (String) The ID of the access policy.
-- `max_access_minutes` (Number) The maximum number of minutes that access can be granted for.
-- `name` (String) The name of the access policy.
-- `require_business_justification` (Boolean) Whether a business justification is required when requesting access.
-- `team_id` (String) The ID of the team that the access policy belongs to.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+$ terraform import serval_access_policy.example '<access_policy_id>'
+```

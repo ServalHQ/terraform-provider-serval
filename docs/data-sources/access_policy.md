@@ -27,13 +27,6 @@ data "serval_access_policy" "example_access_policy" {
 
 ### Read-Only
 
-- `data` (Attributes) The access policy. (see [below for nested schema](#nestedatt--data))
-
-<a id="nestedatt--data"></a>
-### Nested Schema for `data`
-
-Read-Only:
-
 - `description` (String) A description of the access policy.
 - `id` (String) The ID of the access policy.
 - `max_access_minutes` (Number) The maximum number of minutes that access can be granted for.
