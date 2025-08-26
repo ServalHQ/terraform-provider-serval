@@ -9,18 +9,15 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stainless-sdks/serval-go"
 	"github.com/stainless-sdks/serval-go/option"
 	"github.com/stainless-sdks/serval-terraform/internal/apijson"
-	"github.com/stainless-sdks/serval-terraform/internal/importpath"
 	"github.com/stainless-sdks/serval-terraform/internal/logging"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.ResourceWithConfigure = (*AccessPolicyResource)(nil)
 var _ resource.ResourceWithModifyPlan = (*AccessPolicyResource)(nil)
-var _ resource.ResourceWithImportState = (*AccessPolicyResource)(nil)
 
 func NewResource() resource.Resource {
 	return &AccessPolicyResource{}
@@ -194,45 +191,6 @@ func (r *AccessPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
 	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func (r *AccessPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data *AccessPolicyModel = new(AccessPolicyModel)
-
-	path := ""
-	diags := importpath.ParseImportID(
-		req.ID,
-		"<id>",
-		&path,
-	)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	data.ID = types.StringValue(path)
-
-	res := new(http.Response)
-	env := AccessPolicyDataEnvelope{*data}
-	_, err := r.client.AccessPolicies.Get(
-		ctx,
-		path,
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
-	if err != nil {
-		resp.Diagnostics.AddError("failed to make http request", err.Error())
-		return
-	}
-	bytes, _ := io.ReadAll(res.Body)
-	err = apijson.Unmarshal(bytes, &env)
-	if err != nil {
-		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
-		return
-	}
-	data = &env.Data
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
