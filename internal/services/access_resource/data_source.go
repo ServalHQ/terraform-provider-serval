@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package resource
+package access_resource
 
 import (
 	"context"
@@ -15,21 +15,21 @@ import (
 	"github.com/stainless-sdks/serval-terraform/internal/logging"
 )
 
-type ResourceDataSource struct {
+type AccessResourceDataSource struct {
 	client *serval.Client
 }
 
-var _ datasource.DataSourceWithConfigure = (*ResourceDataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*AccessResourceDataSource)(nil)
 
-func NewResourceDataSource() datasource.DataSource {
-	return &ResourceDataSource{}
+func NewAccessResourceDataSource() datasource.DataSource {
+	return &AccessResourceDataSource{}
 }
 
-func (d *ResourceDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_resource"
+func (d *AccessResourceDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_access_resource"
 }
 
-func (d *ResourceDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *AccessResourceDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -48,8 +48,8 @@ func (d *ResourceDataSource) Configure(ctx context.Context, req datasource.Confi
 	d.client = client
 }
 
-func (d *ResourceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data *ResourceDataSourceModel
+func (d *AccessResourceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data *AccessResourceDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -58,7 +58,7 @@ func (d *ResourceDataSource) Read(ctx context.Context, req datasource.ReadReques
 	}
 
 	res := new(http.Response)
-	env := ResourceDataDataSourceEnvelope{*data}
+	env := AccessResourceDataDataSourceEnvelope{*data}
 	_, err := d.client.Resources.Get(
 		ctx,
 		data.ID.ValueString(),

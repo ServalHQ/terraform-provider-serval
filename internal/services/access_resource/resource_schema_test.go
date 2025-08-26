@@ -1,19 +1,19 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package resource_test
+package access_resource_test
 
 import (
 	"context"
 	"testing"
 
-	"github.com/stainless-sdks/serval-terraform/internal/services/resource"
+	"github.com/stainless-sdks/serval-terraform/internal/services/access_resource"
 	"github.com/stainless-sdks/serval-terraform/internal/test_helpers"
 )
 
-func TestResourceModelSchemaParity(t *testing.T) {
+func TestAccessResourceModelSchemaParity(t *testing.T) {
 	t.Parallel()
-	model := (*resource.ResourceModel)(nil)
-	schema := resource.ResourceSchema(context.TODO())
+	model := (*access_resource.AccessResourceModel)(nil)
+	schema := access_resource.ResourceSchema(context.TODO())
 	errs := test_helpers.ValidateResourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

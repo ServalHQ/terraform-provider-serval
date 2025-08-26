@@ -1,4 +1,4 @@
-resource "serval_resource" "example_resource" {
+resource "serval_access_resource" "example_access_resource" {
   app_instance_id = "appInstanceId"
   description = "description"
   external_id = "externalId"
