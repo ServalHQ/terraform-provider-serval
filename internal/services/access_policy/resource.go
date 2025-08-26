@@ -9,15 +9,18 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stainless-sdks/serval-go"
 	"github.com/stainless-sdks/serval-go/option"
 	"github.com/stainless-sdks/serval-terraform/internal/apijson"
+	"github.com/stainless-sdks/serval-terraform/internal/importpath"
 	"github.com/stainless-sdks/serval-terraform/internal/logging"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.ResourceWithConfigure = (*AccessPolicyResource)(nil)
 var _ resource.ResourceWithModifyPlan = (*AccessPolicyResource)(nil)
+var _ resource.ResourceWithImportState = (*AccessPolicyResource)(nil)
 
 func NewResource() resource.Resource {
 	return &AccessPolicyResource{}
@@ -94,27 +97,106 @@ func (r *AccessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 }
 
 func (r *AccessPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *AccessPolicyModel
 
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	res := new(http.Response)
+	env := AccessPolicyDataEnvelope{*data}
+	_, err := r.client.AccessPolicies.Get(
+		ctx,
+		data.ID.ValueString(),
+		serval.AccessPolicyGetParams{},
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if res != nil && res.StatusCode == 404 {
+		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
+		resp.State.RemoveResource(ctx)
+		return
+	}
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Data
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *AccessPolicyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data *AccessPolicyModel
 
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	_, err := r.client.AccessPolicies.Delete(
+		ctx,
+		data.ID.ValueString(),
+		serval.AccessPolicyDeleteParams{},
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *AccessPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	if req.State.Raw.IsNull() {
-		resp.Diagnostics.AddWarning(
-			"Resource Destruction Considerations",
-			"This resource cannot be destroyed from Terraform. If you create this resource, it will be "+
-				"present in the API until manually deleted.",
-		)
+func (r *AccessPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data *AccessPolicyModel = new(AccessPolicyModel)
+
+	path := ""
+	diags := importpath.ParseImportID(
+		req.ID,
+		"<id>",
+		&path,
+	)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if req.Plan.Raw.IsNull() {
-		resp.Diagnostics.AddWarning(
-			"Resource Destruction Considerations",
-			"Applying this resource destruction will remove the resource from the Terraform state "+
-				"but will not change it in the API. If you would like to destroy or reset this resource "+
-				"in the API, refer to the documentation for how to do it manually.",
-		)
+
+	data.ID = types.StringValue(path)
+
+	res := new(http.Response)
+	env := AccessPolicyDataEnvelope{*data}
+	_, err := r.client.AccessPolicies.Get(
+		ctx,
+		path,
+		serval.AccessPolicyGetParams{},
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
 	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Data
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *AccessPolicyResource) ModifyPlan(_ context.Context, _ resource.ModifyPlanRequest, _ *resource.ModifyPlanResponse) {
+
 }

@@ -36,3 +36,11 @@ resource "serval_access_policy" "example_access_policy" {
 ### Read-Only
 
 - `id` (String) The ID of the access policy.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+$ terraform import serval_access_policy.example '<id>'
+```
