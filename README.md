@@ -32,7 +32,7 @@ provider "serval" {
 
 # Configure a resource
 resource "serval_access_policy" "example_access_policy" {
-  access_policy_id = "REPLACE_ME"
+
 }
 ```
 

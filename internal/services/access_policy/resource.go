@@ -9,15 +9,18 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stainless-sdks/serval-go"
 	"github.com/stainless-sdks/serval-go/option"
 	"github.com/stainless-sdks/serval-terraform/internal/apijson"
+	"github.com/stainless-sdks/serval-terraform/internal/importpath"
 	"github.com/stainless-sdks/serval-terraform/internal/logging"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.ResourceWithConfigure = (*AccessPolicyResource)(nil)
 var _ resource.ResourceWithModifyPlan = (*AccessPolicyResource)(nil)
+var _ resource.ResourceWithImportState = (*AccessPolicyResource)(nil)
 
 func NewResource() resource.Resource {
 	return &AccessPolicyResource{}
@@ -66,6 +69,7 @@ func (r *AccessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 	res := new(http.Response)
+	env := AccessPolicyDataEnvelope{*data}
 	_, err = r.client.AccessPolicies.New(
 		ctx,
 		serval.AccessPolicyNewParams{},
@@ -78,58 +82,18 @@ func (r *AccessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 	bytes, _ := io.ReadAll(res.Body)
-	err = apijson.UnmarshalComputed(bytes, &data)
+	err = apijson.UnmarshalComputed(bytes, &env)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
 		return
 	}
+	data = &env.Data
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *AccessPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data *AccessPolicyModel
-
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var state *AccessPolicyModel
-
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	dataBytes, err := data.MarshalJSONForUpdate(*state)
-	if err != nil {
-		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
-		return
-	}
-	res := new(http.Response)
-	_, err = r.client.AccessPolicies.Update(
-		ctx,
-		data.AccessPolicyID.ValueString(),
-		serval.AccessPolicyUpdateParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
-	if err != nil {
-		resp.Diagnostics.AddError("failed to make http request", err.Error())
-		return
-	}
-	bytes, _ := io.ReadAll(res.Body)
-	err = apijson.UnmarshalComputed(bytes, &data)
-	if err != nil {
-		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	// Update is not supported for this resource
 }
 
 func (r *AccessPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -142,9 +106,10 @@ func (r *AccessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	res := new(http.Response)
+	env := AccessPolicyDataEnvelope{*data}
 	_, err := r.client.AccessPolicies.Get(
 		ctx,
-		data.AccessPolicyID.ValueString(),
+		data.ID.ValueString(),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -158,11 +123,12 @@ func (r *AccessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 	bytes, _ := io.ReadAll(res.Body)
-	err = apijson.Unmarshal(bytes, &data)
+	err = apijson.Unmarshal(bytes, &env)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
 		return
 	}
+	data = &env.Data
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -178,13 +144,52 @@ func (r *AccessPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 
 	_, err := r.client.AccessPolicies.Delete(
 		ctx,
-		data.AccessPolicyID.ValueString(),
+		data.ID.ValueString(),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
 	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *AccessPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data *AccessPolicyModel = new(AccessPolicyModel)
+
+	path := ""
+	diags := importpath.ParseImportID(
+		req.ID,
+		"<access_policy_id>",
+		&path,
+	)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	data.ID = types.StringValue(path)
+
+	res := new(http.Response)
+	env := AccessPolicyDataEnvelope{*data}
+	_, err := r.client.AccessPolicies.Get(
+		ctx,
+		path,
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Data
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
