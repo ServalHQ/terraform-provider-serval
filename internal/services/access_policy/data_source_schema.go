@@ -34,10 +34,6 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "Whether a business justification is required when requesting access.",
 				Computed:    true,
 			},
-			"team_id": schema.StringAttribute{
-				Description: "The ID of the team that the access policy belongs to.",
-				Computed:    true,
-			},
 		},
 	}
 }
