@@ -16,6 +16,7 @@ import (
 	"github.com/stainless-sdks/serval-go/option"
 	"github.com/stainless-sdks/serval-terraform/internal/services/access_policy"
 	"github.com/stainless-sdks/serval-terraform/internal/services/access_policy_approval_procedure"
+	"github.com/stainless-sdks/serval-terraform/internal/services/access_resource"
 	"github.com/stainless-sdks/serval-terraform/internal/services/guidance"
 	"github.com/stainless-sdks/serval-terraform/internal/services/workflow"
 	"github.com/stainless-sdks/serval-terraform/internal/services/workflow_approval_procedure"
@@ -106,6 +107,7 @@ func (p *ServalProvider) Resources(ctx context.Context) []func() resource.Resour
 		workflow.NewResource,
 		workflow_approval_procedure.NewResource,
 		guidance.NewResource,
+		access_resource.NewResource,
 	}
 }
 
@@ -116,6 +118,7 @@ func (p *ServalProvider) DataSources(ctx context.Context) []func() datasource.Da
 		workflow.NewWorkflowDataSource,
 		workflow_approval_procedure.NewWorkflowApprovalProcedureDataSource,
 		guidance.NewGuidanceDataSource,
+		access_resource.NewAccessResourceDataSource,
 	}
 }
 
