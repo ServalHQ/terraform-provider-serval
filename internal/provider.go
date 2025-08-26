@@ -102,7 +102,9 @@ func (p *ServalProvider) Resources(ctx context.Context) []func() resource.Resour
 }
 
 func (p *ServalProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		access_policy.NewAccessPolicyDataSource,
+	}
 }
 
 func NewProvider(version string) func() provider.Provider {
