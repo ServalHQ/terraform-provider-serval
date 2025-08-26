@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package access_resource
+package app_resource
 
 import (
 	"context"
@@ -15,21 +15,21 @@ import (
 	"github.com/stainless-sdks/serval-terraform/internal/logging"
 )
 
-type AccessResourceDataSource struct {
+type AppResourceDataSource struct {
 	client *serval.Client
 }
 
-var _ datasource.DataSourceWithConfigure = (*AccessResourceDataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*AppResourceDataSource)(nil)
 
-func NewAccessResourceDataSource() datasource.DataSource {
-	return &AccessResourceDataSource{}
+func NewAppResourceDataSource() datasource.DataSource {
+	return &AppResourceDataSource{}
 }
 
-func (d *AccessResourceDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_access_resource"
+func (d *AppResourceDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_app_resource"
 }
 
-func (d *AccessResourceDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *AppResourceDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -48,8 +48,8 @@ func (d *AccessResourceDataSource) Configure(ctx context.Context, req datasource
 	d.client = client
 }
 
-func (d *AccessResourceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data *AccessResourceDataSourceModel
+func (d *AppResourceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data *AppResourceDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -58,7 +58,7 @@ func (d *AccessResourceDataSource) Read(ctx context.Context, req datasource.Read
 	}
 
 	res := new(http.Response)
-	env := AccessResourceDataDataSourceEnvelope{*data}
+	env := AppResourceDataDataSourceEnvelope{*data}
 	_, err := d.client.AppResources.Get(
 		ctx,
 		data.ID.ValueString(),

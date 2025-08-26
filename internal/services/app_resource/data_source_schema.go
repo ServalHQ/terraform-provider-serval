@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package access_resource
+package app_resource
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
-var _ datasource.DataSourceWithConfigValidators = (*AccessResourceDataSource)(nil)
+var _ datasource.DataSourceWithConfigValidators = (*AppResourceDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
@@ -42,10 +42,10 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 	}
 }
 
-func (d *AccessResourceDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *AppResourceDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = DataSourceSchema(ctx)
 }
 
-func (d *AccessResourceDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+func (d *AppResourceDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
 	return []datasource.ConfigValidator{}
 }

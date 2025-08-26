@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package access_resource
+package app_resource
 
 import (
 	"context"
@@ -18,24 +18,24 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.ResourceWithConfigure = (*AccessResourceResource)(nil)
-var _ resource.ResourceWithModifyPlan = (*AccessResourceResource)(nil)
-var _ resource.ResourceWithImportState = (*AccessResourceResource)(nil)
+var _ resource.ResourceWithConfigure = (*AppResourceResource)(nil)
+var _ resource.ResourceWithModifyPlan = (*AppResourceResource)(nil)
+var _ resource.ResourceWithImportState = (*AppResourceResource)(nil)
 
 func NewResource() resource.Resource {
-	return &AccessResourceResource{}
+	return &AppResourceResource{}
 }
 
-// AccessResourceResource defines the resource implementation.
-type AccessResourceResource struct {
+// AppResourceResource defines the resource implementation.
+type AppResourceResource struct {
 	client *serval.Client
 }
 
-func (r *AccessResourceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_access_resource"
+func (r *AppResourceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_app_resource"
 }
 
-func (r *AccessResourceResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *AppResourceResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -54,8 +54,8 @@ func (r *AccessResourceResource) Configure(ctx context.Context, req resource.Con
 	r.client = client
 }
 
-func (r *AccessResourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data *AccessResourceModel
+func (r *AppResourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *AppResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -69,7 +69,7 @@ func (r *AccessResourceResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 	res := new(http.Response)
-	env := AccessResourceDataEnvelope{*data}
+	env := AppResourceDataEnvelope{*data}
 	_, err = r.client.AppResources.New(
 		ctx,
 		serval.AppResourceNewParams{},
@@ -92,8 +92,8 @@ func (r *AccessResourceResource) Create(ctx context.Context, req resource.Create
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *AccessResourceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data *AccessResourceModel
+func (r *AppResourceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *AppResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -101,7 +101,7 @@ func (r *AccessResourceResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	var state *AccessResourceModel
+	var state *AppResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
@@ -115,7 +115,7 @@ func (r *AccessResourceResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 	res := new(http.Response)
-	env := AccessResourceDataEnvelope{*data}
+	env := AppResourceDataEnvelope{*data}
 	_, err = r.client.AppResources.Update(
 		ctx,
 		data.ID.ValueString(),
@@ -139,8 +139,8 @@ func (r *AccessResourceResource) Update(ctx context.Context, req resource.Update
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *AccessResourceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data *AccessResourceModel
+func (r *AppResourceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *AppResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -149,7 +149,7 @@ func (r *AccessResourceResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	res := new(http.Response)
-	env := AccessResourceDataEnvelope{*data}
+	env := AppResourceDataEnvelope{*data}
 	_, err := r.client.AppResources.Get(
 		ctx,
 		data.ID.ValueString(),
@@ -176,8 +176,8 @@ func (r *AccessResourceResource) Read(ctx context.Context, req resource.ReadRequ
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *AccessResourceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data *AccessResourceModel
+func (r *AppResourceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data *AppResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -198,8 +198,8 @@ func (r *AccessResourceResource) Delete(ctx context.Context, req resource.Delete
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *AccessResourceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data *AccessResourceModel = new(AccessResourceModel)
+func (r *AppResourceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data *AppResourceModel = new(AppResourceModel)
 
 	path := ""
 	diags := importpath.ParseImportID(
@@ -215,7 +215,7 @@ func (r *AccessResourceResource) ImportState(ctx context.Context, req resource.I
 	data.ID = types.StringValue(path)
 
 	res := new(http.Response)
-	env := AccessResourceDataEnvelope{*data}
+	env := AppResourceDataEnvelope{*data}
 	_, err := r.client.AppResources.Get(
 		ctx,
 		path,
@@ -237,6 +237,6 @@ func (r *AccessResourceResource) ImportState(ctx context.Context, req resource.I
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *AccessResourceResource) ModifyPlan(_ context.Context, _ resource.ModifyPlanRequest, _ *resource.ModifyPlanResponse) {
+func (r *AppResourceResource) ModifyPlan(_ context.Context, _ resource.ModifyPlanRequest, _ *resource.ModifyPlanResponse) {
 
 }

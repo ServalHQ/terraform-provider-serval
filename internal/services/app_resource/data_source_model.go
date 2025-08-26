@@ -1,16 +1,16 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package access_resource
+package app_resource
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type AccessResourceDataDataSourceEnvelope struct {
-	Data AccessResourceDataSourceModel `json:"data,computed"`
+type AppResourceDataDataSourceEnvelope struct {
+	Data AppResourceDataSourceModel `json:"data,computed"`
 }
 
-type AccessResourceDataSourceModel struct {
+type AppResourceDataSourceModel struct {
 	ID            types.String `tfsdk:"id" path:"id,required"`
 	AppInstanceID types.String `tfsdk:"app_instance_id" json:"appInstanceId,computed"`
 	Description   types.String `tfsdk:"description" json:"description,computed"`
