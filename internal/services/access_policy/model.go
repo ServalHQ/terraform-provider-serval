@@ -12,7 +12,7 @@ type AccessPolicyDataEnvelope struct {
 }
 
 type AccessPolicyModel struct {
-	ID                           types.String `tfsdk:"id" json:"id,computed"`
+	ID                           types.String `tfsdk:"id" path:"id,optional"`
 	TeamID                       types.String `tfsdk:"team_id" json:"teamId,optional,no_refresh"`
 	Description                  types.String `tfsdk:"description" json:"description,optional"`
 	MaxAccessMinutes             types.Int64  `tfsdk:"max_access_minutes" json:"maxAccessMinutes,optional"`
