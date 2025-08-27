@@ -18,7 +18,6 @@ resource "serval_user" "example_user" {
   first_name = "firstName"
   last_name = "lastName"
   role = "USER_ROLE_UNSPECIFIED"
-  team_ids = ["string"]
 }
 ```
 
@@ -32,7 +31,6 @@ resource "serval_user" "example_user" {
 - `first_name` (String)
 - `last_name` (String)
 - `role` (String) Available values: "USER_ROLE_UNSPECIFIED", "USER_ROLE_ORG_MEMBER", "USER_ROLE_ORG_ADMIN".
-- `team_ids` (List of String)
 
 ### Read-Only
 
