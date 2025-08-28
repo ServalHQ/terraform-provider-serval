@@ -16,6 +16,7 @@ import (
 	"github.com/stainless-sdks/serval-go/option"
 	"github.com/stainless-sdks/serval-terraform/internal/services/access_policy"
 	"github.com/stainless-sdks/serval-terraform/internal/services/access_policy_approval_procedure"
+	"github.com/stainless-sdks/serval-terraform/internal/services/app_instance"
 	"github.com/stainless-sdks/serval-terraform/internal/services/app_resource"
 	"github.com/stainless-sdks/serval-terraform/internal/services/app_resource_entitlement"
 	"github.com/stainless-sdks/serval-terraform/internal/services/group"
@@ -113,6 +114,7 @@ func (p *ServalProvider) Resources(ctx context.Context) []func() resource.Resour
 		guidance.NewResource,
 		app_resource.NewResource,
 		app_resource_entitlement.NewResource,
+		app_instance.NewResource,
 		user.NewResource,
 		group.NewResource,
 		team.NewResource,
@@ -128,6 +130,7 @@ func (p *ServalProvider) DataSources(ctx context.Context) []func() datasource.Da
 		guidance.NewGuidanceDataSource,
 		app_resource.NewAppResourceDataSource,
 		app_resource_entitlement.NewAppResourceEntitlementDataSource,
+		app_instance.NewAppInstanceDataSource,
 		user.NewUserDataSource,
 		group.NewGroupDataSource,
 		team.NewTeamDataSource,
