@@ -31,6 +31,14 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
+			"access_requests_enabled": schema.BoolAttribute{
+				Description: "Whether access requests are enabled for the app instance.",
+				Optional:    true,
+			},
+			"default_access_policy_id": schema.StringAttribute{
+				Description: "The default access policy for the app instance (optional).",
+				Optional:    true,
+			},
 			"instance_id": schema.StringAttribute{
 				Description: "The instance ID of the app instance.",
 				Optional:    true,
@@ -38,14 +46,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Description: "The name of the app instance.",
 				Optional:    true,
-			},
-			"access_requests_enabled": schema.BoolAttribute{
-				Description: "Whether access requests are enabled for the app instance.",
-				Computed:    true,
-			},
-			"default_access_policy_id": schema.StringAttribute{
-				Description: "The default access policy for the app instance.",
-				Computed:    true,
 			},
 		},
 	}

@@ -162,8 +162,8 @@ github.com/skeema/knownhosts v1.1.0/go.mod h1:sKFq3RD6/TKZkSWn8boUbDC7Qkgcv+8XXi
 github.com/spf13/cast v1.3.1/go.mod h1:Qx5cxh0v+4UWYiBimWS+eyWzqEqokIECu5etghLkUJE=
 github.com/spf13/cast v1.5.0 h1:rj3WzYc11XZaIZMPKmwP96zkFEnnAmV8s6XbB2aY32w=
 github.com/spf13/cast v1.5.0/go.mod h1:SpXXQ5YoyJw6s3/6cMTQuxvgRl3PCJiyaX9p6b155UU=
-github.com/stainless-sdks/serval-go v0.0.0-20250828010929-cd665845296d h1:Li0ttkzZdCkeRNBS8JDZJZJBfNcHGEaVrTNjfLqAOYw=
-github.com/stainless-sdks/serval-go v0.0.0-20250828010929-cd665845296d/go.mod h1:DSNbIR5Yq3LqtPz8mtbKVd3QmXlUwJLb6mn4HIU2yxg=
+github.com/stainless-sdks/serval-go v0.0.0-20250828011955-d4146f252166 h1:fIb07l4khyNkCTTa8mK87BWMl5pf0+pjuVL8x4eu0cQ=
+github.com/stainless-sdks/serval-go v0.0.0-20250828011955-d4146f252166/go.mod h1:DSNbIR5Yq3LqtPz8mtbKVd3QmXlUwJLb6mn4HIU2yxg=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
