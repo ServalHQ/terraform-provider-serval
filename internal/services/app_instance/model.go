@@ -15,10 +15,10 @@ type AppInstanceModel struct {
 	ID                    types.String `tfsdk:"id" json:"id,computed"`
 	Service               types.String `tfsdk:"service" json:"service,optional"`
 	TeamID                types.String `tfsdk:"team_id" json:"teamId,optional"`
+	AccessRequestsEnabled types.Bool   `tfsdk:"access_requests_enabled" json:"accessRequestsEnabled,optional"`
+	DefaultAccessPolicyID types.String `tfsdk:"default_access_policy_id" json:"defaultAccessPolicyId,optional"`
 	InstanceID            types.String `tfsdk:"instance_id" json:"instanceId,optional"`
 	Name                  types.String `tfsdk:"name" json:"name,optional"`
-	AccessRequestsEnabled types.Bool   `tfsdk:"access_requests_enabled" json:"accessRequestsEnabled,computed"`
-	DefaultAccessPolicyID types.String `tfsdk:"default_access_policy_id" json:"defaultAccessPolicyId,computed"`
 }
 
 func (m AppInstanceModel) MarshalJSON() (data []byte, err error) {
