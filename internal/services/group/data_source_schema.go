@@ -5,11 +5,11 @@ package group
 import (
 	"context"
 
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/serval-terraform/internal/customfield"
 )
 
 var _ datasource.DataSourceWithConfigValidators = (*GroupDataSource)(nil)

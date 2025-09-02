@@ -26,7 +26,7 @@ Then edit (or create) your `~/.terraformrc` to look something like this:
 ```hcl
   provider_installation {
     dev_overrides {
-      "stainless-sdks/serval" = "/local/path/to/this/repo"
+      "ServalHQ/serval" = "/local/path/to/this/repo"
     }
     direct {}
   }

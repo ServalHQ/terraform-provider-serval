@@ -12,9 +12,6 @@ on:
       - 'stl-preview-head/**'
       - 'stl-preview-base/**'
 
-env:
-  GOPRIVATE: github.com/stainless-sdks/serval-go
-
 jobs:
   lint:
     runs-on: ${{ github.repository == 'stainless-sdks/serval-terraform' && 'depot-ubuntu-24.04' || 'ubuntu-latest' }}
@@ -22,9 +19,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: ./.github/actions/setup-go
+      - name: Setup go
+        uses: actions/setup-go@v5
         with:
-          stainless-api-key: ${{ secrets.STAINLESS_API_KEY }}
+          go-version-file: ./go.mod
+
+      - name: Bootstrap
+        run: ./scripts/bootstrap
 
       - name: Run lints
         run: ./scripts/lint
@@ -35,9 +36,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: ./.github/actions/setup-go
+      - name: Setup go
+        uses: actions/setup-go@v5
         with:
-          stainless-api-key: ${{ secrets.STAINLESS_API_KEY }}
+          go-version-file: ./go.mod
+
+      - name: Bootstrap
+        run: ./scripts/bootstrap
 
       - name: Run tests
         run: ./scripts/test

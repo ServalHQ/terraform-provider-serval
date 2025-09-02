@@ -3,8 +3,8 @@
 package access_policy_approval_procedure
 
 import (
+	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/serval-terraform/internal/apijson"
 )
 
 type AccessPolicyApprovalProcedureDataEnvelope struct {

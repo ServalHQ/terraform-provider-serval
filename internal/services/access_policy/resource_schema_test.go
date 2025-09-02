@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stainless-sdks/serval-terraform/internal/services/access_policy"
-	"github.com/stainless-sdks/serval-terraform/internal/test_helpers"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_policy"
+	"github.com/ServalHQ/terraform-provider-serval/internal/test_helpers"
 )
 
 func TestAccessPolicyModelSchemaParity(t *testing.T) {

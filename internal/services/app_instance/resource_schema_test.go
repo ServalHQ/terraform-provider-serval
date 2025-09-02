@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stainless-sdks/serval-terraform/internal/services/app_instance"
-	"github.com/stainless-sdks/serval-terraform/internal/test_helpers"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_instance"
+	"github.com/ServalHQ/terraform-provider-serval/internal/test_helpers"
 )
 
 func TestAppInstanceModelSchemaParity(t *testing.T) {

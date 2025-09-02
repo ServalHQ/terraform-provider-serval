@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stainless-sdks/serval-terraform/internal/services/workflow_approval_procedure"
-	"github.com/stainless-sdks/serval-terraform/internal/test_helpers"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow_approval_procedure"
+	"github.com/ServalHQ/terraform-provider-serval/internal/test_helpers"
 )
 
 func TestWorkflowApprovalProcedureDataSourceModelSchemaParity(t *testing.T) {

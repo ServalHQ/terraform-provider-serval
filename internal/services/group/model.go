@@ -3,9 +3,9 @@
 package group
 
 import (
+	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/serval-terraform/internal/apijson"
 )
 
 type GroupDataEnvelope struct {

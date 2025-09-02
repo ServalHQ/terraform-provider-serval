@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/stainless-sdks/serval-go/option"
+	"github.com/ServalHQ/serval-go/option"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )

@@ -8,13 +8,13 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/ServalHQ/serval-go"
+	"github.com/ServalHQ/serval-go/option"
+	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
+	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
+	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/serval-go"
-	"github.com/stainless-sdks/serval-go/option"
-	"github.com/stainless-sdks/serval-terraform/internal/apijson"
-	"github.com/stainless-sdks/serval-terraform/internal/importpath"
-	"github.com/stainless-sdks/serval-terraform/internal/logging"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
