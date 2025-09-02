@@ -6,8 +6,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/ServalHQ/serval-go/v2"
-	"github.com/ServalHQ/serval-go/v2/option"
+	"github.com/ServalHQ/serval-go"
+	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_policy"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_policy_approval_procedure"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_instance"
