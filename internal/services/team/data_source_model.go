@@ -3,9 +3,9 @@
 package team
 
 import (
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/serval-terraform/internal/customfield"
 )
 
 type TeamDataDataSourceEnvelope struct {

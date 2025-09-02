@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stainless-sdks/serval-terraform/internal/importpath"
+	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
 )
 
 func TestParseID(t *testing.T) {
