@@ -8,8 +8,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
+	"github.com/ServalHQ/serval-go/v2"
+	"github.com/ServalHQ/serval-go/v2/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
