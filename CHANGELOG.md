@@ -1,0 +1,58 @@
+# Changelog
+
+## 0.1.0 (2025-09-02)
+
+Full Changelog: [v0.0.1...v0.1.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.0.1...v0.1.0)
+
+### Features
+
+* **api:** update via SDK Studio ([57337d0](https://github.com/ServalHQ/terraform-provider-serval/commit/57337d05e80108b2edd2602837ffef49557677ae))
+* **api:** update via SDK Studio ([652e9cd](https://github.com/ServalHQ/terraform-provider-serval/commit/652e9cd4aa679af8983cd220ab75b2d8dc7caaf4))
+* **api:** update via SDK Studio ([7384a4d](https://github.com/ServalHQ/terraform-provider-serval/commit/7384a4d3949e1bcfa1fc819b830923738a9f46a1))
+* **api:** update via SDK Studio ([84de47b](https://github.com/ServalHQ/terraform-provider-serval/commit/84de47be0e1c094d9950702ce6dd8c6625cf4fd8))
+* **api:** update via SDK Studio ([e4faf09](https://github.com/ServalHQ/terraform-provider-serval/commit/e4faf091a790faeffec72bb01d2e367c0f97350c))
+* **api:** update via SDK Studio ([88e9938](https://github.com/ServalHQ/terraform-provider-serval/commit/88e9938ca57bb648a41e07b10b344bfe9f02b015))
+* **api:** update via SDK Studio ([2e4a46b](https://github.com/ServalHQ/terraform-provider-serval/commit/2e4a46b0283298bf5b303d238aa9bfde2a7f8426))
+* **api:** update via SDK Studio ([2cbff8b](https://github.com/ServalHQ/terraform-provider-serval/commit/2cbff8b58f0c142c39570ace1be6c3eb0d54025e))
+* **api:** update via SDK Studio ([f6e83de](https://github.com/ServalHQ/terraform-provider-serval/commit/f6e83de950972998c5779956c04e1b379c6e356b))
+* **api:** update via SDK Studio ([b4981a5](https://github.com/ServalHQ/terraform-provider-serval/commit/b4981a58654362f50e9986b6489c891d7022c27d))
+* **api:** update via SDK Studio ([d32b7ad](https://github.com/ServalHQ/terraform-provider-serval/commit/d32b7ad112e64a85a366de31a66bd7c04734fa66))
+* **api:** update via SDK Studio ([d016b36](https://github.com/ServalHQ/terraform-provider-serval/commit/d016b36f8e4bf7ee3536ae2dd16956bb60a69b1f))
+* **api:** update via SDK Studio ([eb189f1](https://github.com/ServalHQ/terraform-provider-serval/commit/eb189f159e75248c8fab82aae78cb40bcb5a09c2))
+* **api:** update via SDK Studio ([8c98a75](https://github.com/ServalHQ/terraform-provider-serval/commit/8c98a75233faa73f663e05dab82a449f0545d528))
+* **api:** update via SDK Studio ([8e06891](https://github.com/ServalHQ/terraform-provider-serval/commit/8e0689136542df4e26bd9882e7429a1dc833b7f9))
+* **api:** update via SDK Studio ([ccff8b3](https://github.com/ServalHQ/terraform-provider-serval/commit/ccff8b3a93c1bde606a0c8e48549fc45646bdcbf))
+* **api:** update via SDK Studio ([74e464d](https://github.com/ServalHQ/terraform-provider-serval/commit/74e464d484dd45c53ca78df3d861c41f2cd93820))
+* **api:** update via SDK Studio ([70d62dd](https://github.com/ServalHQ/terraform-provider-serval/commit/70d62ddc3a1226f338f772555ed82e4f01f78c91))
+* **api:** update via SDK Studio ([9344709](https://github.com/ServalHQ/terraform-provider-serval/commit/9344709aef02f556b0f466e17c928da29f432b98))
+* **api:** update via SDK Studio ([a8783ab](https://github.com/ServalHQ/terraform-provider-serval/commit/a8783ab5eac8ef3b628f397a31fb1070d0ff8294))
+* **api:** update via SDK Studio ([15a1f90](https://github.com/ServalHQ/terraform-provider-serval/commit/15a1f900da879475e756b3d460928744aa707314))
+* **api:** update via SDK Studio ([f7540a5](https://github.com/ServalHQ/terraform-provider-serval/commit/f7540a56566901af514ea86f79836d8aba73e56a))
+* **api:** update via SDK Studio ([b256c16](https://github.com/ServalHQ/terraform-provider-serval/commit/b256c165aaad8ecbf103918facdeb6a24b530add))
+* **api:** update via SDK Studio ([e0b0b87](https://github.com/ServalHQ/terraform-provider-serval/commit/e0b0b879d6309476aaf89354ccafe71c1257c61c))
+* **api:** update via SDK Studio ([4c9125f](https://github.com/ServalHQ/terraform-provider-serval/commit/4c9125f18f3620f3b0f5b7767bd0263f1a120925))
+* **api:** update via SDK Studio ([8895fe1](https://github.com/ServalHQ/terraform-provider-serval/commit/8895fe1083e4a729b884494a7378aaa8654182a0))
+* **api:** update via SDK Studio ([fcbaa13](https://github.com/ServalHQ/terraform-provider-serval/commit/fcbaa134989171b4a131200a7223064e3b3b6c48))
+* **api:** update via SDK Studio ([a13141e](https://github.com/ServalHQ/terraform-provider-serval/commit/a13141e85564478968402dbe48e3aa62dca8dcc1))
+* **api:** update via SDK Studio ([e0777d8](https://github.com/ServalHQ/terraform-provider-serval/commit/e0777d8e2cb1eafbf61ca538a2bbb01c097c839e))
+* **api:** update via SDK Studio ([4b258c0](https://github.com/ServalHQ/terraform-provider-serval/commit/4b258c0eac00d367d80b66c299c429d644963a0b))
+* **api:** update via SDK Studio ([adee1f5](https://github.com/ServalHQ/terraform-provider-serval/commit/adee1f5087c150b4eebeeeac21bca5d6f52d95b6))
+* **api:** update via SDK Studio ([3e0ae35](https://github.com/ServalHQ/terraform-provider-serval/commit/3e0ae35ffb616e904b5926eabf873cf28b78a411))
+* **api:** update via SDK Studio ([25d8227](https://github.com/ServalHQ/terraform-provider-serval/commit/25d8227d2475f6e57ff52e0d6210cab030c68874))
+* **api:** update via SDK Studio ([c1c07c0](https://github.com/ServalHQ/terraform-provider-serval/commit/c1c07c0940beccafac2793d8ed0739a644571adb))
+* **api:** update via SDK Studio ([f3a3947](https://github.com/ServalHQ/terraform-provider-serval/commit/f3a39475758febb97a991e381b8f7a76161055d8))
+* **api:** update via SDK Studio ([57ff5ba](https://github.com/ServalHQ/terraform-provider-serval/commit/57ff5ba0e7d41da3276e36b0902d616b7d5e0ee4))
+* **api:** update via SDK Studio ([879aae7](https://github.com/ServalHQ/terraform-provider-serval/commit/879aae704e5872b6b7e68cf1d82e4f2d24f784d2))
+
+
+### Bug Fixes
+
+* properly handle null nested objects in customfield marshaling ([25aa57e](https://github.com/ServalHQ/terraform-provider-serval/commit/25aa57ee199fc0c815b5d6097e06abee6414658d))
+
+
+### Chores
+
+* configure new SDK language ([0076001](https://github.com/ServalHQ/terraform-provider-serval/commit/0076001b4e89938bb5a45bb26051622e16e06bf3))
+* **internal:** codegen related update ([eeb9a01](https://github.com/ServalHQ/terraform-provider-serval/commit/eeb9a0153903910d441bfc02eb3b10d79f01bb1b))
+* **internal:** codegen related update ([cca0fa6](https://github.com/ServalHQ/terraform-provider-serval/commit/cca0fa60bbc8ca09230773e7b7fa149e667d41e4))
+* update SDK settings ([68669f7](https://github.com/ServalHQ/terraform-provider-serval/commit/68669f739abff3bd1f328f9273b87182e8825607))
