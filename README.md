@@ -3,8 +3,6 @@
 The [Serval Terraform provider](https://registry.terraform.io/providers/ServalHQ/serval/latest/docs) provides convenient access to
 the [Serval REST API](https://serval.com) from Terraform.
 
-It is generated with [Stainless](https://www.stainless.com/).
-
 ## Requirements
 
 This provider requires Terraform CLI 1.0 or later. You can [install it for your system](https://developer.hashicorp.com/terraform/install)
