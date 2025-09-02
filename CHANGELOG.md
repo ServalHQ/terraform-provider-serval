@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0 (2025-09-02)
+
+Full Changelog: [v0.1.0...v0.2.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.1.0...v0.2.0)
+
+### Features
+
+* **api:** update via SDK Studio ([a0f2c63](https://github.com/ServalHQ/terraform-provider-serval/commit/a0f2c63ff498cf4abf77a2e83c3180f6641b72d8))
+* **api:** update via SDK Studio ([2b6a003](https://github.com/ServalHQ/terraform-provider-serval/commit/2b6a00368d8e8f455d5f0615090be17f177ef1d2))
+
 ## 0.1.0 (2025-09-02)
 
 Full Changelog: [v0.0.1...v0.1.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.0.1...v0.1.0)
