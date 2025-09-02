@@ -5,7 +5,7 @@ package access_policy_approval_procedure
 import (
 	"context"
 
-	"github.com/ServalHQ/serval-go"
+	"github.com/ServalHQ/serval-go/v2"
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"

@@ -13,4 +13,4 @@ fi
 
 echo "==> Linking with local directory"
 go mod tidy -e
-go mod edit -replace github.com/ServalHQ/serval-go="$LOCAL_GO"
+go mod edit -replace github.com/ServalHQ/serval-go/v2="$LOCAL_GO"
