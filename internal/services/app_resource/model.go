@@ -3,8 +3,8 @@
 package app_resource
 
 import (
+	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/serval-terraform/internal/apijson"
 )
 
 type AppResourceDataEnvelope struct {

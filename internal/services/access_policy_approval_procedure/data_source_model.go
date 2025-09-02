@@ -5,10 +5,10 @@ package access_policy_approval_procedure
 import (
 	"context"
 
+	"github.com/ServalHQ/serval-go"
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/serval-go"
-	"github.com/stainless-sdks/serval-terraform/internal/customfield"
 )
 
 type AccessPolicyApprovalProcedureDataDataSourceEnvelope struct {

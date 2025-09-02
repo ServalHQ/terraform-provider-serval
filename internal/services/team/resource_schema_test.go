@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stainless-sdks/serval-terraform/internal/services/team"
-	"github.com/stainless-sdks/serval-terraform/internal/test_helpers"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/team"
+	"github.com/ServalHQ/terraform-provider-serval/internal/test_helpers"
 )
 
 func TestTeamModelSchemaParity(t *testing.T) {

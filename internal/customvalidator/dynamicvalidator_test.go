@@ -2,7 +2,7 @@ package customvalidator_test
 
 import (
 	"context"
-	"github.com/stainless-sdks/serval-terraform/internal/customvalidator"
+	"github.com/ServalHQ/terraform-provider-serval/internal/customvalidator"
 	"math/big"
 	"testing"
 

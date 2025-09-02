@@ -8,11 +8,11 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/ServalHQ/serval-go"
+	"github.com/ServalHQ/serval-go/option"
+	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
+	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/stainless-sdks/serval-go"
-	"github.com/stainless-sdks/serval-go/option"
-	"github.com/stainless-sdks/serval-terraform/internal/apijson"
-	"github.com/stainless-sdks/serval-terraform/internal/logging"
 )
 
 type UserDataSource struct {
