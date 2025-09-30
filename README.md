@@ -20,14 +20,15 @@ terraform {
   required_providers {
     serval = {
       source  = "ServalHQ/serval"
-      version = "~> 0.2.0"
+      version = "~> 0.3.0"
     }
   }
 }
 
 # Initialize the provider
 provider "serval" {
-  api_key = "My API Key" # or set SERVAL_API_KEY env variable
+  client_id = "My Client ID" # or set SERVAL_CLIENT_ID env variable
+  client_secret = "My Client Secret" # or set SERVAL_CLIENT_SECRET env variable
 }
 
 # Configure a resource
@@ -48,9 +49,10 @@ refer to the full documentation on [the Terraform Registry](https://registry.ter
 When you initialize the provider, the following options are supported. It is recommended to use environment variables for sensitive values like access tokens.
 If an environment variable is provided, then the option does not need to be set in the terraform source.
 
-| Property | Environment variable | Required | Default value |
-| -------- | -------------------- | -------- | ------------- |
-| api_key  | `SERVAL_API_KEY`     | true     | —             |
+| Property      | Environment variable   | Required | Default value |
+| ------------- | ---------------------- | -------- | ------------- |
+| client_secret | `SERVAL_CLIENT_SECRET` | true     | —             |
+| client_id     | `SERVAL_CLIENT_ID`     | true     | —             |
 
 ## Semantic versioning
 

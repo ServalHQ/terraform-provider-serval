@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.3.0 (2025-09-30)
+
+Full Changelog: [v0.2.0...v0.3.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.2.0...v0.3.0)
+
+### Features
+
+* **api:** manual updates ([7e420c0](https://github.com/ServalHQ/terraform-provider-serval/commit/7e420c0cf4cf845d4686ede745dfb76999da6d7f))
+* **api:** manual updates ([71bd077](https://github.com/ServalHQ/terraform-provider-serval/commit/71bd07784baa51839692b0f9df1c69c2d5a7a321))
+* **internal:** support CustomMarshaler interface for encoding types ([1cdf439](https://github.com/ServalHQ/terraform-provider-serval/commit/1cdf439639612ce6c6c4623bd6bc3be76e596610))
+
+
+### Bug Fixes
+
+* bugfix for setting JSON keys with special characters ([a72075c](https://github.com/ServalHQ/terraform-provider-serval/commit/a72075c55abf114d2fd3355ee365b457cf90814a))
+
+
+### Chores
+
+* do not install brew dependencies in ./scripts/bootstrap by default ([f2b3ff0](https://github.com/ServalHQ/terraform-provider-serval/commit/f2b3ff0e2f28b45e53af290c31711e2a10aa54d4))
+* ensure `tfplugindocs` always use `/var/tmp` for compilation on linux ([72fad97](https://github.com/ServalHQ/terraform-provider-serval/commit/72fad97d84e605428f1d6e484beb323edea3eee5))
+
 ## 0.2.0 (2025-09-02)
 
 Full Changelog: [v0.1.0...v0.2.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.1.0...v0.2.0)
