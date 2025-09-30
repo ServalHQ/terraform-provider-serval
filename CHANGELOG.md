@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.4.0 (2025-09-30)
+
+Full Changelog: [v0.3.0...v0.4.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.3.0...v0.4.0)
+
+### Features
+
+* added capability for `dynamicvalidator` to do arbitrary semantic equivalence check ([b0ce64c](https://github.com/ServalHQ/terraform-provider-serval/commit/b0ce64ca5036f3e82e6fb6354dd1b07d18334a0f))
+* **api:** manual updates ([b47776c](https://github.com/ServalHQ/terraform-provider-serval/commit/b47776c909c07953c6a70e978f9b66d18670b419))
+* **api:** manual updates ([8431acd](https://github.com/ServalHQ/terraform-provider-serval/commit/8431acdab02d118da1aa7f9cab53b0b47a586332))
+* **api:** manual updates ([6f2dd65](https://github.com/ServalHQ/terraform-provider-serval/commit/6f2dd65e99c2654d596bba2beba7e0c6eb12f87a))
+
+
+### Chores
+
+* update SDK settings ([5aa450a](https://github.com/ServalHQ/terraform-provider-serval/commit/5aa450a314fe4b8b624355a9d61fbe74dafee32d))
+
 ## 0.3.0 (2025-09-30)
 
 Full Changelog: [v0.2.0...v0.3.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.2.0...v0.3.0)

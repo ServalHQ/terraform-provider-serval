@@ -32,7 +32,7 @@ func (m *WorkflowApprovalProcedureDataSourceModel) toReadParams(_ context.Contex
 type WorkflowApprovalProcedureStepsDataSourceModel struct {
 	ID                types.String                   `tfsdk:"id" json:"id,computed"`
 	AllowSelfApproval types.Bool                     `tfsdk:"allow_self_approval" json:"allowSelfApproval,computed"`
+	CustomWorkflowID  types.String                   `tfsdk:"custom_workflow_id" json:"customWorkflowId,computed"`
 	ServalGroupIDs    customfield.List[types.String] `tfsdk:"serval_group_ids" json:"servalGroupIds,computed"`
 	SpecificUserIDs   customfield.List[types.String] `tfsdk:"specific_user_ids" json:"specificUserIds,computed"`
-	StepType          types.String                   `tfsdk:"step_type" json:"stepType,computed"`
 }

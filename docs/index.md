@@ -14,7 +14,8 @@ description: |-
 
 ```terraform
 provider "serval" {
-  api_key = "My API Key"
+  client_id = "My Client ID"
+  client_secret = "My Client Secret"
 }
 ```
 
@@ -23,5 +24,6 @@ provider "serval" {
 
 ### Optional
 
-- `api_key` (String)
 - `base_url` (String) Set the base url that the provider connects to.
+- `client_id` (String)
+- `client_secret` (String)
