@@ -5,12 +5,10 @@ package access_policy_approval_procedure
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -42,6 +40,10 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							Description: "Whether the step can be approved by the requester themselves.",
 							Optional:    true,
 						},
+						"custom_workflow_id": schema.StringAttribute{
+							Description: "If step_type is CUSTOM_WORKFLOW, this is the workflow ID to execute",
+							Optional:    true,
+						},
 						"serval_group_ids": schema.ListAttribute{
 							Description: "The IDs of the Serval groups that can approve the step.",
 							Optional:    true,
@@ -51,17 +53,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							Description: "The IDs of the specific users that can approve the step.",
 							Optional:    true,
 							ElementType: types.StringType,
-						},
-						"step_type": schema.StringAttribute{
-							Description: "The type of approval step.\nAvailable values: \"APPROVAL_PROCEDURE_STEP_TYPE_UNSPECIFIED\", \"SPECIFIC_USERS\", \"SERVAL_GROUPS\".",
-							Optional:    true,
-							Validators: []validator.String{
-								stringvalidator.OneOfCaseInsensitive(
-									"APPROVAL_PROCEDURE_STEP_TYPE_UNSPECIFIED",
-									"SPECIFIC_USERS",
-									"SERVAL_GROUPS",
-								),
-							},
 						},
 					},
 				},
