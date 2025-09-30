@@ -38,8 +38,9 @@ type ServalProvider struct {
 
 // ServalProviderModel describes the provider data model.
 type ServalProviderModel struct {
-	BaseURL types.String `tfsdk:"base_url" json:"base_url,optional"`
-	APIKey  types.String `tfsdk:"api_key" json:"api_key,optional"`
+	BaseURL      types.String `tfsdk:"base_url" json:"base_url,optional"`
+	ClientID     types.String `tfsdk:"client_id" json:"client_id,optional"`
+	ClientSecret types.String `tfsdk:"client_secret" json:"client_secret,optional"`
 }
 
 func (p *ServalProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -54,7 +55,10 @@ func ProviderSchema(ctx context.Context) schema.Schema {
 				Description: "Set the base url that the provider connects to.",
 				Optional:    true,
 			},
-			"api_key": schema.StringAttribute{
+			"client_id": schema.StringAttribute{
+				Optional: true,
+			},
+			"client_secret": schema.StringAttribute{
 				Optional: true,
 			},
 		},
@@ -79,15 +83,28 @@ func (p *ServalProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		opts = append(opts, option.WithBaseURL(o))
 	}
 
-	if !data.APIKey.IsNull() && !data.APIKey.IsUnknown() {
-		opts = append(opts, option.WithAPIKey(data.APIKey.ValueString()))
-	} else if o, ok := os.LookupEnv("SERVAL_API_KEY"); ok {
-		opts = append(opts, option.WithAPIKey(o))
+	if !data.ClientID.IsNull() && !data.ClientID.IsUnknown() {
+		opts = append(opts, option.WithClientID(data.ClientID.ValueString()))
+	} else if o, ok := os.LookupEnv("SERVAL_CLIENT_ID"); ok {
+		opts = append(opts, option.WithClientID(o))
 	} else {
 		resp.Diagnostics.AddAttributeError(
-			path.Root("api_key"),
-			"Missing api_key value",
-			"The api_key field is required. Set it in provider configuration or via the \"SERVAL_API_KEY\" environment variable.",
+			path.Root("client_id"),
+			"Missing client_id value",
+			"The client_id field is required. Set it in provider configuration or via the \"SERVAL_CLIENT_ID\" environment variable.",
+		)
+		return
+	}
+
+	if !data.ClientSecret.IsNull() && !data.ClientSecret.IsUnknown() {
+		opts = append(opts, option.WithClientSecret(data.ClientSecret.ValueString()))
+	} else if o, ok := os.LookupEnv("SERVAL_CLIENT_SECRET"); ok {
+		opts = append(opts, option.WithClientSecret(o))
+	} else {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("client_secret"),
+			"Missing client_secret value",
+			"The client_secret field is required. Set it in provider configuration or via the \"SERVAL_CLIENT_SECRET\" environment variable.",
 		)
 		return
 	}

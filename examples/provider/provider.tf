@@ -1,3 +1,4 @@
 provider "serval" {
-  api_key = "My API Key"
+  client_id = "My Client ID"
+  client_secret = "My Client Secret"
 }
