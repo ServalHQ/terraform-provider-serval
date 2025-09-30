@@ -6,10 +6,8 @@ import (
 	"context"
 
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -40,6 +38,10 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 							Description: "Whether the step can be approved by the requester themselves.",
 							Computed:    true,
 						},
+						"custom_workflow_id": schema.StringAttribute{
+							Description: "If step_type is CUSTOM_WORKFLOW, this is the workflow ID to execute",
+							Computed:    true,
+						},
 						"serval_group_ids": schema.ListAttribute{
 							Description: "The IDs of the Serval groups that can approve the step.",
 							Computed:    true,
@@ -51,17 +53,6 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:    true,
 							CustomType:  customfield.NewListType[types.String](ctx),
 							ElementType: types.StringType,
-						},
-						"step_type": schema.StringAttribute{
-							Description: "The type of approval step.\nAvailable values: \"APPROVAL_PROCEDURE_STEP_TYPE_UNSPECIFIED\", \"SPECIFIC_USERS\", \"SERVAL_GROUPS\".",
-							Computed:    true,
-							Validators: []validator.String{
-								stringvalidator.OneOfCaseInsensitive(
-									"APPROVAL_PROCEDURE_STEP_TYPE_UNSPECIFIED",
-									"SPECIFIC_USERS",
-									"SERVAL_GROUPS",
-								),
-							},
 						},
 					},
 				},

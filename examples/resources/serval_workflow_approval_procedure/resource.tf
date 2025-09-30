@@ -3,8 +3,8 @@ resource "serval_workflow_approval_procedure" "example_workflow_approval_procedu
   steps = [{
     id = "id"
     allow_self_approval = true
+    custom_workflow_id = "customWorkflowId"
     serval_group_ids = ["string"]
     specific_user_ids = ["string"]
-    step_type = "APPROVAL_PROCEDURE_STEP_TYPE_UNSPECIFIED"
   }]
 }

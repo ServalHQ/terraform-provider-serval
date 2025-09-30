@@ -18,9 +18,9 @@ resource "serval_access_policy_approval_procedure" "example_access_policy_approv
   steps = [{
     id = "id"
     allow_self_approval = true
+    custom_workflow_id = "customWorkflowId"
     serval_group_ids = ["string"]
     specific_user_ids = ["string"]
-    step_type = "APPROVAL_PROCEDURE_STEP_TYPE_UNSPECIFIED"
   }]
 }
 ```
@@ -46,11 +46,10 @@ resource "serval_access_policy_approval_procedure" "example_access_policy_approv
 Optional:
 
 - `allow_self_approval` (Boolean) Whether the step can be approved by the requester themselves.
+- `custom_workflow_id` (String) If step_type is CUSTOM_WORKFLOW, this is the workflow ID to execute
 - `id` (String) The ID of the approval step.
 - `serval_group_ids` (List of String) The IDs of the Serval groups that can approve the step.
 - `specific_user_ids` (List of String) The IDs of the specific users that can approve the step.
-- `step_type` (String) The type of approval step.
-Available values: "APPROVAL_PROCEDURE_STEP_TYPE_UNSPECIFIED", "SPECIFIC_USERS", "SERVAL_GROUPS".
 
 ## Import
 
