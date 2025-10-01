@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.1 (2025-10-01)
+
+Full Changelog: [v0.4.0...v0.4.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.4.0...v0.4.1)
+
+### Chores
+
+* **internal:** codegen related update ([99a4c3a](https://github.com/ServalHQ/terraform-provider-serval/commit/99a4c3a89a79ad1c01a7916078a3d62544ceaaf1))
+
 ## 0.4.0 (2025-09-30)
 
 Full Changelog: [v0.3.0...v0.4.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.3.0...v0.4.0)
