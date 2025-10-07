@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.2 (2025-10-07)
+
+Full Changelog: [v0.4.1...v0.4.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.4.1...v0.4.2)
+
+### Bug Fixes
+
+* correctly detect more ID attributes for data sources ([ceaf32b](https://github.com/ServalHQ/terraform-provider-serval/commit/ceaf32b6ed7c2b58b596184ca5cbae8d8a5115ed))
+
 ## 0.4.1 (2025-10-01)
 
 Full Changelog: [v0.4.0...v0.4.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.4.0...v0.4.1)
