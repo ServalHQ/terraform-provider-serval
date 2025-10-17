@@ -65,6 +65,3 @@ We take backwards-compatibility seriously and work hard to ensure you can rely o
 
 We are keen for your feedback; please open an [issue](https://www.github.com/ServalHQ/terraform-provider-serval/issues) with questions, bugs, or suggestions.
 
-## Contributing
-
-See [the contributing documentation](./CONTRIBUTING.md).
