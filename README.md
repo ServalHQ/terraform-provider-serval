@@ -1,7 +1,7 @@
 # Serval Terraform Provider
 
 The [Serval Terraform provider](https://registry.terraform.io/providers/ServalHQ/serval/latest/docs) provides convenient access to
-the [Serval REST API](https://serval.com) from Terraform.
+the [Serval REST API](https://docs.serval.com) from Terraform.
 
 ## Requirements
 
@@ -20,7 +20,7 @@ terraform {
   required_providers {
     serval = {
       source  = "ServalHQ/serval"
-      version = "~> 0.5.1"
+      version = "~> 0.6.0"
     }
   }
 }
