@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.7.0 (2025-11-10)
+
+Full Changelog: [v0.6.2...v0.7.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.6.2...v0.7.0)
+
+### Features
+
+* **api:** manual updates ([a7430fe](https://github.com/ServalHQ/terraform-provider-serval/commit/a7430fec34ede0149fdd5deb32069e862f715347))
+
+
+### Bug Fixes
+
+* **client:** correctly encode map patches ([4f8a2f7](https://github.com/ServalHQ/terraform-provider-serval/commit/4f8a2f712d3cd7f8d9b4ca5fe4626ec2e1724cb7))
+* **client:** correctly patch `null` -&gt; zero value ([94ce573](https://github.com/ServalHQ/terraform-provider-serval/commit/94ce5730e6181b6aac7b3d98b9718cdfb57e927f))
+
+
+### Chores
+
+* **internal:** refactor the apijson encoder ([964c047](https://github.com/ServalHQ/terraform-provider-serval/commit/964c047d656f1d37096e9884ab18b08c571bbe78))
+* **internal:** update `interface{}` to `any` ([3f72e11](https://github.com/ServalHQ/terraform-provider-serval/commit/3f72e114e2c8caf5495aecb6ac117933ad7b1816))
+
 ## 0.6.2 (2025-10-17)
 
 Full Changelog: [v0.6.1...v0.6.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.6.1...v0.6.2)

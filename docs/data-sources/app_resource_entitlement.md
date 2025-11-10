@@ -29,7 +29,18 @@ data "serval_app_resource_entitlement" "example_app_resource_entitlement" {
 
 - `access_policy_id` (String) The default access policy for the entitlement.
 - `description` (String) A description of the entitlement.
+- `linked_entitlement_ids` (List of String) The IDs of entitlements that must be provisioned before this entitlement can be provisioned (prerequisite entitlements).
+- `manual_provisioning_assignees` (Attributes List) The manual provisioning assignees (users and groups) for this entitlement. (see [below for nested schema](#nestedatt--manual_provisioning_assignees))
 - `name` (String) The name of the entitlement.
 - `provisioning_method` (String) The provisioning method for the entitlement.
 - `requests_enabled` (Boolean) Whether requests are enabled for the entitlement.
 - `resource_id` (String) The ID of the resource that the entitlement belongs to.
+
+<a id="nestedatt--manual_provisioning_assignees"></a>
+### Nested Schema for `manual_provisioning_assignees`
+
+Read-Only:
+
+- `assignee_id` (String) The ID of the user or group.
+- `assignee_type` (String) The type of assignee.
+Available values: "MANUAL_PROVISIONING_ASSIGNEE_TYPE_UNSPECIFIED", "MANUAL_PROVISIONING_ASSIGNEE_TYPE_USER", "MANUAL_PROVISIONING_ASSIGNEE_TYPE_GROUP".

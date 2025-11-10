@@ -17,6 +17,7 @@ resource "serval_access_policy" "example_access_policy" {
   description = "description"
   max_access_minutes = 0
   name = "name"
+  recommended_access_minutes = 0
   require_business_justification = true
   team_id = "teamId"
 }
@@ -30,6 +31,7 @@ resource "serval_access_policy" "example_access_policy" {
 - `description` (String) A description of the access policy.
 - `max_access_minutes` (Number) The maximum number of minutes that access can be granted for (optional).
 - `name` (String) The name of the access policy.
+- `recommended_access_minutes` (Number) The recommended duration in minutes for access requests (optional).
 - `require_business_justification` (Boolean) Whether a business justification is required when requesting access (optional).
 - `team_id` (String) The ID of the team.
 

@@ -41,7 +41,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							Optional:    true,
 						},
 						"custom_workflow_id": schema.StringAttribute{
-							Description: "If step_type is CUSTOM_WORKFLOW, this is the workflow ID to execute",
+							Description: "A workflow ID to execute to determine the approvers for this step (or to auto-approve the step).",
 							Optional:    true,
 						},
 						"serval_group_ids": schema.ListAttribute{
