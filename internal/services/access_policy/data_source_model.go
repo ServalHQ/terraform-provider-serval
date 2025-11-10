@@ -15,5 +15,6 @@ type AccessPolicyDataSourceModel struct {
 	Description                  types.String `tfsdk:"description" json:"description,computed"`
 	MaxAccessMinutes             types.Int64  `tfsdk:"max_access_minutes" json:"maxAccessMinutes,computed"`
 	Name                         types.String `tfsdk:"name" json:"name,computed"`
+	RecommendedAccessMinutes     types.Int64  `tfsdk:"recommended_access_minutes" json:"recommendedAccessMinutes,computed"`
 	RequireBusinessJustification types.Bool   `tfsdk:"require_business_justification" json:"requireBusinessJustification,computed"`
 }

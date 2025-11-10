@@ -37,7 +37,7 @@ data "serval_workflow_approval_procedure" "example_workflow_approval_procedure" 
 Read-Only:
 
 - `allow_self_approval` (Boolean) Whether the step can be approved by the requester themselves.
-- `custom_workflow_id` (String) If step_type is CUSTOM_WORKFLOW, this is the workflow ID to execute
+- `custom_workflow_id` (String) A workflow ID to execute to determine the approvers for this step (or to auto-approve the step).
 - `id` (String) The ID of the approval step.
 - `serval_group_ids` (List of String) The IDs of the Serval groups that can approve the step.
 - `specific_user_ids` (List of String) The IDs of the specific users that can approve the step.

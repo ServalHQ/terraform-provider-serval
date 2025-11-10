@@ -3,6 +3,7 @@
 package app_resource_entitlement
 
 import (
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -11,11 +12,18 @@ type AppResourceEntitlementDataDataSourceEnvelope struct {
 }
 
 type AppResourceEntitlementDataSourceModel struct {
-	ID                 types.String `tfsdk:"id" path:"id,required"`
-	AccessPolicyID     types.String `tfsdk:"access_policy_id" json:"accessPolicyId,computed"`
-	Description        types.String `tfsdk:"description" json:"description,computed"`
-	Name               types.String `tfsdk:"name" json:"name,computed"`
-	ProvisioningMethod types.String `tfsdk:"provisioning_method" json:"provisioningMethod,computed"`
-	RequestsEnabled    types.Bool   `tfsdk:"requests_enabled" json:"requestsEnabled,computed"`
-	ResourceID         types.String `tfsdk:"resource_id" json:"resourceId,computed"`
+	ID                          types.String                                                                                   `tfsdk:"id" path:"id,required"`
+	AccessPolicyID              types.String                                                                                   `tfsdk:"access_policy_id" json:"accessPolicyId,computed"`
+	Description                 types.String                                                                                   `tfsdk:"description" json:"description,computed"`
+	Name                        types.String                                                                                   `tfsdk:"name" json:"name,computed"`
+	ProvisioningMethod          types.String                                                                                   `tfsdk:"provisioning_method" json:"provisioningMethod,computed"`
+	RequestsEnabled             types.Bool                                                                                     `tfsdk:"requests_enabled" json:"requestsEnabled,computed"`
+	ResourceID                  types.String                                                                                   `tfsdk:"resource_id" json:"resourceId,computed"`
+	LinkedEntitlementIDs        customfield.List[types.String]                                                                 `tfsdk:"linked_entitlement_ids" json:"linkedEntitlementIds,computed"`
+	ManualProvisioningAssignees customfield.NestedObjectList[AppResourceEntitlementManualProvisioningAssigneesDataSourceModel] `tfsdk:"manual_provisioning_assignees" json:"manualProvisioningAssignees,computed"`
+}
+
+type AppResourceEntitlementManualProvisioningAssigneesDataSourceModel struct {
+	AssigneeID   types.String `tfsdk:"assignee_id" json:"assigneeId,computed"`
+	AssigneeType types.String `tfsdk:"assignee_type" json:"assigneeType,computed"`
 }
