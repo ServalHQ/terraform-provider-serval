@@ -30,6 +30,10 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "The name of the access policy.",
 				Computed:    true,
 			},
+			"recommended_access_minutes": schema.Int64Attribute{
+				Description: "The recommended duration in minutes for access requests (optional).",
+				Computed:    true,
+			},
 			"require_business_justification": schema.BoolAttribute{
 				Description: "Whether a business justification is required when requesting access.",
 				Computed:    true,
