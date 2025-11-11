@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0 (2025-11-11)
+
+Full Changelog: [v0.7.1...v0.8.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.7.1...v0.8.0)
+
+### Features
+
+* **team:** add name and prefix-based lookup for team data source ([#17](https://github.com/ServalHQ/terraform-provider-serval/issues/17)) ([d5bb5f5](https://github.com/ServalHQ/terraform-provider-serval/commit/d5bb5f51b76da751a439df15c7a619f93404c5ed))
+
 ## 0.7.1 (2025-11-11)
 
 Full Changelog: [v0.7.0...v0.7.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.7.0...v0.7.1)
