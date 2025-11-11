@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0 (2025-11-11)
+
+Full Changelog: [v0.8.0...v0.9.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.8.0...v0.9.0)
+
+### Features
+
+* **user:** add email-based lookup for user data source ([#19](https://github.com/ServalHQ/terraform-provider-serval/issues/19)) ([940ccd4](https://github.com/ServalHQ/terraform-provider-serval/commit/940ccd4e3fcb25fdac9841d34fc9a547f8d6b36b))
+
 ## 0.8.0 (2025-11-11)
 
 Full Changelog: [v0.7.1...v0.8.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.7.1...v0.8.0)
