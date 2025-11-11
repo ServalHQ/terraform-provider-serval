@@ -13,11 +13,11 @@ type TeamDataDataSourceEnvelope struct {
 }
 
 type TeamDataSourceModel struct {
-	ID             types.String                   `tfsdk:"id" path:"id,required"`
+	ID             types.String                   `tfsdk:"id" json:"id,computed_optional"`
+	Name           types.String                   `tfsdk:"name" json:"name,computed_optional"`
+	Prefix         types.String                   `tfsdk:"prefix" json:"prefix,computed_optional"`
 	CreatedAt      timetypes.RFC3339              `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
 	Description    types.String                   `tfsdk:"description" json:"description,computed"`
-	Name           types.String                   `tfsdk:"name" json:"name,computed"`
 	OrganizationID types.String                   `tfsdk:"organization_id" json:"organizationId,computed"`
-	Prefix         types.String                   `tfsdk:"prefix" json:"prefix,computed"`
 	UserIDs        customfield.List[types.String] `tfsdk:"user_ids" json:"userIds,computed"`
 }
