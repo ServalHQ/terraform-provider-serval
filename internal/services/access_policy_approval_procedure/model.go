@@ -26,7 +26,7 @@ func (m AccessPolicyApprovalProcedureModel) MarshalJSONForUpdate(state AccessPol
 }
 
 type AccessPolicyApprovalProcedureStepsModel struct {
-	ID                types.String    `tfsdk:"id" json:"id,optional"`
+	ID                types.String    `tfsdk:"id" json:"id,computed"`
 	AllowSelfApproval types.Bool      `tfsdk:"allow_self_approval" json:"allowSelfApproval,optional"`
 	CustomWorkflowID  types.String    `tfsdk:"custom_workflow_id" json:"customWorkflowId,optional"`
 	ServalGroupIDs    *[]types.String `tfsdk:"serval_group_ids" json:"servalGroupIds,optional"`
