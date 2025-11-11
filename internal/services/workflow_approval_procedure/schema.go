@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -28,16 +28,16 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
-		"steps": schema.ListNestedAttribute{
-			Description:   "The approval steps for the procedure.",
-			Optional:      true,
-			PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Description: "The ID of the approval step.",
-						Computed:    true,
-					},
+			"steps": schema.ListNestedAttribute{
+				Description:   "The approval steps for the procedure.",
+				Optional:      true,
+				PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Description: "The ID of the approval step.",
+							Computed:    true,
+						},
 						"allow_self_approval": schema.BoolAttribute{
 							Description: "Whether the step can be approved by the requester themselves.",
 							Optional:    true,
