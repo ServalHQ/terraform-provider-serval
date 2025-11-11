@@ -13,10 +13,10 @@ type GroupDataDataSourceEnvelope struct {
 }
 
 type GroupDataSourceModel struct {
-	ID             types.String                   `tfsdk:"id" path:"id,required"`
+	ID             types.String                   `tfsdk:"id" json:"id,computed"`
+	Name           types.String                   `tfsdk:"name" json:"name,computed"`
 	CreatedAt      timetypes.RFC3339              `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
 	DeletedAt      timetypes.RFC3339              `tfsdk:"deleted_at" json:"deletedAt,computed" format:"date-time"`
-	Name           types.String                   `tfsdk:"name" json:"name,computed"`
 	OrganizationID types.String                   `tfsdk:"organization_id" json:"organizationId,computed"`
 	UserIDs        customfield.List[types.String] `tfsdk:"user_ids" json:"userIds,computed"`
 }
