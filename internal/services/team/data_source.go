@@ -98,7 +98,9 @@ func (d *TeamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		cursor := ""
 		
 		for {
-			params := serval.TeamListParams{}
+			params := serval.TeamListParams{
+				Limit: serval.Int(1000), // Set high limit to fetch all teams
+			}
 			if cursor != "" {
 				params.Cursor = serval.String(cursor)
 			}

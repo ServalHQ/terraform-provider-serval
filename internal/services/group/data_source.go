@@ -91,7 +91,9 @@ func (d *GroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		cursor := ""
 		
 		for {
-			params := serval.GroupListParams{}
+			params := serval.GroupListParams{
+				Limit: serval.Int(1000), // Set high limit to fetch all groups
+			}
 			if cursor != "" {
 				params.Cursor = serval.String(cursor)
 			}

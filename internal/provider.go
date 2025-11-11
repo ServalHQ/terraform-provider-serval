@@ -142,7 +142,7 @@ func (p *ServalProvider) DataSources(ctx context.Context) []func() datasource.Da
 	return []func() datasource.DataSource{
 		access_policy.NewAccessPolicyDataSource,
 		access_policy_approval_procedure.NewAccessPolicyApprovalProcedureDataSource,
-		// guidance.NewGuidanceDataSource, // Temporarily disabled
+		guidance.NewGuidanceDataSource,
 		workflow.NewWorkflowDataSource,
 		workflow_approval_procedure.NewWorkflowApprovalProcedureDataSource,
 		app_instance.NewAppInstanceDataSource,

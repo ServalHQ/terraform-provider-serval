@@ -90,9 +90,14 @@ func (d *UserDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		// Fetch all pages to find the user with matching email
 		var allUsers []UserDataSourceModel
 		cursor := ""
-		
+		pageCount := 0
+
 		for {
-			params := serval.UserListParams{}
+			pageCount++
+			params := serval.UserListParams{
+				Limit:              serval.Int(1000),  // Set high limit to fetch all users
+				IncludeDeactivated: serval.Bool(true), // Include deactivated users in search
+			}
 			if cursor != "" {
 				params.Cursor = serval.String(cursor)
 			}
@@ -114,7 +119,7 @@ func (d *UserDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 			// Parse the response which contains a Data array and pagination info
 			var listResponse struct {
 				Data []UserDataSourceModel `json:"data"`
-				Next *string                `json:"next"`
+				Next *string               `json:"next"`
 			}
 			err = apijson.UnmarshalComputed(bytes, &listResponse)
 			if err != nil {
@@ -141,7 +146,11 @@ func (d *UserDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		}
 
 		// User not found after checking all pages
-		resp.Diagnostics.AddError("user not found", fmt.Sprintf("No user found with email: %s", targetEmail))
+		resp.Diagnostics.AddError(
+			"user not found",
+			fmt.Sprintf("No user found with email: %s. Searched %d pages with %d total users",
+				targetEmail, pageCount, len(allUsers)),
+		)
 		return
 	}
 
