@@ -57,25 +57,79 @@ func (d *UserDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	res := new(http.Response)
-	env := UserDataDataSourceEnvelope{*data}
-	_, err := d.client.Users.Get(
-		ctx,
-		data.ID.ValueString(),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
-	if err != nil {
-		resp.Diagnostics.AddError("failed to make http request", err.Error())
-		return
-	}
-	bytes, _ := io.ReadAll(res.Body)
-	err = apijson.UnmarshalComputed(bytes, &env)
-	if err != nil {
-		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
-		return
-	}
-	data = &env.Data
+	// Check if ID is provided for direct lookup
+	if !data.ID.IsNull() && !data.ID.IsUnknown() {
+		res := new(http.Response)
+		env := UserDataDataSourceEnvelope{*data}
+		_, err := d.client.Users.Get(
+			ctx,
+			data.ID.ValueString(),
+			option.WithResponseBodyInto(&res),
+			option.WithMiddleware(logging.Middleware(ctx)),
+		)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to make http request", err.Error())
+			return
+		}
+		bytes, _ := io.ReadAll(res.Body)
+		err = apijson.UnmarshalComputed(bytes, &env)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+			return
+		}
+		data = &env.Data
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		return
+	}
+
+	// Check if email is provided for list and filter lookup
+	if !data.Email.IsNull() && !data.Email.IsUnknown() {
+		targetEmail := data.Email.ValueString()
+
+		res := new(http.Response)
+		_, err := d.client.Users.List(
+			ctx,
+			serval.UserListParams{},
+			option.WithResponseBodyInto(&res),
+			option.WithMiddleware(logging.Middleware(ctx)),
+		)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to make http request", err.Error())
+			return
+		}
+
+		bytes, _ := io.ReadAll(res.Body)
+
+		// Parse the response which contains a Data array
+		var listResponse struct {
+			Data []UserDataSourceModel `json:"data"`
+		}
+		err = apijson.UnmarshalComputed(bytes, &listResponse)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to deserialize http response", err.Error())
+			return
+		}
+
+		// Find the user with matching email
+		var matchedUser *UserDataSourceModel
+		for _, user := range listResponse.Data {
+			if user.Email.ValueString() == targetEmail {
+				matchedUser = &user
+				break
+			}
+		}
+
+		if matchedUser == nil {
+			resp.Diagnostics.AddError("user not found", fmt.Sprintf("No user found with email: %s", targetEmail))
+			return
+		}
+
+		data = matchedUser
+		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		return
+	}
+
+	// This should never happen due to ExactlyOneOf validator
+	resp.Diagnostics.AddError("missing required field", "Either 'id' or 'email' must be specified")
 }

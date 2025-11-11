@@ -13,8 +13,14 @@ description: |-
 ## Example Usage
 
 ```terraform
-data "serval_user" "example_user" {
+# Query by ID
+data "serval_user" "example_user_by_id" {
   id = "id"
+}
+
+# Query by email
+data "serval_user" "example_user_by_email" {
+  email = "user@example.com"
 }
 ```
 
@@ -22,17 +28,18 @@ data "serval_user" "example_user" {
 
 This data source supports the following arguments:
 
-- `id` (Required) The ID of the user.
+- `id` (Optional) The ID of the user. Exactly one of `id` or `email` must be specified.
+- `email` (Optional) The email address of the user. Exactly one of `id` or `email` must be specified.
 
 ## Attribute Reference
 
 This data source exports the following attributes in addition to the arguments above:
 
 - `id` (String) The ID of the user.
+- `email` (String) The email address of the user.
 - `avatar_url` (String) The avatar URL of the user.
 - `created_at` (String) Timestamp in RFC 3339 format.
 - `deactivated_at` (String) Timestamp in RFC 3339 format.
-- `email` (String) The email address of the user.
 - `first_name` (String) The first name of the user.
 - `last_name` (String) The last name of the user.
 - `name` (String) The full name of the user.

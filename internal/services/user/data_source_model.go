@@ -12,11 +12,11 @@ type UserDataDataSourceEnvelope struct {
 }
 
 type UserDataSourceModel struct {
-	ID            types.String      `tfsdk:"id" path:"id,required"`
+	ID            types.String      `tfsdk:"id" json:"id,computed_optional"`
+	Email         types.String      `tfsdk:"email" json:"email,computed_optional"`
 	AvatarURL     types.String      `tfsdk:"avatar_url" json:"avatarUrl,computed"`
 	CreatedAt     timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
 	DeactivatedAt timetypes.RFC3339 `tfsdk:"deactivated_at" json:"deactivatedAt,computed" format:"date-time"`
-	Email         types.String      `tfsdk:"email" json:"email,computed"`
 	FirstName     types.String      `tfsdk:"first_name" json:"firstName,computed"`
 	LastName      types.String      `tfsdk:"last_name" json:"lastName,computed"`
 	Name          types.String      `tfsdk:"name" json:"name,computed"`
