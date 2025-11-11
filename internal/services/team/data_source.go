@@ -57,25 +57,100 @@ func (d *TeamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	res := new(http.Response)
-	env := TeamDataDataSourceEnvelope{*data}
-	_, err := d.client.Teams.Get(
-		ctx,
-		data.ID.ValueString(),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
-	if err != nil {
-		resp.Diagnostics.AddError("failed to make http request", err.Error())
-		return
-	}
-	bytes, _ := io.ReadAll(res.Body)
-	err = apijson.UnmarshalComputed(bytes, &env)
-	if err != nil {
-		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
-		return
-	}
-	data = &env.Data
+	// If ID is provided, use direct Get method
+	if !data.ID.IsNull() && !data.ID.IsUnknown() {
+		res := new(http.Response)
+		env := TeamDataDataSourceEnvelope{*data}
+		_, err := d.client.Teams.Get(
+			ctx,
+			data.ID.ValueString(),
+			option.WithResponseBodyInto(&res),
+			option.WithMiddleware(logging.Middleware(ctx)),
+		)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to make http request", err.Error())
+			return
+		}
+		bytes, _ := io.ReadAll(res.Body)
+		err = apijson.UnmarshalComputed(bytes, &env)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+			return
+		}
+		data = &env.Data
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		return
+	}
+
+	// If name or prefix is provided, list all teams and filter
+	if (!data.Name.IsNull() && !data.Name.IsUnknown()) || (!data.Prefix.IsNull() && !data.Prefix.IsUnknown()) {
+		var filterField, filterValue string
+		if !data.Name.IsNull() && !data.Name.IsUnknown() {
+			filterField = "name"
+			filterValue = data.Name.ValueString()
+		} else {
+			filterField = "prefix"
+			filterValue = data.Prefix.ValueString()
+		}
+		
+		// Call the List endpoint to get all teams
+		res := new(http.Response)
+		_, err := d.client.Teams.List(
+			ctx,
+			serval.TeamListParams{},
+			option.WithResponseBodyInto(&res),
+			option.WithMiddleware(logging.Middleware(ctx)),
+		)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to list teams", err.Error())
+			return
+		}
+		
+		bytes, _ := io.ReadAll(res.Body)
+		
+		// Parse the list response - API returns {data: [...]}
+		var listResponse struct {
+			Data []TeamDataSourceModel `json:"data"`
+		}
+		err = apijson.UnmarshalComputed(bytes, &listResponse)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to deserialize list response", err.Error())
+			return
+		}
+
+		// Filter by the appropriate field
+		var matchedTeam *TeamDataSourceModel
+		for i := range listResponse.Data {
+			var match bool
+			if filterField == "name" {
+				match = listResponse.Data[i].Name.ValueString() == filterValue
+			} else {
+				match = listResponse.Data[i].Prefix.ValueString() == filterValue
+			}
+			
+			if match {
+				matchedTeam = &listResponse.Data[i]
+				break
+			}
+		}
+
+		if matchedTeam == nil {
+			resp.Diagnostics.AddError(
+				"team not found",
+				fmt.Sprintf("No team found with %s: %s", filterField, filterValue),
+			)
+			return
+		}
+
+		data = matchedTeam
+		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		return
+	}
+
+	// Should never reach here due to validator, but handle it anyway
+	resp.Diagnostics.AddError(
+		"missing required field",
+		"Either 'id', 'name', or 'prefix' must be specified",
+	)
 }
