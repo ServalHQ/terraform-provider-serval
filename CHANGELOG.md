@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.2 (2025-11-11)
+
+Full Changelog: [v0.9.1...v0.9.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.9.1...v0.9.2)
+
 ## 0.9.1 (2025-11-11)
 
 Full Changelog: [v0.9.0...v0.9.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.9.0...v0.9.1)
