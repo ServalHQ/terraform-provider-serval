@@ -87,46 +87,61 @@ func (d *UserDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	if !data.Email.IsNull() && !data.Email.IsUnknown() {
 		targetEmail := data.Email.ValueString()
 
-		res := new(http.Response)
-		_, err := d.client.Users.List(
-			ctx,
-			serval.UserListParams{},
-			option.WithResponseBodyInto(&res),
-			option.WithMiddleware(logging.Middleware(ctx)),
-		)
-		if err != nil {
-			resp.Diagnostics.AddError("failed to make http request", err.Error())
-			return
-		}
+		// Fetch all pages to find the user with matching email
+		var allUsers []UserDataSourceModel
+		cursor := ""
+		
+		for {
+			params := serval.UserListParams{}
+			if cursor != "" {
+				params.Cursor = serval.String(cursor)
+			}
 
-		bytes, _ := io.ReadAll(res.Body)
+			res := new(http.Response)
+			_, err := d.client.Users.List(
+				ctx,
+				params,
+				option.WithResponseBodyInto(&res),
+				option.WithMiddleware(logging.Middleware(ctx)),
+			)
+			if err != nil {
+				resp.Diagnostics.AddError("failed to make http request", err.Error())
+				return
+			}
 
-		// Parse the response which contains a Data array
-		var listResponse struct {
-			Data []UserDataSourceModel `json:"data"`
-		}
-		err = apijson.UnmarshalComputed(bytes, &listResponse)
-		if err != nil {
-			resp.Diagnostics.AddError("failed to deserialize http response", err.Error())
-			return
-		}
+			bytes, _ := io.ReadAll(res.Body)
 
-		// Find the user with matching email
-		var matchedUser *UserDataSourceModel
-		for _, user := range listResponse.Data {
-			if user.Email.ValueString() == targetEmail {
-				matchedUser = &user
+			// Parse the response which contains a Data array and pagination info
+			var listResponse struct {
+				Data []UserDataSourceModel `json:"data"`
+				Next *string                `json:"next"`
+			}
+			err = apijson.UnmarshalComputed(bytes, &listResponse)
+			if err != nil {
+				resp.Diagnostics.AddError("failed to deserialize http response", err.Error())
+				return
+			}
+
+			allUsers = append(allUsers, listResponse.Data...)
+
+			// Check if we found the user in this page (optimization)
+			for _, user := range listResponse.Data {
+				if user.Email.ValueString() == targetEmail {
+					data = &user
+					resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+					return
+				}
+			}
+
+			// Check if there are more pages
+			if listResponse.Next == nil || *listResponse.Next == "" {
 				break
 			}
+			cursor = *listResponse.Next
 		}
 
-		if matchedUser == nil {
-			resp.Diagnostics.AddError("user not found", fmt.Sprintf("No user found with email: %s", targetEmail))
-			return
-		}
-
-		data = matchedUser
-		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		// User not found after checking all pages
+		resp.Diagnostics.AddError("user not found", fmt.Sprintf("No user found with email: %s", targetEmail))
 		return
 	}
 
