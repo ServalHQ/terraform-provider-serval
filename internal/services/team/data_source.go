@@ -94,57 +94,70 @@ func (d *TeamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 			filterValue = data.Prefix.ValueString()
 		}
 		
-		// Call the List endpoint to get all teams
-		res := new(http.Response)
-		_, err := d.client.Teams.List(
-			ctx,
-			serval.TeamListParams{},
-			option.WithResponseBodyInto(&res),
-			option.WithMiddleware(logging.Middleware(ctx)),
-		)
-		if err != nil {
-			resp.Diagnostics.AddError("failed to list teams", err.Error())
-			return
-		}
+		// Fetch all pages to find the team with matching name or prefix
+		cursor := ""
 		
-		bytes, _ := io.ReadAll(res.Body)
-		
-		// Parse the list response - API returns {data: [...]}
-		var listResponse struct {
-			Data []TeamDataSourceModel `json:"data"`
-		}
-		err = apijson.UnmarshalComputed(bytes, &listResponse)
-		if err != nil {
-			resp.Diagnostics.AddError("failed to deserialize list response", err.Error())
-			return
-		}
+		for {
+			params := serval.TeamListParams{
+				Limit: serval.Int(1000), // Set high limit to fetch all teams
+			}
+			if cursor != "" {
+				params.Cursor = serval.String(cursor)
+			}
 
-		// Filter by the appropriate field
-		var matchedTeam *TeamDataSourceModel
-		for i := range listResponse.Data {
-			var match bool
-			if filterField == "name" {
-				match = listResponse.Data[i].Name.ValueString() == filterValue
-			} else {
-				match = listResponse.Data[i].Prefix.ValueString() == filterValue
+			res := new(http.Response)
+			_, err := d.client.Teams.List(
+				ctx,
+				params,
+				option.WithResponseBodyInto(&res),
+				option.WithMiddleware(logging.Middleware(ctx)),
+			)
+			if err != nil {
+				resp.Diagnostics.AddError("failed to list teams", err.Error())
+				return
 			}
 			
-			if match {
-				matchedTeam = &listResponse.Data[i]
+			bytes, _ := io.ReadAll(res.Body)
+			
+			// Parse the list response - API returns {data: [...], next: "..."}
+			var listResponse struct {
+				Data []TeamDataSourceModel `json:"data"`
+				Next *string               `json:"next"`
+			}
+			err = apijson.UnmarshalComputed(bytes, &listResponse)
+			if err != nil {
+				resp.Diagnostics.AddError("failed to deserialize list response", err.Error())
+				return
+			}
+
+			// Check if we found the team in this page
+			for i := range listResponse.Data {
+				var match bool
+				if filterField == "name" {
+					match = listResponse.Data[i].Name.ValueString() == filterValue
+				} else {
+					match = listResponse.Data[i].Prefix.ValueString() == filterValue
+				}
+				
+				if match {
+					data = &listResponse.Data[i]
+					resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+					return
+				}
+			}
+
+			// Check if there are more pages
+			if listResponse.Next == nil || *listResponse.Next == "" {
 				break
 			}
+			cursor = *listResponse.Next
 		}
 
-		if matchedTeam == nil {
-			resp.Diagnostics.AddError(
-				"team not found",
-				fmt.Sprintf("No team found with %s: %s", filterField, filterValue),
-			)
-			return
-		}
-
-		data = matchedTeam
-		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		// Team not found after checking all pages
+		resp.Diagnostics.AddError(
+			"team not found",
+			fmt.Sprintf("No team found with %s: %s", filterField, filterValue),
+		)
 		return
 	}
 
