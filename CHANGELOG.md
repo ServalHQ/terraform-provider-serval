@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.3 (2025-11-12)
+
+Full Changelog: [v0.9.2...v0.9.3](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.9.2...v0.9.3)
+
+### Bug Fixes
+
+* ensure dynamic values always yield valid container inner values ([10a6b68](https://github.com/ServalHQ/terraform-provider-serval/commit/10a6b682215a7d4962a8c2b38be3e669f5932757))
+
 ## 0.9.2 (2025-11-11)
 
 Full Changelog: [v0.9.1...v0.9.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.9.1...v0.9.2)
