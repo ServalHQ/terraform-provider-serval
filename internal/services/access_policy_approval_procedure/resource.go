@@ -208,7 +208,7 @@ func (r *AccessPolicyApprovalProcedureResource) Delete(ctx context.Context, req 
 }
 
 func (r *AccessPolicyApprovalProcedureResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data *AccessPolicyApprovalProcedureModel = new(AccessPolicyApprovalProcedureModel)
+	var data = new(AccessPolicyApprovalProcedureModel)
 
 	path_access_policy_id := ""
 	path_id := ""
