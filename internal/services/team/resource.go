@@ -199,7 +199,7 @@ func (r *TeamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 }
 
 func (r *TeamResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data *TeamModel = new(TeamModel)
+	var data = new(TeamModel)
 
 	path := ""
 	diags := importpath.ParseImportID(

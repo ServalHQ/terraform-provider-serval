@@ -199,7 +199,7 @@ func (r *GuidanceResource) Delete(ctx context.Context, req resource.DeleteReques
 }
 
 func (r *GuidanceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data *GuidanceModel = new(GuidanceModel)
+	var data = new(GuidanceModel)
 
 	path := ""
 	diags := importpath.ParseImportID(
