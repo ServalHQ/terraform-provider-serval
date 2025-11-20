@@ -31,14 +31,14 @@ resource "serval_workflow" "example_workflow" {
 
 ### Optional
 
-- `content` (String) The content/code of the workflow (optional).
+- `content` (String) The content/code of the workflow.
 - `description` (String) A description of the workflow.
 - `execution_scope` (String) The execution scope of the workflow.
 Available values: "WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED", "TEAM_PRIVATE", "TEAM_PUBLIC".
-- `is_temporary` (Boolean) Whether the workflow is temporary (optional).
+- `is_temporary` (Boolean) Whether the workflow is temporary.
 - `name` (String) The name of the workflow.
-- `parameters` (String) The parameters schema of the workflow (JSON, optional).
-- `require_form_confirmation` (Boolean) Whether the workflow requires form confirmation (optional).
+- `parameters` (String) The parameters schema of the workflow (JSON).
+- `require_form_confirmation` (Boolean) Whether the workflow requires form confirmation.
 - `team_id` (String) The ID of the team.
 - `type` (String) The type of the workflow.
 Available values: "WORKFLOW_TYPE_UNSPECIFIED", "EXECUTABLE", "GUIDANCE".

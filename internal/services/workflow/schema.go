@@ -29,7 +29,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"content": schema.StringAttribute{
-				Description: "The content/code of the workflow (optional).",
+				Description: "The content/code of the workflow.",
 				Optional:    true,
 			},
 			"description": schema.StringAttribute{
@@ -48,7 +48,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"is_temporary": schema.BoolAttribute{
-				Description: "Whether the workflow is temporary (optional).",
+				Description: "Whether the workflow is temporary.",
 				Optional:    true,
 			},
 			"name": schema.StringAttribute{
@@ -56,11 +56,11 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"parameters": schema.StringAttribute{
-				Description: "The parameters schema of the workflow (JSON, optional).",
+				Description: "The parameters schema of the workflow (JSON).",
 				Optional:    true,
 			},
 			"require_form_confirmation": schema.BoolAttribute{
-				Description: "Whether the workflow requires form confirmation (optional).",
+				Description: "Whether the workflow requires form confirmation.",
 				Optional:    true,
 			},
 			"type": schema.StringAttribute{
