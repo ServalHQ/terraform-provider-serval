@@ -27,7 +27,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"content": schema.StringAttribute{
-				Description: "The content of the guidance.",
+				Description: "The content of the guidance (optional).",
 				Optional:    true,
 			},
 			"description": schema.StringAttribute{
