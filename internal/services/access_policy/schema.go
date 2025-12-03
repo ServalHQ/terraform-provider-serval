@@ -31,7 +31,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"max_access_minutes": schema.Int64Attribute{
-				Description: "The maximum number of minutes that access can be granted for.",
+				Description: "The maximum number of minutes that access can be granted for (optional).",
 				Optional:    true,
 			},
 			"name": schema.StringAttribute{
@@ -43,7 +43,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"require_business_justification": schema.BoolAttribute{
-				Description: "Whether a business justification is required when requesting access.",
+				Description: "Whether a business justification is required when requesting access (optional).",
 				Optional:    true,
 			},
 		},

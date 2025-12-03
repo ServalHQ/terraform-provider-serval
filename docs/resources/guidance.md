@@ -26,7 +26,7 @@ resource "serval_guidance" "example_guidance" {
 
 ### Optional
 
-- `content` (String) The content of the guidance.
+- `content` (String) The content of the guidance (optional).
 - `description` (String) A description of the guidance.
 - `name` (String) The name of the guidance.
 - `team_id` (String) The ID of the team.
