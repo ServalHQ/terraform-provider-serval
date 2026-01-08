@@ -38,6 +38,18 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Description: "The name of the guidance.",
 				Optional:    true,
 			},
+			"should_always_use": schema.BoolAttribute{
+				Description: "Whether this guidance should always be used (optional, defaults to false).",
+				Optional:    true,
+			},
+			"has_unpublished_changes": schema.BoolAttribute{
+				Description: "Whether there are unpublished changes to the guidance.",
+				Computed:    true,
+			},
+			"is_published": schema.BoolAttribute{
+				Description: "Whether the guidance has been published at least once.",
+				Computed:    true,
+			},
 		},
 	}
 }

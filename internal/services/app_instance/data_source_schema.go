@@ -22,6 +22,10 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "Whether access requests are enabled for the app instance.",
 				Computed:    true,
 			},
+			"custom_service_id": schema.StringAttribute{
+				Description: "**Option: custom_service_id** — The ID of the custom service (for custom apps).",
+				Computed:    true,
+			},
 			"default_access_policy_id": schema.StringAttribute{
 				Description: "The default access policy for the app instance.",
 				Computed:    true,
@@ -35,7 +39,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"service": schema.StringAttribute{
-				Description: "The service of the app instance.",
+				Description: `**Option: service** — The service identifier (for built-in services like "github", "okta", "aws").`,
 				Computed:    true,
 			},
 			"team_id": schema.StringAttribute{

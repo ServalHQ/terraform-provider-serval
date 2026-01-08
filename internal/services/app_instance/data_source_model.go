@@ -13,6 +13,7 @@ type AppInstanceDataDataSourceEnvelope struct {
 type AppInstanceDataSourceModel struct {
 	ID                    types.String `tfsdk:"id" path:"id,required"`
 	AccessRequestsEnabled types.Bool   `tfsdk:"access_requests_enabled" json:"accessRequestsEnabled,computed"`
+	CustomServiceID       types.String `tfsdk:"custom_service_id" json:"customServiceId,computed"`
 	DefaultAccessPolicyID types.String `tfsdk:"default_access_policy_id" json:"defaultAccessPolicyId,computed"`
 	InstanceID            types.String `tfsdk:"instance_id" json:"instanceId,computed"`
 	Name                  types.String `tfsdk:"name" json:"name,computed"`

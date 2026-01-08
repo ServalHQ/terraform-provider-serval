@@ -12,11 +12,14 @@ type GuidanceDataEnvelope struct {
 }
 
 type GuidanceModel struct {
-	ID          types.String `tfsdk:"id" json:"id,computed"`
-	TeamID      types.String `tfsdk:"team_id" json:"teamId,optional"`
-	Content     types.String `tfsdk:"content" json:"content,optional"`
-	Description types.String `tfsdk:"description" json:"description,optional"`
-	Name        types.String `tfsdk:"name" json:"name,optional"`
+	ID                    types.String `tfsdk:"id" json:"id,computed"`
+	TeamID                types.String `tfsdk:"team_id" json:"teamId,optional"`
+	Content               types.String `tfsdk:"content" json:"content,optional"`
+	Description           types.String `tfsdk:"description" json:"description,optional"`
+	Name                  types.String `tfsdk:"name" json:"name,optional"`
+	ShouldAlwaysUse       types.Bool   `tfsdk:"should_always_use" json:"shouldAlwaysUse,optional"`
+	HasUnpublishedChanges types.Bool   `tfsdk:"has_unpublished_changes" json:"hasUnpublishedChanges,computed"`
+	IsPublished           types.Bool   `tfsdk:"is_published" json:"isPublished,computed"`
 }
 
 func (m GuidanceModel) MarshalJSON() (data []byte, err error) {

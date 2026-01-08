@@ -5,6 +5,7 @@ package app_resource_entitlement
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -41,37 +42,70 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Description: "The name of the entitlement.",
 				Optional:    true,
 			},
-			"provisioning_method": schema.StringAttribute{
-				Description: "The provisioning method for the entitlement.",
-				Optional:    true,
-			},
 			"requests_enabled": schema.BoolAttribute{
 				Description: "Whether requests are enabled for the entitlement.",
 				Optional:    true,
 			},
-			"linked_entitlement_ids": schema.ListAttribute{
-				Description: "The IDs of entitlements that must be provisioned before this entitlement can be provisioned (optional).",
+			"provisioning_method": schema.SingleNestedAttribute{
+				Description: "Provisioning configuration. Exactly one method should be set.",
 				Optional:    true,
-				ElementType: types.StringType,
-			},
-			"manual_provisioning_assignees": schema.ListNestedAttribute{
-				Description: `The manual provisioning assignees (users and groups) for this entitlement (optional, only used when provisioning_method is "manual").`,
-				Optional:    true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"assignee_id": schema.StringAttribute{
-							Description: "The ID of the user or group.",
-							Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"builtin_workflow": schema.StringAttribute{
+						Description: "**Option: builtin_workflow**",
+						Optional:    true,
+						CustomType:  jsontypes.NormalizedType{},
+					},
+					"custom_workflow": schema.SingleNestedAttribute{
+						Description: "**Option: custom_workflow**",
+						Optional:    true,
+						Attributes: map[string]schema.Attribute{
+							"deprovision_workflow_id": schema.StringAttribute{
+								Description: "The workflow ID to deprovision access.",
+								Optional:    true,
+							},
+							"provision_workflow_id": schema.StringAttribute{
+								Description: "The workflow ID to provision access.",
+								Optional:    true,
+							},
 						},
-						"assignee_type": schema.StringAttribute{
-							Description: "The type of assignee.\nAvailable values: \"MANUAL_PROVISIONING_ASSIGNEE_TYPE_UNSPECIFIED\", \"MANUAL_PROVISIONING_ASSIGNEE_TYPE_USER\", \"MANUAL_PROVISIONING_ASSIGNEE_TYPE_GROUP\".",
-							Optional:    true,
-							Validators: []validator.String{
-								stringvalidator.OneOfCaseInsensitive(
-									"MANUAL_PROVISIONING_ASSIGNEE_TYPE_UNSPECIFIED",
-									"MANUAL_PROVISIONING_ASSIGNEE_TYPE_USER",
-									"MANUAL_PROVISIONING_ASSIGNEE_TYPE_GROUP",
-								),
+					},
+					"linked_entitlements": schema.SingleNestedAttribute{
+						Description: "**Option: linked_entitlements**",
+						Optional:    true,
+						Attributes: map[string]schema.Attribute{
+							"linked_entitlement_ids": schema.ListAttribute{
+								Description: "The IDs of prerequisite entitlements.",
+								Optional:    true,
+								ElementType: types.StringType,
+							},
+						},
+					},
+					"manual": schema.SingleNestedAttribute{
+						Description: "**Option: manual**",
+						Optional:    true,
+						Attributes: map[string]schema.Attribute{
+							"assignees": schema.ListNestedAttribute{
+								Description: "Users and groups that should be assigned/notified for manual provisioning.",
+								Optional:    true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"assignee_id": schema.StringAttribute{
+											Description: "The ID of the user or group.",
+											Optional:    true,
+										},
+										"assignee_type": schema.StringAttribute{
+											Description: "The type of assignee.\nAvailable values: \"MANUAL_PROVISIONING_ASSIGNEE_TYPE_UNSPECIFIED\", \"MANUAL_PROVISIONING_ASSIGNEE_TYPE_USER\", \"MANUAL_PROVISIONING_ASSIGNEE_TYPE_GROUP\".",
+											Optional:    true,
+											Validators: []validator.String{
+												stringvalidator.OneOfCaseInsensitive(
+													"MANUAL_PROVISIONING_ASSIGNEE_TYPE_UNSPECIFIED",
+													"MANUAL_PROVISIONING_ASSIGNEE_TYPE_USER",
+													"MANUAL_PROVISIONING_ASSIGNEE_TYPE_GROUP",
+												),
+											},
+										},
+									},
+								},
 							},
 						},
 					},

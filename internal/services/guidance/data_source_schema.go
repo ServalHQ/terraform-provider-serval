@@ -26,8 +26,20 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "A description of the guidance.",
 				Computed:    true,
 			},
+			"has_unpublished_changes": schema.BoolAttribute{
+				Description: "Whether there are unpublished changes to the guidance.",
+				Computed:    true,
+			},
+			"is_published": schema.BoolAttribute{
+				Description: "Whether the guidance has been published at least once.",
+				Computed:    true,
+			},
 			"name": schema.StringAttribute{
 				Description: "The name of the guidance.",
+				Computed:    true,
+			},
+			"should_always_use": schema.BoolAttribute{
+				Description: "Whether this guidance should always be used (skipping LLM selection).",
 				Computed:    true,
 			},
 			"team_id": schema.StringAttribute{
