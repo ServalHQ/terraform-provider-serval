@@ -16,9 +16,25 @@ description: |-
 resource "serval_app_resource_entitlement" "example_app_resource_entitlement" {
   access_policy_id = "accessPolicyId"
   description = "description"
-  linked_entitlement_ids = ["string"]
   name = "name"
-  provisioning_method = "provisioningMethod"
+  provisioning_method = {
+    builtin_workflow = {
+
+    }
+    custom_workflow = {
+      deprovision_workflow_id = "deprovisionWorkflowId"
+      provision_workflow_id = "provisionWorkflowId"
+    }
+    linked_entitlements = {
+      linked_entitlement_ids = ["string"]
+    }
+    manual = {
+      assignees = [{
+        assignee_id = "assigneeId"
+        assignee_type = "MANUAL_PROVISIONING_ASSIGNEE_TYPE_UNSPECIFIED"
+      }]
+    }
+  }
   requests_enabled = true
   resource_id = "resourceId"
 }
@@ -31,10 +47,8 @@ resource "serval_app_resource_entitlement" "example_app_resource_entitlement" {
 
 - `access_policy_id` (String) The default access policy for the entitlement (optional).
 - `description` (String) A description of the entitlement.
-- `linked_entitlement_ids` (List of String) The IDs of entitlements that must be provisioned before this entitlement can be provisioned (optional).
-- `manual_provisioning_assignees` (Attributes List) The manual provisioning assignees (users and groups) for this entitlement (optional, only used when provisioning_method is "manual"). (see [below for nested schema](#nestedatt--manual_provisioning_assignees))
 - `name` (String) The name of the entitlement.
-- `provisioning_method` (String) The provisioning method for the entitlement.
+- `provisioning_method` (Attributes) Provisioning configuration. Exactly one method should be set. (see [below for nested schema](#nestedatt--provisioning_method))
 - `requests_enabled` (Boolean) Whether requests are enabled for the entitlement.
 - `resource_id` (String) The ID of the resource.
 
@@ -42,8 +56,42 @@ resource "serval_app_resource_entitlement" "example_app_resource_entitlement" {
 
 - `id` (String) The ID of the entitlement.
 
-<a id="nestedatt--manual_provisioning_assignees"></a>
-### Nested Schema for `manual_provisioning_assignees`
+<a id="nestedatt--provisioning_method"></a>
+### Nested Schema for `provisioning_method`
+
+Optional:
+
+- `builtin_workflow` (String) **Option: builtin_workflow**
+- `custom_workflow` (Attributes) **Option: custom_workflow** (see [below for nested schema](#nestedatt--provisioning_method--custom_workflow))
+- `linked_entitlements` (Attributes) **Option: linked_entitlements** (see [below for nested schema](#nestedatt--provisioning_method--linked_entitlements))
+- `manual` (Attributes) **Option: manual** (see [below for nested schema](#nestedatt--provisioning_method--manual))
+
+<a id="nestedatt--provisioning_method--custom_workflow"></a>
+### Nested Schema for `provisioning_method.custom_workflow`
+
+Optional:
+
+- `deprovision_workflow_id` (String) The workflow ID to deprovision access.
+- `provision_workflow_id` (String) The workflow ID to provision access.
+
+
+<a id="nestedatt--provisioning_method--linked_entitlements"></a>
+### Nested Schema for `provisioning_method.linked_entitlements`
+
+Optional:
+
+- `linked_entitlement_ids` (List of String) The IDs of prerequisite entitlements.
+
+
+<a id="nestedatt--provisioning_method--manual"></a>
+### Nested Schema for `provisioning_method.manual`
+
+Optional:
+
+- `assignees` (Attributes List) Users and groups that should be assigned/notified for manual provisioning. (see [below for nested schema](#nestedatt--provisioning_method--manual--assignees))
+
+<a id="nestedatt--provisioning_method--manual--assignees"></a>
+### Nested Schema for `provisioning_method.manual.assignees`
 
 Optional:
 

@@ -45,7 +45,20 @@ Available values: "WORKFLOW_TYPE_UNSPECIFIED", "EXECUTABLE", "GUIDANCE".
 
 ### Read-Only
 
+- `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the workflow.
 - `id` (String) The ID of the workflow.
+- `is_published` (Boolean) Whether the workflow has been published at least once.
+- `tags` (Attributes List) Tags associated with this workflow. (see [below for nested schema](#nestedatt--tags))
+
+<a id="nestedatt--tags"></a>
+### Nested Schema for `tags`
+
+Read-Only:
+
+- `color` (String) The color of the tag (CSS color string).
+- `icon_slug` (String) The icon slug for the tag.
+- `id` (String) The ID of the tag.
+- `name` (String) The name of the tag.
 
 ## Import
 

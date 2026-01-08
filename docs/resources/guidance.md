@@ -17,6 +17,7 @@ resource "serval_guidance" "example_guidance" {
   content = "content"
   description = "description"
   name = "name"
+  should_always_use = true
   team_id = "teamId"
 }
 ```
@@ -29,11 +30,14 @@ resource "serval_guidance" "example_guidance" {
 - `content` (String) The content of the guidance (optional).
 - `description` (String) A description of the guidance.
 - `name` (String) The name of the guidance.
+- `should_always_use` (Boolean) Whether this guidance should always be used (optional, defaults to false).
 - `team_id` (String) The ID of the team.
 
 ### Read-Only
 
+- `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the guidance.
 - `id` (String) The ID of the guidance.
+- `is_published` (Boolean) Whether the guidance has been published at least once.
 
 ## Import
 
