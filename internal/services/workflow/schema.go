@@ -5,6 +5,7 @@ package workflow
 import (
 	"context"
 
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -72,6 +73,39 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						"EXECUTABLE",
 						"GUIDANCE",
 					),
+				},
+			},
+			"has_unpublished_changes": schema.BoolAttribute{
+				Description: "Whether there are unpublished changes to the workflow.",
+				Computed:    true,
+			},
+			"is_published": schema.BoolAttribute{
+				Description: "Whether the workflow has been published at least once.",
+				Computed:    true,
+			},
+			"tags": schema.ListNestedAttribute{
+				Description: "Tags associated with this workflow.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectListType[WorkflowTagsModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Description: "The ID of the tag.",
+							Computed:    true,
+						},
+						"color": schema.StringAttribute{
+							Description: "The color of the tag (CSS color string).",
+							Computed:    true,
+						},
+						"icon_slug": schema.StringAttribute{
+							Description: "The icon slug for the tag.",
+							Computed:    true,
+						},
+						"name": schema.StringAttribute{
+							Description: "The name of the tag.",
+							Computed:    true,
+						},
+					},
 				},
 			},
 		},

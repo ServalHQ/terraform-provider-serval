@@ -36,6 +36,6 @@ This data source exports the following attributes in addition to the arguments a
   - `assignee_id` (String) The ID of the user or group.
   - `assignee_type` (String) The type of assignee. Available values: "MANUAL_PROVISIONING_ASSIGNEE_TYPE_UNSPECIFIED", "MANUAL_PROVISIONING_ASSIGNEE_TYPE_USER", "MANUAL_PROVISIONING_ASSIGNEE_TYPE_GROUP".
 - `name` (String) The name of the entitlement.
-- `provisioning_method` (String) The provisioning method for the entitlement.
+- `provisioning_method` (Attributes) Provisioning configuration. **Exactly one method should be set.** (see [below for nested schema](#nestedatt--provisioning_method))
 - `requests_enabled` (Boolean) Whether requests are enabled for the entitlement.
 - `resource_id` (String) The ID of the resource that the entitlement belongs to.

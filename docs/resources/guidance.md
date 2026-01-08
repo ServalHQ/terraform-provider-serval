@@ -17,6 +17,7 @@ resource "serval_guidance" "example_guidance" {
   content = "content"
   description = "description"
   name = "name"
+  should_always_use = true
   team_id = "teamId"
 }
 ```
@@ -28,13 +29,16 @@ This resource supports the following arguments:
 - `content` (Optional) The content of the guidance.
 - `description` (Optional) A description of the guidance.
 - `name` (Optional) The name of the guidance.
+- `should_always_use` (Boolean) Whether this guidance should always be used (optional, defaults to false).
 - `team_id` (Optional) The ID of the team.
 
 ## Attribute Reference
 
 This resource exports the following attributes in addition to the arguments above:
 
+- `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the guidance.
 - `id` (String) The ID of the guidance.
+- `is_published` (Boolean) Whether the guidance has been published at least once.
 
 ## Import
 
