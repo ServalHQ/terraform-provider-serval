@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.23.9
 
 require (
-	github.com/ServalHQ/serval-go v0.0.0
+	github.com/ServalHQ/serval-go v0.5.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/hashicorp/terraform-plugin-docs v0.16.0
 	github.com/hashicorp/terraform-plugin-framework v1.15.0
@@ -75,5 +75,3 @@ require (
 	google.golang.org/grpc v1.72.1 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )
-
-replace github.com/ServalHQ/serval-go => github.com/stainless-sdks/serval-go v0.0.0-20251110202728-6de9c92d7bd0
