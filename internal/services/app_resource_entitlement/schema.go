@@ -38,6 +38,14 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Description: "A description of the entitlement.",
 				Optional:    true,
 			},
+			"external_data": schema.StringAttribute{
+				Description: "Data from the external system as a JSON string (optional).",
+				Optional:    true,
+			},
+			"external_id": schema.StringAttribute{
+				Description: "The external ID of the entitlement in the external system (optional).",
+				Optional:    true,
+			},
 			"name": schema.StringAttribute{
 				Description: "The name of the entitlement.",
 				Optional:    true,
@@ -51,12 +59,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"builtin_workflow": schema.StringAttribute{
-						Description: "**Option: builtin_workflow**",
+						Description: "Provisioning is handled by the service's builtin workflow integration.",
 						Optional:    true,
 						CustomType:  jsontypes.NormalizedType{},
 					},
 					"custom_workflow": schema.SingleNestedAttribute{
-						Description: "**Option: custom_workflow**",
+						Description: "Provisioning is handled by custom workflows for provision + deprovision.",
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"deprovision_workflow_id": schema.StringAttribute{
@@ -70,7 +78,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"linked_entitlements": schema.SingleNestedAttribute{
-						Description: "**Option: linked_entitlements**",
+						Description: "Provisioning depends on prerequisite entitlements being provisioned first.",
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"linked_entitlement_ids": schema.ListAttribute{
@@ -81,7 +89,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"manual": schema.SingleNestedAttribute{
-						Description: "**Option: manual**",
+						Description: "Provisioning is handled manually by assigned users/groups.",
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"assignees": schema.ListNestedAttribute{

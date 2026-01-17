@@ -31,6 +31,14 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "A description of the entitlement.",
 				Computed:    true,
 			},
+			"external_data": schema.StringAttribute{
+				Description: "Data from the external system as a JSON string (optional).",
+				Computed:    true,
+			},
+			"external_id": schema.StringAttribute{
+				Description: "The external ID of the entitlement in the external system (optional).",
+				Computed:    true,
+			},
 			"name": schema.StringAttribute{
 				Description: "The name of the entitlement.",
 				Computed:    true,
@@ -49,12 +57,12 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  customfield.NewNestedObjectType[AppResourceEntitlementProvisioningMethodDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"builtin_workflow": schema.StringAttribute{
-						Description: "**Option: builtin_workflow**",
+						Description: "Provisioning is handled by the service's builtin workflow integration.",
 						Computed:    true,
 						CustomType:  jsontypes.NormalizedType{},
 					},
 					"custom_workflow": schema.SingleNestedAttribute{
-						Description: "**Option: custom_workflow**",
+						Description: "Provisioning is handled by custom workflows for provision + deprovision.",
 						Computed:    true,
 						CustomType:  customfield.NewNestedObjectType[AppResourceEntitlementProvisioningMethodCustomWorkflowDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{
@@ -69,7 +77,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"linked_entitlements": schema.SingleNestedAttribute{
-						Description: "**Option: linked_entitlements**",
+						Description: "Provisioning depends on prerequisite entitlements being provisioned first.",
 						Computed:    true,
 						CustomType:  customfield.NewNestedObjectType[AppResourceEntitlementProvisioningMethodLinkedEntitlementsDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{
@@ -82,7 +90,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"manual": schema.SingleNestedAttribute{
-						Description: "**Option: manual**",
+						Description: "Provisioning is handled manually by assigned users/groups.",
 						Computed:    true,
 						CustomType:  customfield.NewNestedObjectType[AppResourceEntitlementProvisioningMethodManualDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{

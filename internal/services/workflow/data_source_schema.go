@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var _ datasource.DataSourceWithConfigValidators = (*WorkflowDataSource)(nil)
@@ -79,30 +80,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 					),
 				},
 			},
-			"tags": schema.ListNestedAttribute{
-				Description: "Tags associated with this workflow.",
+			"tag_ids": schema.ListAttribute{
+				Description: "IDs of tags associated with this workflow.",
 				Computed:    true,
-				CustomType:  customfield.NewNestedObjectListType[WorkflowTagsDataSourceModel](ctx),
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"id": schema.StringAttribute{
-							Description: "The ID of the tag.",
-							Computed:    true,
-						},
-						"color": schema.StringAttribute{
-							Description: "The color of the tag (CSS color string).",
-							Computed:    true,
-						},
-						"icon_slug": schema.StringAttribute{
-							Description: "The icon slug for the tag.",
-							Computed:    true,
-						},
-						"name": schema.StringAttribute{
-							Description: "The name of the tag.",
-							Computed:    true,
-						},
-					},
-				},
+				CustomType:  customfield.NewListType[types.String](ctx),
+				ElementType: types.StringType,
 			},
 		},
 	}

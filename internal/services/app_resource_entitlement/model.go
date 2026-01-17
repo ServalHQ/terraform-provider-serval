@@ -17,6 +17,8 @@ type AppResourceEntitlementModel struct {
 	ResourceID         types.String                                   `tfsdk:"resource_id" json:"resourceId,optional"`
 	AccessPolicyID     types.String                                   `tfsdk:"access_policy_id" json:"accessPolicyId,optional"`
 	Description        types.String                                   `tfsdk:"description" json:"description,optional"`
+	ExternalData       types.String                                   `tfsdk:"external_data" json:"externalData,optional"`
+	ExternalID         types.String                                   `tfsdk:"external_id" json:"externalId,optional"`
 	Name               types.String                                   `tfsdk:"name" json:"name,optional"`
 	RequestsEnabled    types.Bool                                     `tfsdk:"requests_enabled" json:"requestsEnabled,optional"`
 	ProvisioningMethod *AppResourceEntitlementProvisioningMethodModel `tfsdk:"provisioning_method" json:"provisioningMethod,optional"`
