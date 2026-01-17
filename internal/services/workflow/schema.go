@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var _ resource.ResourceWithConfigValidators = (*WorkflowResource)(nil)
@@ -83,30 +84,11 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Description: "Whether the workflow has been published at least once.",
 				Computed:    true,
 			},
-			"tags": schema.ListNestedAttribute{
-				Description: "Tags associated with this workflow.",
+			"tag_ids": schema.ListAttribute{
+				Description: "IDs of tags associated with this workflow.",
 				Computed:    true,
-				CustomType:  customfield.NewNestedObjectListType[WorkflowTagsModel](ctx),
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"id": schema.StringAttribute{
-							Description: "The ID of the tag.",
-							Computed:    true,
-						},
-						"color": schema.StringAttribute{
-							Description: "The color of the tag (CSS color string).",
-							Computed:    true,
-						},
-						"icon_slug": schema.StringAttribute{
-							Description: "The icon slug for the tag.",
-							Computed:    true,
-						},
-						"name": schema.StringAttribute{
-							Description: "The name of the tag.",
-							Computed:    true,
-						},
-					},
-				},
+				CustomType:  customfield.NewListType[types.String](ctx),
+				ElementType: types.StringType,
 			},
 		},
 	}
