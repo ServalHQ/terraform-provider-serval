@@ -15,6 +15,7 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_resource_entitlement"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/group"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/guidance"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/tag"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/team"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/user"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow"
@@ -151,6 +152,7 @@ func (p *ServalProvider) DataSources(ctx context.Context) []func() datasource.Da
 		user.NewUserDataSource,
 		group.NewGroupDataSource,
 		team.NewTeamDataSource,
+		tag.NewTagDataSource,
 	}
 }
 
