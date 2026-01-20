@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.10.0 (2026-01-20)
+
+Full Changelog: [v0.9.2...v0.10.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.9.2...v0.10.0)
+
+### Features
+
+* **api:** manual updates ([175e6dd](https://github.com/ServalHQ/terraform-provider-serval/commit/175e6ddd9f979718fac5b69301fec27ce24bbd8c))
+
+
+### Bug Fixes
+
+* correctly mark a subset of fields shared between create and update calls as required ([e437296](https://github.com/ServalHQ/terraform-provider-serval/commit/e437296b701c005b4d81c1a7d8d6d3433ed287fe))
+* ensure derived request attribute schemas conform to the upstream configurability overrides ([16b7b71](https://github.com/ServalHQ/terraform-provider-serval/commit/16b7b7197a4670153df139da257519c6076b1163))
+* ensure dynamic values always yield valid container inner values ([10a6b68](https://github.com/ServalHQ/terraform-provider-serval/commit/10a6b682215a7d4962a8c2b38be3e669f5932757))
+* list style data sources should always have id value populated ([b010ec7](https://github.com/ServalHQ/terraform-provider-serval/commit/b010ec7da6d240b5257dc4b3523736a12bc42c7f))
+
+
+### Chores
+
+* ensure tests build as part of lint step ([4688320](https://github.com/ServalHQ/terraform-provider-serval/commit/4688320d18963ec9298c98aaabdd45ff23787fff))
+* **internal:** address linter warnings ([cf4f611](https://github.com/ServalHQ/terraform-provider-serval/commit/cf4f611f7c23542dfb3948cab5bd174711c5cd7a))
+* **internal:** codegen related update ([0f701ad](https://github.com/ServalHQ/terraform-provider-serval/commit/0f701ad4d71b87648de932db627928ce4443e5e5))
+
 ## 0.9.2 (2025-11-11)
 
 Full Changelog: [v0.9.1...v0.9.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.9.1...v0.9.2)
