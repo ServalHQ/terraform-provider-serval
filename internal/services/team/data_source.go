@@ -95,14 +95,14 @@ func (d *TeamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		}
 		
 		// Fetch all pages to find the team with matching name or prefix
-		cursor := ""
+		nextPage := ""
 		
 		for {
 			params := serval.TeamListParams{
-				Limit: serval.Int(1000), // Set high limit to fetch all teams
+				PageSize: serval.Int(1000),
 			}
-			if cursor != "" {
-				params.Cursor = serval.String(cursor)
+			if nextPage != "" {
+				params.NextPage = serval.String(nextPage)
 			}
 
 			res := new(http.Response)
@@ -119,10 +119,10 @@ func (d *TeamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 			
 			bytes, _ := io.ReadAll(res.Body)
 			
-			// Parse the list response - API returns {data: [...], next: "..."}
+			// Parse the list response - API returns {data: [...], next_page: "..."}
 			var listResponse struct {
-				Data []TeamDataSourceModel `json:"data"`
-				Next *string               `json:"next"`
+				Data     []TeamDataSourceModel `json:"data"`
+				NextPage *string               `json:"next_page"`
 			}
 			err = apijson.UnmarshalComputed(bytes, &listResponse)
 			if err != nil {
@@ -147,10 +147,10 @@ func (d *TeamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 			}
 
 			// Check if there are more pages
-			if listResponse.Next == nil || *listResponse.Next == "" {
+			if listResponse.NextPage == nil || *listResponse.NextPage == "" {
 				break
 			}
-			cursor = *listResponse.Next
+			nextPage = *listResponse.NextPage
 		}
 
 		// Team not found after checking all pages

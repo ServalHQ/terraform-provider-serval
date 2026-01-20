@@ -86,16 +86,16 @@ func (d *GroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	// If name is provided, list all groups and filter by name
 	if !data.Name.IsNull() && !data.Name.IsUnknown() {
 		targetName := data.Name.ValueString()
-		
+
 		// Fetch all pages to find the group with matching name
-		cursor := ""
-		
+		nextPage := ""
+
 		for {
 			params := serval.GroupListParams{
-				Limit: serval.Int(1000), // Set high limit to fetch all groups
+				PageSize: serval.Int(1000),
 			}
-			if cursor != "" {
-				params.Cursor = serval.String(cursor)
+			if nextPage != "" {
+				params.NextPage = serval.String(nextPage)
 			}
 
 			res := new(http.Response)
@@ -109,13 +109,13 @@ func (d *GroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 				resp.Diagnostics.AddError("failed to list groups", err.Error())
 				return
 			}
-			
+
 			bytes, _ := io.ReadAll(res.Body)
-			
-			// Parse the list response - API returns {data: [...], next: "..."}
+
+			// Parse the list response - API returns {data: [...], next_page: "..."}
 			var listResponse struct {
-				Data []GroupDataSourceModel `json:"data"`
-				Next *string                `json:"next"`
+				Data     []GroupDataSourceModel `json:"data"`
+				NextPage *string                `json:"next_page"`
 			}
 			err = apijson.UnmarshalComputed(bytes, &listResponse)
 			if err != nil {
@@ -133,10 +133,10 @@ func (d *GroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 			}
 
 			// Check if there are more pages
-			if listResponse.Next == nil || *listResponse.Next == "" {
+			if listResponse.NextPage == nil || *listResponse.NextPage == "" {
 				break
 			}
-			cursor = *listResponse.Next
+			nextPage = *listResponse.NextPage
 		}
 
 		// Group not found after checking all pages

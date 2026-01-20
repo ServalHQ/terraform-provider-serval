@@ -89,17 +89,17 @@ func (d *UserDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 
 		// Fetch all pages to find the user with matching email
 		var allUsers []UserDataSourceModel
-		cursor := ""
+		nextPage := ""
 		pageCount := 0
 
 		for {
 			pageCount++
 			params := serval.UserListParams{
-				Limit:              serval.Int(1000),  // Set high limit to fetch all users
+				PageSize:           serval.Int(1000),
 				IncludeDeactivated: serval.Bool(true), // Include deactivated users in search
 			}
-			if cursor != "" {
-				params.Cursor = serval.String(cursor)
+			if nextPage != "" {
+				params.NextPage = serval.String(nextPage)
 			}
 
 			res := new(http.Response)
@@ -118,8 +118,8 @@ func (d *UserDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 
 			// Parse the response which contains a Data array and pagination info
 			var listResponse struct {
-				Data []UserDataSourceModel `json:"data"`
-				Next *string               `json:"next"`
+				Data     []UserDataSourceModel `json:"data"`
+				NextPage *string               `json:"next_page"`
 			}
 			err = apijson.UnmarshalComputed(bytes, &listResponse)
 			if err != nil {
@@ -139,10 +139,10 @@ func (d *UserDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 			}
 
 			// Check if there are more pages
-			if listResponse.Next == nil || *listResponse.Next == "" {
+			if listResponse.NextPage == nil || *listResponse.NextPage == "" {
 				break
 			}
-			cursor = *listResponse.Next
+			nextPage = *listResponse.NextPage
 		}
 
 		// User not found after checking all pages
