@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package app_resource_entitlement
+package app_resource_role
 
 import (
 	"context"
@@ -18,24 +18,24 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.ResourceWithConfigure = (*AppResourceEntitlementResource)(nil)
-var _ resource.ResourceWithModifyPlan = (*AppResourceEntitlementResource)(nil)
-var _ resource.ResourceWithImportState = (*AppResourceEntitlementResource)(nil)
+var _ resource.ResourceWithConfigure = (*AppResourceRoleResource)(nil)
+var _ resource.ResourceWithModifyPlan = (*AppResourceRoleResource)(nil)
+var _ resource.ResourceWithImportState = (*AppResourceRoleResource)(nil)
 
 func NewResource() resource.Resource {
-	return &AppResourceEntitlementResource{}
+	return &AppResourceRoleResource{}
 }
 
-// AppResourceEntitlementResource defines the resource implementation.
-type AppResourceEntitlementResource struct {
+// AppResourceRoleResource defines the resource implementation.
+type AppResourceRoleResource struct {
 	client *serval.Client
 }
 
-func (r *AppResourceEntitlementResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_app_resource_entitlement"
+func (r *AppResourceRoleResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_app_resource_role"
 }
 
-func (r *AppResourceEntitlementResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *AppResourceRoleResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -54,8 +54,8 @@ func (r *AppResourceEntitlementResource) Configure(ctx context.Context, req reso
 	r.client = client
 }
 
-func (r *AppResourceEntitlementResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data *AppResourceEntitlementModel
+func (r *AppResourceRoleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *AppResourceRoleModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -69,10 +69,10 @@ func (r *AppResourceEntitlementResource) Create(ctx context.Context, req resourc
 		return
 	}
 	res := new(http.Response)
-	env := AppResourceEntitlementDataEnvelope{*data}
-	_, err = r.client.AppResourceEntitlements.New(
+	env := AppResourceRoleDataEnvelope{*data}
+	_, err = r.client.AppResourceRoles.New(
 		ctx,
-		serval.AppResourceEntitlementNewParams{},
+		serval.AppResourceRoleNewParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -92,8 +92,8 @@ func (r *AppResourceEntitlementResource) Create(ctx context.Context, req resourc
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *AppResourceEntitlementResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data *AppResourceEntitlementModel
+func (r *AppResourceRoleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *AppResourceRoleModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -101,7 +101,7 @@ func (r *AppResourceEntitlementResource) Update(ctx context.Context, req resourc
 		return
 	}
 
-	var state *AppResourceEntitlementModel
+	var state *AppResourceRoleModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
@@ -115,11 +115,11 @@ func (r *AppResourceEntitlementResource) Update(ctx context.Context, req resourc
 		return
 	}
 	res := new(http.Response)
-	env := AppResourceEntitlementDataEnvelope{*data}
-	_, err = r.client.AppResourceEntitlements.Update(
+	env := AppResourceRoleDataEnvelope{*data}
+	_, err = r.client.AppResourceRoles.Update(
 		ctx,
 		data.ID.ValueString(),
-		serval.AppResourceEntitlementUpdateParams{},
+		serval.AppResourceRoleUpdateParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -139,8 +139,8 @@ func (r *AppResourceEntitlementResource) Update(ctx context.Context, req resourc
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *AppResourceEntitlementResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data *AppResourceEntitlementModel
+func (r *AppResourceRoleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *AppResourceRoleModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -149,8 +149,8 @@ func (r *AppResourceEntitlementResource) Read(ctx context.Context, req resource.
 	}
 
 	res := new(http.Response)
-	env := AppResourceEntitlementDataEnvelope{*data}
-	_, err := r.client.AppResourceEntitlements.Get(
+	env := AppResourceRoleDataEnvelope{*data}
+	_, err := r.client.AppResourceRoles.Get(
 		ctx,
 		data.ID.ValueString(),
 		option.WithResponseBodyInto(&res),
@@ -176,8 +176,8 @@ func (r *AppResourceEntitlementResource) Read(ctx context.Context, req resource.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *AppResourceEntitlementResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data *AppResourceEntitlementModel
+func (r *AppResourceRoleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data *AppResourceRoleModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -185,7 +185,7 @@ func (r *AppResourceEntitlementResource) Delete(ctx context.Context, req resourc
 		return
 	}
 
-	_, err := r.client.AppResourceEntitlements.Delete(
+	_, err := r.client.AppResourceRoles.Delete(
 		ctx,
 		data.ID.ValueString(),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -198,8 +198,8 @@ func (r *AppResourceEntitlementResource) Delete(ctx context.Context, req resourc
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *AppResourceEntitlementResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data = new(AppResourceEntitlementModel)
+func (r *AppResourceRoleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data = new(AppResourceRoleModel)
 
 	path := ""
 	diags := importpath.ParseImportID(
@@ -215,8 +215,8 @@ func (r *AppResourceEntitlementResource) ImportState(ctx context.Context, req re
 	data.ID = types.StringValue(path)
 
 	res := new(http.Response)
-	env := AppResourceEntitlementDataEnvelope{*data}
-	_, err := r.client.AppResourceEntitlements.Get(
+	env := AppResourceRoleDataEnvelope{*data}
+	_, err := r.client.AppResourceRoles.Get(
 		ctx,
 		path,
 		option.WithResponseBodyInto(&res),
@@ -237,6 +237,6 @@ func (r *AppResourceEntitlementResource) ImportState(ctx context.Context, req re
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *AppResourceEntitlementResource) ModifyPlan(_ context.Context, _ resource.ModifyPlanRequest, _ *resource.ModifyPlanResponse) {
+func (r *AppResourceRoleResource) ModifyPlan(_ context.Context, _ resource.ModifyPlanRequest, _ *resource.ModifyPlanResponse) {
 
 }

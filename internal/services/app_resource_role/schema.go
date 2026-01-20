@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package app_resource_entitlement
+package app_resource_role
 
 import (
 	"context"
@@ -15,13 +15,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-var _ resource.ResourceWithConfigValidators = (*AppResourceEntitlementResource)(nil)
+var _ resource.ResourceWithConfigValidators = (*AppResourceRoleResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The ID of the entitlement.",
+				Description:   "The ID of the role.",
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
@@ -31,11 +31,11 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"access_policy_id": schema.StringAttribute{
-				Description: "The default access policy for the entitlement (optional).",
+				Description: "The default access policy for the role (optional).",
 				Optional:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "A description of the entitlement.",
+				Description: "A description of the role.",
 				Optional:    true,
 			},
 			"external_data": schema.StringAttribute{
@@ -43,15 +43,15 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"external_id": schema.StringAttribute{
-				Description: "The external ID of the entitlement in the external system (optional).",
+				Description: "The external ID of the role in the external system (optional).",
 				Optional:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "The name of the entitlement.",
+				Description: "The name of the role.",
 				Optional:    true,
 			},
 			"requests_enabled": schema.BoolAttribute{
-				Description: "Whether requests are enabled for the entitlement.",
+				Description: "Whether requests are enabled for the role.",
 				Optional:    true,
 			},
 			"provisioning_method": schema.SingleNestedAttribute{
@@ -59,12 +59,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"builtin_workflow": schema.StringAttribute{
-						Description: "**Option: builtin_workflow**",
+						Description: "Provisioning is handled by the service's builtin workflow integration.",
 						Optional:    true,
 						CustomType:  jsontypes.NormalizedType{},
 					},
 					"custom_workflow": schema.SingleNestedAttribute{
-						Description: "**Option: custom_workflow**",
+						Description: "Provisioning is handled by custom workflows for provision + deprovision.",
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"deprovision_workflow_id": schema.StringAttribute{
@@ -77,19 +77,19 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 					},
-					"linked_entitlements": schema.SingleNestedAttribute{
-						Description: "**Option: linked_entitlements**",
+					"linked_roles": schema.SingleNestedAttribute{
+						Description: "Provisioning depends on prerequisite roles being provisioned first.",
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
-							"linked_entitlement_ids": schema.ListAttribute{
-								Description: "The IDs of prerequisite entitlements.",
+							"linked_role_ids": schema.ListAttribute{
+								Description: "The IDs of prerequisite roles.",
 								Optional:    true,
 								ElementType: types.StringType,
 							},
 						},
 					},
 					"manual": schema.SingleNestedAttribute{
-						Description: "**Option: manual**",
+						Description: "Provisioning is handled manually by assigned users/groups.",
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"assignees": schema.ListNestedAttribute{
@@ -123,10 +123,10 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 	}
 }
 
-func (r *AppResourceEntitlementResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *AppResourceRoleResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = ResourceSchema(ctx)
 }
 
-func (r *AppResourceEntitlementResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+func (r *AppResourceRoleResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{}
 }
