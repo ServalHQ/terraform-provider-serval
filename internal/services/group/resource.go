@@ -199,7 +199,7 @@ func (r *GroupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 }
 
 func (r *GroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data *GroupModel = new(GroupModel)
+	var data = new(GroupModel)
 
 	path := ""
 	diags := importpath.ParseImportID(

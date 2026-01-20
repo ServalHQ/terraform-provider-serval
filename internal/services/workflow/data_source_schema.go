@@ -5,10 +5,12 @@ package workflow
 import (
 	"context"
 
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var _ datasource.DataSourceWithConfigValidators = (*WorkflowDataSource)(nil)
@@ -38,6 +40,14 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						"TEAM_PUBLIC",
 					),
 				},
+			},
+			"has_unpublished_changes": schema.BoolAttribute{
+				Description: "Whether there are unpublished changes to the workflow.",
+				Computed:    true,
+			},
+			"is_published": schema.BoolAttribute{
+				Description: "Whether the workflow has been published at least once.",
+				Computed:    true,
 			},
 			"is_temporary": schema.BoolAttribute{
 				Description: "Whether the workflow is temporary.",
@@ -69,6 +79,12 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						"GUIDANCE",
 					),
 				},
+			},
+			"tag_ids": schema.ListAttribute{
+				Description: "IDs of tags associated with this workflow.",
+				Computed:    true,
+				CustomType:  customfield.NewListType[types.String](ctx),
+				ElementType: types.StringType,
 			},
 		},
 	}

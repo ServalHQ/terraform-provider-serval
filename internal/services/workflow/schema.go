@@ -5,12 +5,14 @@ package workflow
 import (
 	"context"
 
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var _ resource.ResourceWithConfigValidators = (*WorkflowResource)(nil)
@@ -73,6 +75,20 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						"GUIDANCE",
 					),
 				},
+			},
+			"has_unpublished_changes": schema.BoolAttribute{
+				Description: "Whether there are unpublished changes to the workflow.",
+				Computed:    true,
+			},
+			"is_published": schema.BoolAttribute{
+				Description: "Whether the workflow has been published at least once.",
+				Computed:    true,
+			},
+			"tag_ids": schema.ListAttribute{
+				Description: "IDs of tags associated with this workflow.",
+				Computed:    true,
+				CustomType:  customfield.NewListType[types.String](ctx),
+				ElementType: types.StringType,
 			},
 		},
 	}

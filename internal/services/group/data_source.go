@@ -86,60 +86,45 @@ func (d *GroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	// If name is provided, list all groups and filter by name
 	if !data.Name.IsNull() && !data.Name.IsUnknown() {
 		targetName := data.Name.ValueString()
-		
-		// Fetch all pages to find the group with matching name
-		cursor := ""
-		
-		for {
-			params := serval.GroupListParams{
-				Limit: serval.Int(1000), // Set high limit to fetch all groups
-			}
-			if cursor != "" {
-				params.Cursor = serval.String(cursor)
-			}
 
-			res := new(http.Response)
-			_, err := d.client.Groups.List(
-				ctx,
-				params,
-				option.WithResponseBodyInto(&res),
-				option.WithMiddleware(logging.Middleware(ctx)),
-			)
-			if err != nil {
-				resp.Diagnostics.AddError("failed to list groups", err.Error())
-				return
-			}
-			
-			bytes, _ := io.ReadAll(res.Body)
-			
-			// Parse the list response - API returns {data: [...], next: "..."}
-			var listResponse struct {
-				Data []GroupDataSourceModel `json:"data"`
-				Next *string                `json:"next"`
-			}
-			err = apijson.UnmarshalComputed(bytes, &listResponse)
-			if err != nil {
-				resp.Diagnostics.AddError("failed to deserialize list response", err.Error())
-				return
-			}
-
-			// Check if we found the group in this page
-			for i := range listResponse.Data {
-				if listResponse.Data[i].Name.ValueString() == targetName {
-					data = &listResponse.Data[i]
-					resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-					return
-				}
-			}
-
-			// Check if there are more pages
-			if listResponse.Next == nil || *listResponse.Next == "" {
-				break
-			}
-			cursor = *listResponse.Next
+		params := serval.GroupListParams{
+			PageSize: serval.Int(1000),
 		}
 
-		// Group not found after checking all pages
+		res := new(http.Response)
+		_, err := d.client.Groups.List(
+			ctx,
+			params,
+			option.WithResponseBodyInto(&res),
+			option.WithMiddleware(logging.Middleware(ctx)),
+		)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to list groups", err.Error())
+			return
+		}
+
+		bytes, _ := io.ReadAll(res.Body)
+
+		// Parse the list response - API returns {data: [...]}
+		var listResponse struct {
+			Data []GroupDataSourceModel `json:"data"`
+		}
+		err = apijson.UnmarshalComputed(bytes, &listResponse)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to deserialize list response", err.Error())
+			return
+		}
+
+		// Check if we found the group
+		for i := range listResponse.Data {
+			if listResponse.Data[i].Name.ValueString() == targetName {
+				data = &listResponse.Data[i]
+				resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+				return
+			}
+		}
+
+		// Group not found
 		resp.Diagnostics.AddError(
 			"group not found",
 			fmt.Sprintf("No group found with name: %s", targetName),

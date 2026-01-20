@@ -199,7 +199,7 @@ func (r *WorkflowResource) Delete(ctx context.Context, req resource.DeleteReques
 }
 
 func (r *WorkflowResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data *WorkflowModel = new(WorkflowModel)
+	var data = new(WorkflowModel)
 
 	path := ""
 	diags := importpath.ParseImportID(

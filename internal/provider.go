@@ -12,9 +12,10 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_policy_approval_procedure"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_instance"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_resource"
-	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_resource_entitlement"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_resource_role"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/group"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/guidance"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/tag"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/team"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/user"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow"
@@ -131,7 +132,7 @@ func (p *ServalProvider) Resources(ctx context.Context) []func() resource.Resour
 		workflow_approval_procedure.NewResource,
 		app_instance.NewResource,
 		app_resource.NewResource,
-		app_resource_entitlement.NewResource,
+		app_resource_role.NewResource,
 		user.NewResource,
 		group.NewResource,
 		team.NewResource,
@@ -147,10 +148,11 @@ func (p *ServalProvider) DataSources(ctx context.Context) []func() datasource.Da
 		workflow_approval_procedure.NewWorkflowApprovalProcedureDataSource,
 		app_instance.NewAppInstanceDataSource,
 		app_resource.NewAppResourceDataSource,
-		app_resource_entitlement.NewAppResourceEntitlementDataSource,
+		app_resource_role.NewAppResourceRoleDataSource,
 		user.NewUserDataSource,
 		group.NewGroupDataSource,
 		team.NewTeamDataSource,
+		tag.NewTagDataSource,
 	}
 }
 

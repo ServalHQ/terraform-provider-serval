@@ -199,7 +199,7 @@ func (r *AppResourceResource) Delete(ctx context.Context, req resource.DeleteReq
 }
 
 func (r *AppResourceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data *AppResourceModel = new(AppResourceModel)
+	var data = new(AppResourceModel)
 
 	path := ""
 	diags := importpath.ParseImportID(

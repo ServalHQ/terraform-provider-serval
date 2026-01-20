@@ -199,7 +199,7 @@ func (r *AccessPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 }
 
 func (r *AccessPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data *AccessPolicyModel = new(AccessPolicyModel)
+	var data = new(AccessPolicyModel)
 
 	path := ""
 	diags := importpath.ParseImportID(

@@ -11,9 +11,12 @@ type GuidanceDataDataSourceEnvelope struct {
 }
 
 type GuidanceDataSourceModel struct {
-	ID          types.String `tfsdk:"id" path:"id,required"`
-	Content     types.String `tfsdk:"content" json:"content,computed"`
-	Description types.String `tfsdk:"description" json:"description,computed"`
-	Name        types.String `tfsdk:"name" json:"name,computed"`
-	TeamID      types.String `tfsdk:"team_id" json:"teamId,computed"`
+	ID                    types.String `tfsdk:"id" path:"id,required"`
+	Content               types.String `tfsdk:"content" json:"content,computed"`
+	Description           types.String `tfsdk:"description" json:"description,computed"`
+	HasUnpublishedChanges types.Bool   `tfsdk:"has_unpublished_changes" json:"hasUnpublishedChanges,computed"`
+	IsPublished           types.Bool   `tfsdk:"is_published" json:"isPublished,computed"`
+	Name                  types.String `tfsdk:"name" json:"name,computed"`
+	ShouldAlwaysUse       types.Bool   `tfsdk:"should_always_use" json:"shouldAlwaysUse,computed"`
+	TeamID                types.String `tfsdk:"team_id" json:"teamId,computed"`
 }

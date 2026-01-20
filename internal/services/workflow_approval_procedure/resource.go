@@ -208,7 +208,7 @@ func (r *WorkflowApprovalProcedureResource) Delete(ctx context.Context, req reso
 }
 
 func (r *WorkflowApprovalProcedureResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data *WorkflowApprovalProcedureModel = new(WorkflowApprovalProcedureModel)
+	var data = new(WorkflowApprovalProcedureModel)
 
 	path_workflow_id := ""
 	path_id := ""

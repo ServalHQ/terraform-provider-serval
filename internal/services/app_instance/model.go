@@ -13,6 +13,7 @@ type AppInstanceDataEnvelope struct {
 
 type AppInstanceModel struct {
 	ID                    types.String `tfsdk:"id" json:"id,computed"`
+	CustomServiceID       types.String `tfsdk:"custom_service_id" json:"customServiceId,optional"`
 	Service               types.String `tfsdk:"service" json:"service,optional"`
 	TeamID                types.String `tfsdk:"team_id" json:"teamId,optional"`
 	AccessRequestsEnabled types.Bool   `tfsdk:"access_requests_enabled" json:"accessRequestsEnabled,optional"`

@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package app_resource_entitlement
+package app_resource_role
 
 import (
 	"context"
@@ -15,21 +15,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
-type AppResourceEntitlementDataSource struct {
+type AppResourceRoleDataSource struct {
 	client *serval.Client
 }
 
-var _ datasource.DataSourceWithConfigure = (*AppResourceEntitlementDataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*AppResourceRoleDataSource)(nil)
 
-func NewAppResourceEntitlementDataSource() datasource.DataSource {
-	return &AppResourceEntitlementDataSource{}
+func NewAppResourceRoleDataSource() datasource.DataSource {
+	return &AppResourceRoleDataSource{}
 }
 
-func (d *AppResourceEntitlementDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_app_resource_entitlement"
+func (d *AppResourceRoleDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_app_resource_role"
 }
 
-func (d *AppResourceEntitlementDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *AppResourceRoleDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -48,8 +48,8 @@ func (d *AppResourceEntitlementDataSource) Configure(ctx context.Context, req da
 	d.client = client
 }
 
-func (d *AppResourceEntitlementDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data *AppResourceEntitlementDataSourceModel
+func (d *AppResourceRoleDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data *AppResourceRoleDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -58,8 +58,8 @@ func (d *AppResourceEntitlementDataSource) Read(ctx context.Context, req datasou
 	}
 
 	res := new(http.Response)
-	env := AppResourceEntitlementDataDataSourceEnvelope{*data}
-	_, err := d.client.AppResourceEntitlements.Get(
+	env := AppResourceRoleDataDataSourceEnvelope{*data}
+	_, err := d.client.AppResourceRoles.Get(
 		ctx,
 		data.ID.ValueString(),
 		option.WithResponseBodyInto(&res),

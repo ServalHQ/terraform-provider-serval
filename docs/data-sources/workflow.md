@@ -36,5 +36,6 @@ This data source exports the following attributes in addition to the arguments a
 - `name` (String) The name of the workflow.
 - `parameters` (String) The parameters schema of the workflow (JSON).
 - `require_form_confirmation` (Boolean) Whether the workflow requires form confirmation.
+- `tags` (Attributes List) Tags associated with this workflow. (see [below for nested schema](#nestedatt--tags))
 - `team_id` (String) The ID of the team that the workflow belongs to.
 - `type` (String) The type of the workflow. Available values: "WORKFLOW_TYPE_UNSPECIFIED", "EXECUTABLE", "GUIDANCE".

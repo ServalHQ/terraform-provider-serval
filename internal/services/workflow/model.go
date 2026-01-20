@@ -4,6 +4,7 @@ package workflow
 
 import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -12,16 +13,19 @@ type WorkflowDataEnvelope struct {
 }
 
 type WorkflowModel struct {
-	ID                      types.String `tfsdk:"id" json:"id,computed"`
-	TeamID                  types.String `tfsdk:"team_id" json:"teamId,optional"`
-	Content                 types.String `tfsdk:"content" json:"content,optional"`
-	Description             types.String `tfsdk:"description" json:"description,optional"`
-	ExecutionScope          types.String `tfsdk:"execution_scope" json:"executionScope,optional"`
-	IsTemporary             types.Bool   `tfsdk:"is_temporary" json:"isTemporary,optional"`
-	Name                    types.String `tfsdk:"name" json:"name,optional"`
-	Parameters              types.String `tfsdk:"parameters" json:"parameters,optional"`
-	RequireFormConfirmation types.Bool   `tfsdk:"require_form_confirmation" json:"requireFormConfirmation,optional"`
-	Type                    types.String `tfsdk:"type" json:"type,optional"`
+	ID                      types.String                   `tfsdk:"id" json:"id,computed"`
+	TeamID                  types.String                   `tfsdk:"team_id" json:"teamId,optional"`
+	Content                 types.String                   `tfsdk:"content" json:"content,optional"`
+	Description             types.String                   `tfsdk:"description" json:"description,optional"`
+	ExecutionScope          types.String                   `tfsdk:"execution_scope" json:"executionScope,optional"`
+	IsTemporary             types.Bool                     `tfsdk:"is_temporary" json:"isTemporary,optional"`
+	Name                    types.String                   `tfsdk:"name" json:"name,optional"`
+	Parameters              types.String                   `tfsdk:"parameters" json:"parameters,optional"`
+	RequireFormConfirmation types.Bool                     `tfsdk:"require_form_confirmation" json:"requireFormConfirmation,optional"`
+	Type                    types.String                   `tfsdk:"type" json:"type,optional"`
+	HasUnpublishedChanges   types.Bool                     `tfsdk:"has_unpublished_changes" json:"hasUnpublishedChanges,computed"`
+	IsPublished             types.Bool                     `tfsdk:"is_published" json:"isPublished,computed"`
+	TagIDs                  customfield.List[types.String] `tfsdk:"tag_ids" json:"tagIds,computed"`
 }
 
 func (m WorkflowModel) MarshalJSON() (data []byte, err error) {
