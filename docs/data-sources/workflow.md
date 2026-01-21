@@ -37,17 +37,7 @@ Available values: "WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED", "TEAM_PRIVATE", "TEAM_
 - `name` (String) The name of the workflow.
 - `parameters` (String) The parameters schema of the workflow (JSON).
 - `require_form_confirmation` (Boolean) Whether the workflow requires form confirmation.
-- `tags` (Attributes List) Tags associated with this workflow. (see [below for nested schema](#nestedatt--tags))
+- `tag_ids` (List of String) IDs of tags associated with this workflow.
 - `team_id` (String) The ID of the team that the workflow belongs to.
 - `type` (String) The type of the workflow.
 Available values: "WORKFLOW_TYPE_UNSPECIFIED", "EXECUTABLE", "GUIDANCE".
-
-<a id="nestedatt--tags"></a>
-### Nested Schema for `tags`
-
-Read-Only:
-
-- `color` (String) The color of the tag (CSS color string).
-- `icon_slug` (String) The icon slug for the tag.
-- `id` (String) The ID of the tag.
-- `name` (String) The name of the tag.
