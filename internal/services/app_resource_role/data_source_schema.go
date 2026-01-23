@@ -57,12 +57,12 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  customfield.NewNestedObjectType[AppResourceRoleProvisioningMethodDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"builtin_workflow": schema.StringAttribute{
-						Description: "Provisioning is handled by the service's builtin workflow integration.",
+						Description: "**Option: builtin_workflow**",
 						Computed:    true,
 						CustomType:  jsontypes.NormalizedType{},
 					},
 					"custom_workflow": schema.SingleNestedAttribute{
-						Description: "Provisioning is handled by custom workflows for provision + deprovision.",
+						Description: "**Option: custom_workflow**",
 						Computed:    true,
 						CustomType:  customfield.NewNestedObjectType[AppResourceRoleProvisioningMethodCustomWorkflowDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{
@@ -77,7 +77,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"linked_roles": schema.SingleNestedAttribute{
-						Description: "Provisioning depends on prerequisite roles being provisioned first.",
+						Description: "**Option: linked_roles**",
 						Computed:    true,
 						CustomType:  customfield.NewNestedObjectType[AppResourceRoleProvisioningMethodLinkedRolesDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{
@@ -90,7 +90,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"manual": schema.SingleNestedAttribute{
-						Description: "Provisioning is handled manually by assigned users/groups.",
+						Description: "**Option: manual**",
 						Computed:    true,
 						CustomType:  customfield.NewNestedObjectType[AppResourceRoleProvisioningMethodManualDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{

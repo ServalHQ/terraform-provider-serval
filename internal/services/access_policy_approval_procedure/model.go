@@ -4,6 +4,7 @@ package access_policy_approval_procedure
 
 import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -12,9 +13,9 @@ type AccessPolicyApprovalProcedureDataEnvelope struct {
 }
 
 type AccessPolicyApprovalProcedureModel struct {
-	ID             types.String                                `tfsdk:"id" json:"id,computed"`
-	AccessPolicyID types.String                                `tfsdk:"access_policy_id" path:"access_policy_id,required"`
-	Steps          *[]*AccessPolicyApprovalProcedureStepsModel `tfsdk:"steps" json:"steps,optional"`
+	ID             types.String                                                          `tfsdk:"id" json:"id,computed"`
+	AccessPolicyID types.String                                                          `tfsdk:"access_policy_id" path:"access_policy_id,required"`
+	Steps          customfield.NestedObjectList[AccessPolicyApprovalProcedureStepsModel] `tfsdk:"steps" json:"steps,computed_optional"`
 }
 
 func (m AccessPolicyApprovalProcedureModel) MarshalJSON() (data []byte, err error) {

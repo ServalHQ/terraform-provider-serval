@@ -5,6 +5,7 @@ package workflow_approval_procedure
 import (
 	"context"
 
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
@@ -32,6 +33,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Description:   "The approval steps for the procedure.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectListType[WorkflowApprovalProcedureStepsModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{

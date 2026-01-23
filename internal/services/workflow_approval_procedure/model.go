@@ -4,6 +4,7 @@ package workflow_approval_procedure
 
 import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -12,9 +13,9 @@ type WorkflowApprovalProcedureDataEnvelope struct {
 }
 
 type WorkflowApprovalProcedureModel struct {
-	ID         types.String                            `tfsdk:"id" json:"id,computed"`
-	WorkflowID types.String                            `tfsdk:"workflow_id" path:"workflow_id,required"`
-	Steps      *[]*WorkflowApprovalProcedureStepsModel `tfsdk:"steps" json:"steps,optional"`
+	ID         types.String                                                      `tfsdk:"id" json:"id,computed"`
+	WorkflowID types.String                                                      `tfsdk:"workflow_id" path:"workflow_id,required"`
+	Steps      customfield.NestedObjectList[WorkflowApprovalProcedureStepsModel] `tfsdk:"steps" json:"steps,computed_optional"`
 }
 
 func (m WorkflowApprovalProcedureModel) MarshalJSON() (data []byte, err error) {
