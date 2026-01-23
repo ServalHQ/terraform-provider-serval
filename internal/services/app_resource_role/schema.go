@@ -59,11 +59,13 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"builtin_workflow": schema.StringAttribute{
-						Optional:   true,
-						CustomType: jsontypes.NormalizedType{},
+						Description: "Provisioning is handled by the service's builtin workflow integration.",
+						Optional:    true,
+						CustomType:  jsontypes.NormalizedType{},
 					},
 					"custom_workflow": schema.SingleNestedAttribute{
-						Optional: true,
+						Description: "Provisioning is handled by custom workflows for provision + deprovision.",
+						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"deprovision_workflow_id": schema.StringAttribute{
 								Description: "The workflow ID to deprovision access.",
@@ -76,7 +78,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"linked_roles": schema.SingleNestedAttribute{
-						Optional: true,
+						Description: "Provisioning depends on prerequisite roles being provisioned first.",
+						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"linked_role_ids": schema.ListAttribute{
 								Description: "The IDs of prerequisite roles.",
@@ -86,7 +89,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"manual": schema.SingleNestedAttribute{
-						Optional: true,
+						Description: "Provisioning is handled manually by assigned users/groups.",
+						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"assignees": schema.ListNestedAttribute{
 								Description: "Users and groups that should be assigned/notified for manual provisioning.",
