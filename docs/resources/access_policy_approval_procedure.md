@@ -16,7 +16,6 @@ description: |-
 resource "serval_access_policy_approval_procedure" "example_access_policy_approval_procedure" {
   access_policy_id = "access_policy_id"
   steps = [{
-    id = "id"
     allow_self_approval = true
     custom_workflow_id = "customWorkflowId"
     serval_group_ids = ["string"]

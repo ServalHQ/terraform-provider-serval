@@ -41,10 +41,10 @@ data "serval_app_resource_role" "example_app_resource_role" {
 
 Read-Only:
 
-- `builtin_workflow` (String) Provisioning is handled by the service's builtin workflow integration.
-- `custom_workflow` (Attributes) Provisioning is handled by custom workflows for provision + deprovision. (see [below for nested schema](#nestedatt--provisioning_method--custom_workflow))
-- `linked_roles` (Attributes) Provisioning depends on prerequisite roles being provisioned first. (see [below for nested schema](#nestedatt--provisioning_method--linked_roles))
-- `manual` (Attributes) Provisioning is handled manually by assigned users/groups. (see [below for nested schema](#nestedatt--provisioning_method--manual))
+- `builtin_workflow` (String) **Option: builtin_workflow**
+- `custom_workflow` (Attributes) **Option: custom_workflow** (see [below for nested schema](#nestedatt--provisioning_method--custom_workflow))
+- `linked_roles` (Attributes) **Option: linked_roles** (see [below for nested schema](#nestedatt--provisioning_method--linked_roles))
+- `manual` (Attributes) **Option: manual** (see [below for nested schema](#nestedatt--provisioning_method--manual))
 
 <a id="nestedatt--provisioning_method--custom_workflow"></a>
 ### Nested Schema for `provisioning_method.custom_workflow`

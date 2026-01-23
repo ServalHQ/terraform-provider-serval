@@ -23,7 +23,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"custom_service_id": schema.StringAttribute{
-				Description: "The ID of the custom service (for custom apps).",
+				Description: "**Option: custom_service_id** — The ID of the custom service (for custom apps).",
 				Computed:    true,
 			},
 			"default_access_policy_id": schema.StringAttribute{
@@ -39,7 +39,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"service": schema.StringAttribute{
-				Description: `The service identifier (for built-in services like "github", "okta", "aws").`,
+				Description: `**Option: service** — The service identifier (for built-in services like "github", "okta", "aws").`,
 				Computed:    true,
 			},
 			"team_id": schema.StringAttribute{

@@ -22,12 +22,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"custom_service_id": schema.StringAttribute{
-				Description:   "The ID of a custom service to create the app instance for.",
+				Description:   "**Option: custom_service_id** — The ID of a custom service to create the app instance for.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"service": schema.StringAttribute{
-				Description:   `The service identifier (for built-in services like "github", "okta", "aws").`,
+				Description:   `**Option: service** — The service identifier (for built-in services like "github", "okta", "aws").`,
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
