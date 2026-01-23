@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.14.1 (2026-01-23)
+
+Full Changelog: [v0.14.0...v0.14.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.14.0...v0.14.1)
+
 ## 0.14.0 (2026-01-23)
 
 Full Changelog: [v0.13.0...v0.14.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.13.0...v0.14.0)
