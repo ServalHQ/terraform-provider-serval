@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.10.2 (2026-01-20)
+
+Full Changelog: [v0.10.1...v0.10.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.10.1...v0.10.2)
+
+### Documentation
+
+* regenerate documentation and add missing app_resource_role and tag docs ([#29](https://github.com/ServalHQ/terraform-provider-serval/issues/29)) ([db07fcc](https://github.com/ServalHQ/terraform-provider-serval/commit/db07fccafa7c5fe5ce48d89f30ad440856631363))
+
 ## 0.10.1 (2026-01-20)
 
 Full Changelog: [v0.10.0...v0.10.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.10.0...v0.10.1)
