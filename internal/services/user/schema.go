@@ -47,17 +47,20 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"created_at": schema.StringAttribute{
-				Description: `A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").`,
-				Computed:    true,
-				CustomType:  timetypes.RFC3339Type{},
+				Description:   `A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").`,
+				Computed:      true,
+				CustomType:    timetypes.RFC3339Type{},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"deactivated_at": schema.StringAttribute{
-				Description: `A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").`,
-				Computed:    true,
-				CustomType:  timetypes.RFC3339Type{},
+				Description:   `A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").`,
+				Computed:      true,
+				CustomType:    timetypes.RFC3339Type{},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"name": schema.StringAttribute{
-				Computed: true,
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 		},
 	}

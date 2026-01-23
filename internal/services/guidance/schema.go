@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
@@ -43,12 +44,14 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"has_unpublished_changes": schema.BoolAttribute{
-				Description: "Whether there are unpublished changes to the guidance.",
-				Computed:    true,
+				Description:   "Whether there are unpublished changes to the guidance.",
+				Computed:      true,
+				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 			},
 			"is_published": schema.BoolAttribute{
-				Description: "Whether the guidance has been published at least once.",
-				Computed:    true,
+				Description:   "Whether the guidance has been published at least once.",
+				Computed:      true,
+				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 			},
 		},
 	}
