@@ -57,12 +57,14 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  customfield.NewNestedObjectType[AppResourceRoleProvisioningMethodDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"builtin_workflow": schema.StringAttribute{
-						Computed:   true,
-						CustomType: jsontypes.NormalizedType{},
+						Description: "Provisioning is handled by the service's builtin workflow integration.",
+						Computed:    true,
+						CustomType:  jsontypes.NormalizedType{},
 					},
 					"custom_workflow": schema.SingleNestedAttribute{
-						Computed:   true,
-						CustomType: customfield.NewNestedObjectType[AppResourceRoleProvisioningMethodCustomWorkflowDataSourceModel](ctx),
+						Description: "Provisioning is handled by custom workflows for provision + deprovision.",
+						Computed:    true,
+						CustomType:  customfield.NewNestedObjectType[AppResourceRoleProvisioningMethodCustomWorkflowDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"deprovision_workflow_id": schema.StringAttribute{
 								Description: "The workflow ID to deprovision access.",
@@ -75,8 +77,9 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"linked_roles": schema.SingleNestedAttribute{
-						Computed:   true,
-						CustomType: customfield.NewNestedObjectType[AppResourceRoleProvisioningMethodLinkedRolesDataSourceModel](ctx),
+						Description: "Provisioning depends on prerequisite roles being provisioned first.",
+						Computed:    true,
+						CustomType:  customfield.NewNestedObjectType[AppResourceRoleProvisioningMethodLinkedRolesDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"linked_role_ids": schema.ListAttribute{
 								Description: "The IDs of prerequisite roles.",
@@ -87,8 +90,9 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"manual": schema.SingleNestedAttribute{
-						Computed:   true,
-						CustomType: customfield.NewNestedObjectType[AppResourceRoleProvisioningMethodManualDataSourceModel](ctx),
+						Description: "Provisioning is handled manually by assigned users/groups.",
+						Computed:    true,
+						CustomType:  customfield.NewNestedObjectType[AppResourceRoleProvisioningMethodManualDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"assignees": schema.ListNestedAttribute{
 								Description: "Users and groups that should be assigned/notified for manual provisioning.",
