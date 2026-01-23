@@ -5,6 +5,7 @@ package access_policy_approval_procedure
 import (
 	"context"
 
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -29,12 +30,14 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"steps": schema.ListNestedAttribute{
 				Description: "The approval steps for the procedure.",
+				Computed:    true,
 				Optional:    true,
+				CustomType:  customfield.NewNestedObjectListType[AccessPolicyApprovalProcedureStepsModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
 							Description: "The ID of the approval step.",
-							Optional:    true,
+							Computed:    true,
 						},
 						"allow_self_approval": schema.BoolAttribute{
 							Description: "Whether the step can be approved by the requester themselves.",

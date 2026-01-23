@@ -4,6 +4,7 @@ package access_policy_approval_procedure
 
 import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -12,9 +13,9 @@ type AccessPolicyApprovalProcedureDataEnvelope struct {
 }
 
 type AccessPolicyApprovalProcedureModel struct {
-	ID             types.String                                `tfsdk:"id" json:"id,computed"`
-	AccessPolicyID types.String                                `tfsdk:"access_policy_id" path:"access_policy_id,required"`
-	Steps          *[]*AccessPolicyApprovalProcedureStepsModel `tfsdk:"steps" json:"steps,optional"`
+	ID             types.String                                                          `tfsdk:"id" json:"id,computed"`
+	AccessPolicyID types.String                                                          `tfsdk:"access_policy_id" path:"access_policy_id,required"`
+	Steps          customfield.NestedObjectList[AccessPolicyApprovalProcedureStepsModel] `tfsdk:"steps" json:"steps,computed_optional"`
 }
 
 func (m AccessPolicyApprovalProcedureModel) MarshalJSON() (data []byte, err error) {
@@ -26,7 +27,7 @@ func (m AccessPolicyApprovalProcedureModel) MarshalJSONForUpdate(state AccessPol
 }
 
 type AccessPolicyApprovalProcedureStepsModel struct {
-	ID                types.String    `tfsdk:"id" json:"id,optional"`
+	ID                types.String    `tfsdk:"id" json:"id,computed"`
 	AllowSelfApproval types.Bool      `tfsdk:"allow_self_approval" json:"allowSelfApproval,optional"`
 	CustomWorkflowID  types.String    `tfsdk:"custom_workflow_id" json:"customWorkflowId,optional"`
 	ServalGroupIDs    *[]types.String `tfsdk:"serval_group_ids" json:"servalGroupIds,optional"`
