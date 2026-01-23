@@ -65,10 +65,10 @@ resource "serval_app_resource_role" "example_app_resource_role" {
 
 Optional:
 
-- `builtin_workflow` (String) **Option: builtin_workflow**
-- `custom_workflow` (Attributes) **Option: custom_workflow** (see [below for nested schema](#nestedatt--provisioning_method--custom_workflow))
-- `linked_roles` (Attributes) **Option: linked_roles** (see [below for nested schema](#nestedatt--provisioning_method--linked_roles))
-- `manual` (Attributes) **Option: manual** (see [below for nested schema](#nestedatt--provisioning_method--manual))
+- `builtin_workflow` (String)
+- `custom_workflow` (Attributes) (see [below for nested schema](#nestedatt--provisioning_method--custom_workflow))
+- `linked_roles` (Attributes) (see [below for nested schema](#nestedatt--provisioning_method--linked_roles))
+- `manual` (Attributes) (see [below for nested schema](#nestedatt--provisioning_method--manual))
 
 <a id="nestedatt--provisioning_method--custom_workflow"></a>
 ### Nested Schema for `provisioning_method.custom_workflow`
