@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.1 (2026-01-23)
+
+Full Changelog: [v0.11.0...v0.11.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.11.0...v0.11.1)
+
+### Chores
+
+* bump serval-go from v0.7.1 to v0.8.0 ([#33](https://github.com/ServalHQ/terraform-provider-serval/issues/33)) ([4ac4b1a](https://github.com/ServalHQ/terraform-provider-serval/commit/4ac4b1adeb0769cc9e69a409d54b12fff937090b))
+
 ## 0.11.0 (2026-01-23)
 
 Full Changelog: [v0.10.3...v0.11.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.10.3...v0.11.0)
