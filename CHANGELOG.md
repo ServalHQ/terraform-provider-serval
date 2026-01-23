@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.10.3 (2026-01-23)
+
+Full Changelog: [v0.10.2...v0.10.3](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.10.2...v0.10.3)
+
+### Chores
+
+* **internal:** codegen related update ([5fccc4f](https://github.com/ServalHQ/terraform-provider-serval/commit/5fccc4fd56f19a4b0f0fac21fe59d7bf30266944))
+
 ## 0.10.2 (2026-01-20)
 
 Full Changelog: [v0.10.1...v0.10.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.10.1...v0.10.2)
