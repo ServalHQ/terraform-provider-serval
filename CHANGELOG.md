@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.0 (2026-01-23)
+
+Full Changelog: [v0.10.3...v0.11.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.10.3...v0.11.0)
+
+### Features
+
+* **api:** manual updates ([01f5ebb](https://github.com/ServalHQ/terraform-provider-serval/commit/01f5ebb0af55f8d8ade6efadb5b7ebd6bc709a1d))
+
 ## 0.10.3 (2026-01-23)
 
 Full Changelog: [v0.10.2...v0.10.3](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.10.2...v0.10.3)
