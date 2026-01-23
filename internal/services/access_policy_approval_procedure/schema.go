@@ -32,14 +32,15 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			"steps": schema.ListNestedAttribute{
 				Description:   "The approval steps for the procedure.",
 				Optional:      true,
-				PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
-				Computed:    true,
-				CustomType:  customfield.NewNestedObjectListType[AccessPolicyApprovalProcedureStepsModel](ctx),
+				PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace(), listplanmodifier.UseStateForUnknown()},
+				Computed:      true,
+				CustomType:    customfield.NewNestedObjectListType[AccessPolicyApprovalProcedureStepsModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
-							Description: "The ID of the approval step.",
-							Computed:    true,
+							Description:   "The ID of the approval step.",
+							Computed:      true,
+							PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 						},
 						"allow_self_approval": schema.BoolAttribute{
 							Description: "Whether the step can be approved by the requester themselves.",
