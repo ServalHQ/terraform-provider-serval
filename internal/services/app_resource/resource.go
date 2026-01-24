@@ -226,6 +226,16 @@ func (r *AppResourceResource) ImportState(ctx context.Context, req resource.Impo
 
 	data.ID = types.StringValue(path)
 
+	// Try per-team cache first for better performance with bulk imports
+	if cached, found, err := GetCachedForImport(ctx, r.client, path); err != nil {
+		resp.Diagnostics.AddError("failed to load app resources cache", err.Error())
+		return
+	} else if found {
+		resp.Diagnostics.Append(resp.State.Set(ctx, cached)...)
+		return
+	}
+
+	// Fall back to individual API call if cache not initialized
 	res := new(http.Response)
 	env := AppResourceDataEnvelope{*data}
 	_, err := r.client.AppResources.Get(

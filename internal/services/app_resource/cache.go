@@ -47,6 +47,36 @@ func GetCached(ctx context.Context, client *serval.Client, id string, appInstanc
 	})
 }
 
+// GetCachedForImport retrieves an app resource from cache when we only have the ID.
+// Used by ImportState where we don't know the app_instance_id upfront.
+// On first import for a team, does a GET to learn the app_instance_id, then loads the team cache.
+func GetCachedForImport(ctx context.Context, client *serval.Client, id string) (*AppResourceModel, bool, error) {
+	if ByTeamCache == nil {
+		return nil, false, nil // Cache not initialized, caller should fall back to API
+	}
+
+	// Step 1: Check if this resource is already in any loaded team cache
+	if item, teamID := ByTeamCache.FindInLoadedCaches(id); item != nil {
+		// Found in cache - also ensure mappings are populated
+		if !item.AppInstanceID.IsNull() && !item.AppInstanceID.IsUnknown() {
+			AppInstanceToTeam.Set(item.AppInstanceID.ValueString(), teamID)
+		}
+		return item, true, nil
+	}
+
+	// Step 2: Not in cache - need to fetch to learn app_instance_id
+	resource, err := client.AppResources.Get(ctx, id,
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		return nil, false, err
+	}
+
+	// Step 3: Now we know the app_instance_id, use GetCached to load the team cache
+	// This will fetch all resources for this team, benefiting subsequent imports
+	return GetCached(ctx, client, id, resource.AppInstanceID)
+}
+
 // getTeamIDForAppInstance looks up the team_id for an app_instance_id.
 // Uses cached mapping if available, otherwise fetches from API.
 func getTeamIDForAppInstance(ctx context.Context, client *serval.Client, appInstanceID string) (string, error) {

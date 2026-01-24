@@ -64,6 +64,21 @@ func (kc *KeyedCache[T]) GetOrCreateCache(key string) *ResourceCache[T] {
 	return cache
 }
 
+// FindInLoadedCaches searches all loaded caches for an item by ID.
+// Returns (item, key) if found, (nil, "") if not found.
+// This is useful for imports where we don't know which parent key the item belongs to.
+func (kc *KeyedCache[T]) FindInLoadedCaches(id string) (*T, string) {
+	kc.mu.RLock()
+	defer kc.mu.RUnlock()
+
+	for key, cache := range kc.caches {
+		if item, found := cache.Get(id); found {
+			return item, key
+		}
+	}
+	return nil, ""
+}
+
 // MappingCache is a thread-safe cache for storing ID mappings (e.g., app_instance_id → team_id).
 type MappingCache struct {
 	mu   sync.RWMutex

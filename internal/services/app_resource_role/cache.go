@@ -54,6 +54,32 @@ func GetCached(ctx context.Context, client *serval.Client, id string, resourceID
 	})
 }
 
+// GetCachedForImport retrieves an app resource role from cache when we only have the ID.
+// Used by ImportState where we don't know the resource_id upfront.
+// On first import for a team, does a GET to learn the resource_id, then loads the team cache.
+func GetCachedForImport(ctx context.Context, client *serval.Client, id string) (*AppResourceRoleModel, bool, error) {
+	if ByTeamCache == nil {
+		return nil, false, nil // Cache not initialized, caller should fall back to API
+	}
+
+	// Step 1: Check if this role is already in any loaded team cache
+	if item, _ := ByTeamCache.FindInLoadedCaches(id); item != nil {
+		return item, true, nil
+	}
+
+	// Step 2: Not in cache - need to fetch to learn resource_id
+	role, err := client.AppResourceRoles.Get(ctx, id,
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		return nil, false, err
+	}
+
+	// Step 3: Now we know the resource_id, use GetCached to load the team cache
+	// This will fetch all roles for this team, benefiting subsequent imports
+	return GetCached(ctx, client, id, role.ResourceID)
+}
+
 // getAppInstanceIDForResource looks up the app_instance_id for a resource_id.
 // Uses cached mapping if available, otherwise fetches from API.
 func getAppInstanceIDForResource(ctx context.Context, client *serval.Client, resourceID string) (string, error) {
