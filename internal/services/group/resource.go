@@ -224,6 +224,16 @@ func (r *GroupResource) ImportState(ctx context.Context, req resource.ImportStat
 
 	data.ID = types.StringValue(path)
 
+	// Try cache first for better performance with bulk imports
+	if cached, found, err := GetCached(ctx, r.client, path); err != nil {
+		resp.Diagnostics.AddError("failed to load groups cache", err.Error())
+		return
+	} else if found {
+		resp.Diagnostics.Append(resp.State.Set(ctx, cached)...)
+		return
+	}
+
+	// Fall back to individual API call if cache miss
 	res := new(http.Response)
 	env := GroupDataEnvelope{*data}
 	_, err := r.client.Groups.Get(

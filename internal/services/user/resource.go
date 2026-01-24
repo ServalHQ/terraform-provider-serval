@@ -224,6 +224,16 @@ func (r *UserResource) ImportState(ctx context.Context, req resource.ImportState
 
 	data.ID = types.StringValue(path)
 
+	// Try cache first for better performance with bulk imports
+	if cached, found, err := GetCached(ctx, r.client, path); err != nil {
+		resp.Diagnostics.AddError("failed to load users cache", err.Error())
+		return
+	} else if found {
+		resp.Diagnostics.Append(resp.State.Set(ctx, cached)...)
+		return
+	}
+
+	// Fall back to individual API call if cache miss
 	res := new(http.Response)
 	env := UserDataEnvelope{*data}
 	_, err := r.client.Users.Get(
