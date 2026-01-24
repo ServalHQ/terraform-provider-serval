@@ -114,6 +114,12 @@ func (p *ServalProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		opts...,
 	)
 
+	// Initialize resource caches for improved performance with large datasets
+	user.InitCache()
+	group.InitCache()
+	app_resource.InitCache()
+	app_resource_role.InitCache()
+
 	resp.DataSourceData = &client
 	resp.ResourceData = &client
 }

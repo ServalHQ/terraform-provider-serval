@@ -148,6 +148,18 @@ func (r *AppResourceResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
+	// Try per-team cache first for better performance with large numbers of resources
+	if !data.AppInstanceID.IsNull() && !data.AppInstanceID.IsUnknown() {
+		if cached, found, err := GetCached(ctx, r.client, data.ID.ValueString(), data.AppInstanceID.ValueString()); err != nil {
+			resp.Diagnostics.AddError("failed to load app resources cache", err.Error())
+			return
+		} else if found {
+			resp.Diagnostics.Append(resp.State.Set(ctx, cached)...)
+			return
+		}
+	}
+
+	// Fall back to individual API call if cache miss (e.g., newly created resource)
 	res := new(http.Response)
 	env := AppResourceDataEnvelope{*data}
 	_, err := r.client.AppResources.Get(

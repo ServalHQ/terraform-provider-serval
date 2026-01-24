@@ -148,6 +148,18 @@ func (r *AppResourceRoleResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
+	// Try per-team cache first for better performance with large numbers of resources
+	if !data.ResourceID.IsNull() && !data.ResourceID.IsUnknown() {
+		if cached, found, err := GetCached(ctx, r.client, data.ID.ValueString(), data.ResourceID.ValueString()); err != nil {
+			resp.Diagnostics.AddError("failed to load app resource roles cache", err.Error())
+			return
+		} else if found {
+			resp.Diagnostics.Append(resp.State.Set(ctx, cached)...)
+			return
+		}
+	}
+
+	// Fall back to individual API call if cache miss (e.g., newly created resource)
 	res := new(http.Response)
 	env := AppResourceRoleDataEnvelope{*data}
 	_, err := r.client.AppResourceRoles.Get(
