@@ -11,6 +11,7 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/cache"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_resource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // ByTeamCache stores AppResourceRoles keyed by team_id for efficient per-team caching.
@@ -19,10 +20,14 @@ var ByTeamCache *cache.KeyedCache[AppResourceRoleModel]
 // ResourceToAppInstance maps resource_id → app_instance_id.
 var ResourceToAppInstance *cache.MappingCache
 
+// importLoadLock prevents thundering herd during parallel imports.
+var importLoadLock *cache.ImportCache[AppResourceRoleModel]
+
 // InitCache initializes the app resource role cache. Call this from provider.Configure().
 func InitCache() {
 	ByTeamCache = cache.NewKeyedCache[AppResourceRoleModel]()
 	ResourceToAppInstance = cache.NewMappingCache()
+	importLoadLock = cache.NewImportCache[AppResourceRoleModel]()
 }
 
 // GetCached retrieves an app resource role from the per-team cache, loading via List API if needed.
@@ -57,27 +62,90 @@ func GetCached(ctx context.Context, client *serval.Client, id string, resourceID
 // GetCachedForImport retrieves an app resource role from cache when we only have the ID.
 // Used by ImportState where we don't know the resource_id upfront.
 // On first import for a team, does a GET to learn the resource_id, then loads the team cache.
+// Uses ImportCache to prevent thundering herd - only one goroutine fetches the initial resource.
 func GetCachedForImport(ctx context.Context, client *serval.Client, id string) (*AppResourceRoleModel, bool, error) {
-	if ByTeamCache == nil {
+	if ByTeamCache == nil || importLoadLock == nil {
+		tflog.Debug(ctx, "[AppResourceRole] Cache not initialized, falling back to API", map[string]interface{}{"id": id})
 		return nil, false, nil // Cache not initialized, caller should fall back to API
 	}
 
 	// Step 1: Check if this role is already in any loaded team cache
-	if item, _ := ByTeamCache.FindInLoadedCaches(id); item != nil {
+	if item, teamID := ByTeamCache.FindInLoadedCaches(id); item != nil {
+		tflog.Debug(ctx, "[AppResourceRole] CACHE HIT - found in loaded cache", map[string]interface{}{"id": id, "teamID": teamID})
 		return item, true, nil
 	}
 
-	// Step 2: Not in cache - need to fetch to learn resource_id
-	role, err := client.AppResourceRoles.Get(ctx, id,
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
-	if err != nil {
-		return nil, false, err
+	// Step 2: Check if import lock already has the team_id (another goroutine discovered it)
+	if importLoadLock.IsInitialized() {
+		teamID := importLoadLock.GetParentKey()
+		if teamID != "" {
+			tflog.Debug(ctx, "[AppResourceRole] Lock initialized, using discovered team_id", map[string]interface{}{"id": id, "teamID": teamID})
+			teamCache := ByTeamCache.GetOrCreateCache(teamID)
+			return teamCache.GetOrLoad(id, func() (map[string]*AppResourceRoleModel, error) {
+				tflog.Info(ctx, "[AppResourceRole] LOADING ALL via List API", map[string]interface{}{"teamID": teamID})
+				return fetchAllAppResourceRolesForTeam(ctx, client, teamID)
+			})
+		}
 	}
 
-	// Step 3: Now we know the resource_id, use GetCached to load the team cache
-	// This will fetch all roles for this team, benefiting subsequent imports
-	return GetCached(ctx, client, id, role.ResourceID)
+	// Step 3: Try to acquire the load lock - only one goroutine should fetch
+	if importLoadLock.AcquireLoadLock() {
+		tflog.Info(ctx, "[AppResourceRole] ACQUIRED LOCK - will fetch initial resource", map[string]interface{}{"id": id})
+		// This goroutine will do the initial fetch to discover team_id
+		role, err := client.AppResourceRoles.Get(ctx, id,
+			option.WithMiddleware(logging.Middleware(ctx)),
+		)
+		if err != nil {
+			tflog.Error(ctx, "[AppResourceRole] Initial Get failed", map[string]interface{}{"id": id, "error": err.Error()})
+			importLoadLock.CompleteLoad("") // Signal failure
+			return nil, false, err
+		}
+
+		// Get app_instance_id from resource_id, then team_id from app_instance_id
+		appInstanceID, err := getAppInstanceIDForResource(ctx, client, role.ResourceID)
+		if err != nil {
+			tflog.Error(ctx, "[AppResourceRole] Failed to get app_instance_id", map[string]interface{}{"id": id, "error": err.Error()})
+			importLoadLock.CompleteLoad("") // Signal failure
+			return nil, false, err
+		}
+
+		teamID, err := getTeamIDForAppInstance(ctx, client, appInstanceID)
+		if err != nil {
+			tflog.Error(ctx, "[AppResourceRole] Failed to get team_id", map[string]interface{}{"id": id, "error": err.Error()})
+			importLoadLock.CompleteLoad("") // Signal failure
+			return nil, false, err
+		}
+
+		tflog.Info(ctx, "[AppResourceRole] Discovered team_id, completing lock", map[string]interface{}{"id": id, "teamID": teamID})
+		// Complete the lock so other goroutines can proceed
+		importLoadLock.CompleteLoad(teamID)
+
+		// Now load the full cache and return the item
+		return GetCached(ctx, client, id, role.ResourceID)
+	}
+
+	// Step 4: Another goroutine is loading - wait for it
+	tflog.Debug(ctx, "[AppResourceRole] WAITING for lock holder to complete", map[string]interface{}{"id": id})
+	teamID := importLoadLock.WaitForLoad()
+	if teamID == "" {
+		tflog.Warn(ctx, "[AppResourceRole] Lock holder failed, falling back to individual Get", map[string]interface{}{"id": id})
+		// Loading failed, fall back to individual API call
+		role, err := client.AppResourceRoles.Get(ctx, id,
+			option.WithMiddleware(logging.Middleware(ctx)),
+		)
+		if err != nil {
+			return nil, false, err
+		}
+		return GetCached(ctx, client, id, role.ResourceID)
+	}
+
+	tflog.Debug(ctx, "[AppResourceRole] Lock holder completed, using cache", map[string]interface{}{"id": id, "teamID": teamID})
+	// Use the discovered team_id to get from cache
+	teamCache := ByTeamCache.GetOrCreateCache(teamID)
+	return teamCache.GetOrLoad(id, func() (map[string]*AppResourceRoleModel, error) {
+		tflog.Info(ctx, "[AppResourceRole] LOADING ALL via List API (from waiter)", map[string]interface{}{"teamID": teamID})
+		return fetchAllAppResourceRolesForTeam(ctx, client, teamID)
+	})
 }
 
 // getAppInstanceIDForResource looks up the app_instance_id for a resource_id.

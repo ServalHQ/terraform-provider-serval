@@ -20,6 +20,17 @@ type ResourceCache[T any] struct {
 	err    error
 }
 
+// ImportCache is a cache specifically designed for import operations where we don't
+// know the parent key (e.g., team_id) upfront. It prevents thundering herd by ensuring
+// only one goroutine fetches the initial resource to learn the parent key, while others wait.
+type ImportCache[T any] struct {
+	mu          sync.Mutex
+	loading     bool
+	loadingDone chan struct{}
+	parentKey   string // The discovered parent key (e.g., team_id)
+	initialized bool
+}
+
 // NewResourceCache creates a new empty cache.
 func NewResourceCache[T any]() *ResourceCache[T] {
 	return &ResourceCache[T]{
@@ -159,4 +170,77 @@ func (c *ResourceCache[T]) GetOrLoad(id string, loader func() (map[string]*T, er
 	}
 	item, exists := c.Get(id)
 	return item, exists, nil
+}
+
+// NewImportCache creates a new import cache.
+func NewImportCache[T any]() *ImportCache[T] {
+	return &ImportCache[T]{}
+}
+
+// AcquireLoadLock tries to acquire the loading lock. Returns true if this goroutine
+// should perform the load, false if another goroutine is already loading.
+// If false, the caller should call WaitForLoad() to wait for the other goroutine.
+func (ic *ImportCache[T]) AcquireLoadLock() bool {
+	ic.mu.Lock()
+	defer ic.mu.Unlock()
+
+	if ic.initialized {
+		return false // Already loaded
+	}
+	if ic.loading {
+		return false // Another goroutine is loading
+	}
+
+	// This goroutine will do the loading
+	ic.loading = true
+	ic.loadingDone = make(chan struct{})
+	return true
+}
+
+// WaitForLoad waits for another goroutine to complete loading.
+// Returns the parent key that was discovered, or empty string if not yet initialized.
+func (ic *ImportCache[T]) WaitForLoad() string {
+	ic.mu.Lock()
+	done := ic.loadingDone
+	if ic.initialized {
+		key := ic.parentKey
+		ic.mu.Unlock()
+		return key
+	}
+	ic.mu.Unlock()
+
+	if done != nil {
+		<-done // Wait for loading to complete
+	}
+
+	ic.mu.Lock()
+	defer ic.mu.Unlock()
+	return ic.parentKey
+}
+
+// CompleteLoad marks loading as complete and stores the discovered parent key.
+func (ic *ImportCache[T]) CompleteLoad(parentKey string) {
+	ic.mu.Lock()
+	defer ic.mu.Unlock()
+
+	ic.parentKey = parentKey
+	ic.initialized = true
+	ic.loading = false
+	if ic.loadingDone != nil {
+		close(ic.loadingDone)
+	}
+}
+
+// IsInitialized returns whether the import cache has discovered the parent key.
+func (ic *ImportCache[T]) IsInitialized() bool {
+	ic.mu.Lock()
+	defer ic.mu.Unlock()
+	return ic.initialized
+}
+
+// GetParentKey returns the discovered parent key, or empty string if not initialized.
+func (ic *ImportCache[T]) GetParentKey() string {
+	ic.mu.Lock()
+	defer ic.mu.Unlock()
+	return ic.parentKey
 }
