@@ -148,6 +148,16 @@ func (r *UserResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
+	// Try cache first for better performance with large numbers of resources
+	if cached, found, err := GetCached(ctx, r.client, data.ID.ValueString()); err != nil {
+		resp.Diagnostics.AddError("failed to load users cache", err.Error())
+		return
+	} else if found {
+		resp.Diagnostics.Append(resp.State.Set(ctx, cached)...)
+		return
+	}
+
+	// Fall back to individual API call if cache miss (e.g., newly created resource)
 	res := new(http.Response)
 	env := UserDataEnvelope{*data}
 	_, err := r.client.Users.Get(
