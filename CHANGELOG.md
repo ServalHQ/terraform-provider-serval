@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.15.2 (2026-01-24)
+
+Full Changelog: [v0.15.1...v0.15.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.15.1...v0.15.2)
+
+### Bug Fixes
+
+* prevent thundering herd in import cache ([#44](https://github.com/ServalHQ/terraform-provider-serval/issues/44)) ([cce880b](https://github.com/ServalHQ/terraform-provider-serval/commit/cce880b4f2d06433b280853e0a11b098e2af70c0))
+
 ## 0.15.1 (2026-01-24)
 
 Full Changelog: [v0.15.0...v0.15.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.15.0...v0.15.1)
