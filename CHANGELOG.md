@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.15.0 (2026-01-24)
+
+Full Changelog: [v0.14.1...v0.15.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.14.1...v0.15.0)
+
+### Features
+
+* add resource caching to improve plan/apply performance ([#40](https://github.com/ServalHQ/terraform-provider-serval/issues/40)) ([6d342e2](https://github.com/ServalHQ/terraform-provider-serval/commit/6d342e206cc77cf689b1cc10fdeee309221b130f))
+
 ## 0.14.1 (2026-01-23)
 
 Full Changelog: [v0.14.0...v0.14.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.14.0...v0.14.1)
