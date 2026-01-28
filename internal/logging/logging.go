@@ -44,7 +44,6 @@ func Middleware(ctx context.Context) option.Middleware {
 }
 
 func LogRequest(ctx context.Context, req *http.Request) error {
-	fmt.Println("teddysanity v1.0.4 - LogRequest")
 	lines := []string{
 		fmt.Sprintf("\n%s %s %s", req.Method, req.URL.Path, req.Proto),
 	}
