@@ -19,11 +19,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "(OPTIONAL) A description of the access policy.",
+				Description: "A description of the access policy.",
 				Computed:    true,
 			},
 			"max_access_minutes": schema.Int64Attribute{
-				Description: "(OPTIONAL) The maximum number of minutes that access can be granted for.",
+				Description: "The maximum number of minutes that access can be granted for.",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
@@ -31,15 +31,15 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"recommended_access_minutes": schema.Int64Attribute{
-				Description: "(OPTIONAL) The recommended duration in minutes for access requests (optional).",
+				Description: "The recommended duration in minutes for access requests (optional).",
 				Computed:    true,
 			},
 			"require_business_justification": schema.BoolAttribute{
-				Description: "(OPTIONAL) Whether a business justification is required when requesting access.",
+				Description: "Whether a business justification is required when requesting access.",
 				Computed:    true,
 			},
 			"team_id": schema.StringAttribute{
-				Description: "(IMMUTABLE) The ID of the team that the access policy belongs to.",
+				Description: "The ID of the team that the access policy belongs to.",
 				Computed:    true,
 			},
 		},

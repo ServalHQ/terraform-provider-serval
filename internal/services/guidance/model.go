@@ -13,10 +13,10 @@ type GuidanceDataEnvelope struct {
 
 type GuidanceModel struct {
 	ID                    types.String `tfsdk:"id" json:"id,computed"`
-	TeamID                types.String `tfsdk:"team_id" json:"teamId,optional"`
-	Content               types.String `tfsdk:"content" json:"content,optional"`
+	TeamID                types.String `tfsdk:"team_id" json:"teamId,required"`
+	Content               types.String `tfsdk:"content" json:"content,required"`
+	Name                  types.String `tfsdk:"name" json:"name,required"`
 	Description           types.String `tfsdk:"description" json:"description,optional"`
-	Name                  types.String `tfsdk:"name" json:"name,optional"`
 	IsPublished           types.Bool   `tfsdk:"is_published" json:"isPublished,computed_optional"`
 	ShouldAlwaysUse       types.Bool   `tfsdk:"should_always_use" json:"shouldAlwaysUse,computed_optional"`
 	HasUnpublishedChanges types.Bool   `tfsdk:"has_unpublished_changes" json:"hasUnpublishedChanges,computed"`

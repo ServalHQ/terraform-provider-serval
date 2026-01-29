@@ -14,13 +14,13 @@ type WorkflowDataEnvelope struct {
 
 type WorkflowModel struct {
 	ID                      types.String                   `tfsdk:"id" json:"id,computed"`
-	TeamID                  types.String                   `tfsdk:"team_id" json:"teamId,optional"`
-	Content                 types.String                   `tfsdk:"content" json:"content,optional"`
+	TeamID                  types.String                   `tfsdk:"team_id" json:"teamId,required"`
+	Content                 types.String                   `tfsdk:"content" json:"content,required"`
+	Name                    types.String                   `tfsdk:"name" json:"name,required"`
+	Type                    types.String                   `tfsdk:"type" json:"type,required"`
 	Description             types.String                   `tfsdk:"description" json:"description,optional"`
 	ExecutionScope          types.String                   `tfsdk:"execution_scope" json:"executionScope,optional"`
-	Name                    types.String                   `tfsdk:"name" json:"name,optional"`
 	Parameters              types.String                   `tfsdk:"parameters" json:"parameters,optional"`
-	Type                    types.String                   `tfsdk:"type" json:"type,optional"`
 	IsPublished             types.Bool                     `tfsdk:"is_published" json:"isPublished,computed_optional"`
 	IsTemporary             types.Bool                     `tfsdk:"is_temporary" json:"isTemporary,computed_optional"`
 	RequireFormConfirmation types.Bool                     `tfsdk:"require_form_confirmation" json:"requireFormConfirmation,computed_optional"`

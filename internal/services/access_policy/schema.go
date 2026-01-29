@@ -23,8 +23,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"team_id": schema.StringAttribute{
 				Description:   "The ID of the team.",
-				Optional:      true,
+				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"name": schema.StringAttribute{
+				Description: "The name of the access policy.",
+				Required:    true,
 			},
 			"description": schema.StringAttribute{
 				Description: "A description of the access policy.",
@@ -32,10 +36,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"max_access_minutes": schema.Int64Attribute{
 				Description: "The maximum number of minutes that access can be granted for (optional).",
-				Optional:    true,
-			},
-			"name": schema.StringAttribute{
-				Description: "The name of the access policy.",
 				Optional:    true,
 			},
 			"recommended_access_minutes": schema.Int64Attribute{

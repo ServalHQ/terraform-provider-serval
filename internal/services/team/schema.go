@@ -22,10 +22,10 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
-			"description": schema.StringAttribute{
-				Optional: true,
-			},
 			"name": schema.StringAttribute{
+				Required: true,
+			},
+			"description": schema.StringAttribute{
 				Optional: true,
 			},
 			"prefix": schema.StringAttribute{

@@ -27,14 +27,14 @@ data "serval_app_resource_role" "example_app_resource_role" {
 
 ### Read-Only
 
-- `access_policy_id` (String) (OPTIONAL) The default access policy for the role.
-- `description` (String) (OPTIONAL) A description of the role.
-- `external_data` (String) Data from the external system as a JSON string (optional).
-- `external_id` (String) (OPTIONAL) The external ID of the role in the external system (optional).
+- `access_policy_id` (String) The default access policy for the role.
+- `description` (String) A description of the role.
+- `external_data` (String) Data from the external system as a JSON string (computed by server).
+- `external_id` (String) The external ID of the role in the external system (optional).
 - `name` (String) The name of the role.
 - `provisioning_method` (Attributes) Provisioning configuration. **Exactly one method should be set.** (see [below for nested schema](#nestedatt--provisioning_method))
-- `requests_enabled` (Boolean) (OPTIONAL) Whether requests are enabled for the role.
-- `resource_id` (String) (IMMUTABLE) The ID of the resource that the role belongs to.
+- `requests_enabled` (Boolean) Whether requests are enabled for the role.
+- `resource_id` (String) The ID of the resource that the role belongs to.
 
 <a id="nestedatt--provisioning_method"></a>
 ### Nested Schema for `provisioning_method`
@@ -60,7 +60,7 @@ Read-Only:
 
 Read-Only:
 
-- `linked_role_ids` (List of String) (OPTIONAL) The IDs of prerequisite roles.
+- `linked_role_ids` (List of String) The IDs of prerequisite roles.
 
 
 <a id="nestedatt--provisioning_method--manual"></a>
@@ -68,7 +68,7 @@ Read-Only:
 
 Read-Only:
 
-- `assignees` (Attributes List) (OPTIONAL) Users and groups that should be assigned/notified for manual provisioning. (see [below for nested schema](#nestedatt--provisioning_method--manual--assignees))
+- `assignees` (Attributes List) Users and groups that should be assigned/notified for manual provisioning. (see [below for nested schema](#nestedatt--provisioning_method--manual--assignees))
 
 <a id="nestedatt--provisioning_method--manual--assignees"></a>
 ### Nested Schema for `provisioning_method.manual.assignees`
