@@ -13,12 +13,12 @@ type AppInstanceDataEnvelope struct {
 
 type AppInstanceModel struct {
 	ID                    types.String `tfsdk:"id" json:"id,computed"`
+	TeamID                types.String `tfsdk:"team_id" json:"teamId,required"`
 	CustomServiceID       types.String `tfsdk:"custom_service_id" json:"customServiceId,optional"`
 	Service               types.String `tfsdk:"service" json:"service,optional"`
-	TeamID                types.String `tfsdk:"team_id" json:"teamId,optional"`
+	InstanceID            types.String `tfsdk:"instance_id" json:"instanceId,required"`
+	Name                  types.String `tfsdk:"name" json:"name,required"`
 	DefaultAccessPolicyID types.String `tfsdk:"default_access_policy_id" json:"defaultAccessPolicyId,optional"`
-	InstanceID            types.String `tfsdk:"instance_id" json:"instanceId,optional"`
-	Name                  types.String `tfsdk:"name" json:"name,optional"`
 	AccessRequestsEnabled types.Bool   `tfsdk:"access_requests_enabled" json:"accessRequestsEnabled,computed_optional"`
 }
 
