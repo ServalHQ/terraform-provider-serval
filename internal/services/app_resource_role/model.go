@@ -20,8 +20,8 @@ type AppResourceRoleModel struct {
 	ExternalData       types.String                            `tfsdk:"external_data" json:"externalData,optional"`
 	ExternalID         types.String                            `tfsdk:"external_id" json:"externalId,optional"`
 	Name               types.String                            `tfsdk:"name" json:"name,optional"`
-	RequestsEnabled    types.Bool                              `tfsdk:"requests_enabled" json:"requestsEnabled,optional"`
 	ProvisioningMethod *AppResourceRoleProvisioningMethodModel `tfsdk:"provisioning_method" json:"provisioningMethod,optional"`
+	RequestsEnabled    types.Bool                              `tfsdk:"requests_enabled" json:"requestsEnabled,computed_optional"`
 }
 
 func (m AppResourceRoleModel) MarshalJSON() (data []byte, err error) {
@@ -33,10 +33,10 @@ func (m AppResourceRoleModel) MarshalJSONForUpdate(state AppResourceRoleModel) (
 }
 
 type AppResourceRoleProvisioningMethodModel struct {
-	BuiltinWorkflow jsontypes.Normalized                                  `tfsdk:"builtin_workflow" json:"builtinWorkflow,optional"`
-	CustomWorkflow  *AppResourceRoleProvisioningMethodCustomWorkflowModel `tfsdk:"custom_workflow" json:"customWorkflow,optional"`
-	LinkedRoles     *AppResourceRoleProvisioningMethodLinkedRolesModel    `tfsdk:"linked_roles" json:"linkedRoles,optional"`
-	Manual          *AppResourceRoleProvisioningMethodManualModel         `tfsdk:"manual" json:"manual,optional"`
+	BuiltinWorkflow jsontypes.Normalized                                  `tfsdk:"builtin_workflow" json:"builtinWorkflow,required"`
+	CustomWorkflow  *AppResourceRoleProvisioningMethodCustomWorkflowModel `tfsdk:"custom_workflow" json:"customWorkflow,required"`
+	LinkedRoles     *AppResourceRoleProvisioningMethodLinkedRolesModel    `tfsdk:"linked_roles" json:"linkedRoles,required"`
+	Manual          *AppResourceRoleProvisioningMethodManualModel         `tfsdk:"manual" json:"manual,required"`
 }
 
 type AppResourceRoleProvisioningMethodCustomWorkflowModel struct {

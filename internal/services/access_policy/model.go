@@ -18,7 +18,7 @@ type AccessPolicyModel struct {
 	MaxAccessMinutes             types.Int64  `tfsdk:"max_access_minutes" json:"maxAccessMinutes,optional"`
 	Name                         types.String `tfsdk:"name" json:"name,optional"`
 	RecommendedAccessMinutes     types.Int64  `tfsdk:"recommended_access_minutes" json:"recommendedAccessMinutes,optional"`
-	RequireBusinessJustification types.Bool   `tfsdk:"require_business_justification" json:"requireBusinessJustification,optional"`
+	RequireBusinessJustification types.Bool   `tfsdk:"require_business_justification" json:"requireBusinessJustification,computed_optional"`
 }
 
 func (m AccessPolicyModel) MarshalJSON() (data []byte, err error) {
