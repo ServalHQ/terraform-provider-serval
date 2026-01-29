@@ -34,7 +34,7 @@ data "serval_app_resource_role" "example_app_resource_role" {
 - `name` (String) The name of the role.
 - `provisioning_method` (Attributes) Provisioning configuration. **Exactly one method should be set.** (see [below for nested schema](#nestedatt--provisioning_method))
 - `requests_enabled` (Boolean) (OPTIONAL) Whether requests are enabled for the role.
-- `resource_id` (String) The ID of the resource that the role belongs to.
+- `resource_id` (String) (IMMUTABLE) The ID of the resource that the role belongs to.
 
 <a id="nestedatt--provisioning_method"></a>
 ### Nested Schema for `provisioning_method`

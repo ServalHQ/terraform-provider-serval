@@ -50,18 +50,22 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Description: "The name of the role.",
 				Optional:    true,
 			},
+			"requests_enabled": schema.BoolAttribute{
+				Description: "Whether requests are enabled for the role.",
+				Optional:    true,
+			},
 			"provisioning_method": schema.SingleNestedAttribute{
 				Description: "Provisioning configuration. Exactly one method should be set.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"builtin_workflow": schema.StringAttribute{
 						Description: "Provisioning is handled by the service's builtin workflow integration.",
-						Required:    true,
+						Optional:    true,
 						CustomType:  jsontypes.NormalizedType{},
 					},
 					"custom_workflow": schema.SingleNestedAttribute{
 						Description: "Provisioning is handled by custom workflows for provision + deprovision.",
-						Required:    true,
+						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"deprovision_workflow_id": schema.StringAttribute{
 								Description: "The workflow ID to deprovision access.",
@@ -75,7 +79,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"linked_roles": schema.SingleNestedAttribute{
 						Description: "Provisioning depends on prerequisite roles being provisioned first.",
-						Required:    true,
+						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"linked_role_ids": schema.ListAttribute{
 								Description: "(OPTIONAL) The IDs of prerequisite roles.",
@@ -86,7 +90,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"manual": schema.SingleNestedAttribute{
 						Description: "Provisioning is handled manually by assigned users/groups.",
-						Required:    true,
+						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"assignees": schema.ListNestedAttribute{
 								Description: "(OPTIONAL) Users and groups that should be assigned/notified for manual provisioning.",
@@ -114,11 +118,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 				},
-			},
-			"requests_enabled": schema.BoolAttribute{
-				Description: "Whether requests are enabled for the role.",
-				Computed:    true,
-				Optional:    true,
 			},
 		},
 	}
