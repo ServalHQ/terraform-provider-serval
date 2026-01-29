@@ -19,6 +19,7 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/user"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow_approval_procedure"
+	"github.com/ServalHQ/terraform-provider-serval/internal/stats"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -39,12 +40,16 @@ type ServalProvider struct {
 
 // ServalProviderModel describes the provider data model.
 type ServalProviderModel struct {
-	BaseURL      types.String `tfsdk:"base_url" json:"base_url,optional"`
-	ClientID     types.String `tfsdk:"client_id" json:"client_id,optional"`
+	BaseURL      types.String `tfsdk:"base_url"      json:"base_url,optional"`
+	ClientID     types.String `tfsdk:"client_id"     json:"client_id,optional"`
 	ClientSecret types.String `tfsdk:"client_secret" json:"client_secret,optional"`
 }
 
-func (p *ServalProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
+func (p *ServalProvider) Metadata(
+	ctx context.Context,
+	req provider.MetadataRequest,
+	resp *provider.MetadataResponse,
+) {
 	resp.TypeName = "serval"
 	resp.Version = p.version
 }
@@ -66,11 +71,19 @@ func ProviderSchema(ctx context.Context) schema.Schema {
 	}
 }
 
-func (p *ServalProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (p *ServalProvider) Schema(
+	ctx context.Context,
+	req provider.SchemaRequest,
+	resp *provider.SchemaResponse,
+) {
 	resp.Schema = ProviderSchema(ctx)
 }
 
-func (p *ServalProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+func (p *ServalProvider) Configure(
+	ctx context.Context,
+	req provider.ConfigureRequest,
+	resp *provider.ConfigureResponse,
+) {
 
 	var data ServalProviderModel
 
@@ -98,7 +111,10 @@ func (p *ServalProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 
 	if !data.ClientSecret.IsNull() && !data.ClientSecret.IsUnknown() {
-		opts = append(opts, option.WithClientSecret(data.ClientSecret.ValueString()))
+		opts = append(
+			opts,
+			option.WithClientSecret(data.ClientSecret.ValueString()),
+		)
 	} else if o, ok := os.LookupEnv("SERVAL_CLIENT_SECRET"); ok {
 		opts = append(opts, option.WithClientSecret(o))
 	} else {
@@ -120,15 +136,22 @@ func (p *ServalProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	app_resource.InitCache()
 	app_resource_role.InitCache()
 
+	// Start periodic stats logging (logs every 5 seconds via tflog)
+	stats.StartPeriodicLogging(ctx)
+
 	resp.DataSourceData = &client
 	resp.ResourceData = &client
 }
 
-func (p *ServalProvider) ConfigValidators(_ context.Context) []provider.ConfigValidator {
+func (p *ServalProvider) ConfigValidators(
+	_ context.Context,
+) []provider.ConfigValidator {
 	return []provider.ConfigValidator{}
 }
 
-func (p *ServalProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *ServalProvider) Resources(
+	ctx context.Context,
+) []func() resource.Resource {
 	return []func() resource.Resource{
 		access_policy.NewResource,
 		access_policy_approval_procedure.NewResource,
@@ -144,7 +167,9 @@ func (p *ServalProvider) Resources(ctx context.Context) []func() resource.Resour
 	}
 }
 
-func (p *ServalProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+func (p *ServalProvider) DataSources(
+	ctx context.Context,
+) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		access_policy.NewAccessPolicyDataSource,
 		access_policy_approval_procedure.NewAccessPolicyApprovalProcedureDataSource,

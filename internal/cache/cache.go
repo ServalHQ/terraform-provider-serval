@@ -8,6 +8,8 @@ package cache
 
 import (
 	"sync"
+
+	"github.com/ServalHQ/terraform-provider-serval/internal/stats"
 )
 
 // ResourceCache is a generic thread-safe cache for any resource type.
@@ -127,6 +129,11 @@ func (c *ResourceCache[T]) Get(id string) (*T, bool) {
 		return nil, false
 	}
 	item, exists := c.data[id]
+	if exists {
+		stats.Global.RecordCacheHit()
+	} else {
+		stats.Global.RecordCacheMiss()
+	}
 	return item, exists
 }
 
@@ -148,6 +155,7 @@ func (c *ResourceCache[T]) LoadError() error {
 // This is thread-safe and will only execute the loader once.
 func (c *ResourceCache[T]) Load(loader func() (map[string]*T, error)) error {
 	c.once.Do(func() {
+		stats.Global.RecordCacheLoad()
 		data, err := loader()
 		c.mu.Lock()
 		defer c.mu.Unlock()
@@ -164,7 +172,10 @@ func (c *ResourceCache[T]) Load(loader func() (map[string]*T, error)) error {
 // GetOrLoad retrieves an item from the cache by ID, loading the cache first if needed.
 // Returns (item, found, error). If loading fails, error is non-nil.
 // If the item doesn't exist after loading, found is false.
-func (c *ResourceCache[T]) GetOrLoad(id string, loader func() (map[string]*T, error)) (*T, bool, error) {
+func (c *ResourceCache[T]) GetOrLoad(
+	id string,
+	loader func() (map[string]*T, error),
+) (*T, bool, error) {
 	if err := c.Load(loader); err != nil {
 		return nil, false, err
 	}

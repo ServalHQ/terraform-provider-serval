@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/ServalHQ/serval-go/option"
+	"github.com/ServalHQ/terraform-provider-serval/internal/stats"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -20,6 +21,10 @@ var LoggingEnabled = false
 
 func Middleware(ctx context.Context) option.Middleware {
 	return func(req *http.Request, next option.MiddlewareNext) (*http.Response, error) {
+		// Track API request with endpoint path (method + path, e.g. "GET /v2/users")
+		endpoint := req.Method + " " + req.URL.Path
+		stats.Global.RecordAPIRequest(endpoint)
+
 		// Skip body logging to prevent HTTP transport hangs
 		if !LoggingEnabled {
 			return next(req)
