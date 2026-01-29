@@ -51,24 +51,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 					),
 				},
 			},
-			"is_published": schema.BoolAttribute{
-				Description: "Whether the workflow is published. Set to true to publish the workflow.",
-				Optional:    true,
-			},
-			"is_temporary": schema.BoolAttribute{
-				Description: "Whether the workflow is temporary (optional).",
-				Optional:    true,
-			},
 			"name": schema.StringAttribute{
 				Description: "The name of the workflow.",
 				Optional:    true,
 			},
 			"parameters": schema.StringAttribute{
 				Description: "The parameters schema of the workflow (JSON, optional).",
-				Optional:    true,
-			},
-			"require_form_confirmation": schema.BoolAttribute{
-				Description: "Whether the workflow requires form confirmation (optional).",
 				Optional:    true,
 			},
 			"type": schema.StringAttribute{
@@ -81,6 +69,21 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						"GUIDANCE",
 					),
 				},
+			},
+			"is_published": schema.BoolAttribute{
+				Description: "Whether to publish the workflow after creation (optional).",
+				Computed:    true,
+				Optional:    true,
+			},
+			"is_temporary": schema.BoolAttribute{
+				Description: "Whether the workflow is temporary (optional).",
+				Computed:    true,
+				Optional:    true,
+			},
+			"require_form_confirmation": schema.BoolAttribute{
+				Description: "Whether the workflow requires form confirmation (optional).",
+				Computed:    true,
+				Optional:    true,
 			},
 			"has_unpublished_changes": schema.BoolAttribute{
 				Description: "Whether there are unpublished changes to the workflow (computed by server).",

@@ -17,6 +17,7 @@ resource "serval_workflow" "example_workflow" {
   content = "content"
   description = "description"
   execution_scope = "WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED"
+  is_published = true
   is_temporary = true
   name = "name"
   parameters = "parameters"
@@ -35,7 +36,7 @@ resource "serval_workflow" "example_workflow" {
 - `description` (String) A description of the workflow.
 - `execution_scope` (String) The execution scope of the workflow.
 Available values: "WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED", "TEAM_PRIVATE", "TEAM_PUBLIC".
-- `is_published` (Boolean) Whether the workflow is published. Set to true to publish the workflow.
+- `is_published` (Boolean) Whether to publish the workflow after creation (optional).
 - `is_temporary` (Boolean) Whether the workflow is temporary (optional).
 - `name` (String) The name of the workflow.
 - `parameters` (String) The parameters schema of the workflow (JSON, optional).

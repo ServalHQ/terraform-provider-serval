@@ -16,6 +16,7 @@ description: |-
 resource "serval_guidance" "example_guidance" {
   content = "content"
   description = "description"
+  is_published = true
   name = "name"
   should_always_use = true
   team_id = "teamId"
@@ -29,7 +30,7 @@ resource "serval_guidance" "example_guidance" {
 
 - `content` (String) The content of the guidance.
 - `description` (String) A description of the guidance.
-- `is_published` (Boolean) Whether the guidance is published. Set to true to publish the guidance.
+- `is_published` (Boolean) Whether to publish the guidance after creation (optional).
 - `name` (String) The name of the guidance.
 - `should_always_use` (Boolean) Whether this guidance should always be used (optional, defaults to false).
 - `team_id` (String) The ID of the team.
