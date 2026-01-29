@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.16.2 (2026-01-29)
+
+Full Changelog: [v0.16.1...v0.16.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.16.1...v0.16.2)
+
+### Bug Fixes
+
+* use Unmarshal instead of UnmarshalComputed in cache loading ([#52](https://github.com/ServalHQ/terraform-provider-serval/issues/52)) ([754aefd](https://github.com/ServalHQ/terraform-provider-serval/commit/754aefd563979966e8067ef4158013937467c4f9))
+
 ## 0.16.1 (2026-01-29)
 
 Full Changelog: [v0.16.0...v0.16.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.16.0...v0.16.1)
