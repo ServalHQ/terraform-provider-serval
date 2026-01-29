@@ -43,20 +43,20 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 						},
 						"allow_self_approval": schema.BoolAttribute{
-							Description: "Whether the step can be approved by the requester themselves.",
+							Description: "(OPTIONAL) Whether the step can be approved by the requester themselves.",
 							Optional:    true,
 						},
 						"custom_workflow_id": schema.StringAttribute{
-							Description: "A workflow ID to execute to determine the approvers for this step (or to auto-approve the step).",
+							Description: "(OPTIONAL) A workflow ID to execute to determine the approvers for this step (or to auto-approve the step).",
 							Optional:    true,
 						},
 						"serval_group_ids": schema.ListAttribute{
-							Description: "The IDs of the Serval groups that can approve the step.",
+							Description: "(OPTIONAL) The IDs of the Serval groups that can approve the step.",
 							Optional:    true,
 							ElementType: types.StringType,
 						},
 						"specific_user_ids": schema.ListAttribute{
-							Description: "The IDs of the specific users that can approve the step.",
+							Description: "(OPTIONAL) The IDs of the specific users that can approve the step.",
 							Optional:    true,
 							ElementType: types.StringType,
 						},

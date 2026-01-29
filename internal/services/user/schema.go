@@ -36,13 +36,14 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional: true,
 			},
 			"role": schema.StringAttribute{
-				Description: `Available values: "USER_ROLE_UNSPECIFIED", "USER_ROLE_ORG_MEMBER", "USER_ROLE_ORG_ADMIN".`,
+				Description: `Available values: "USER_ROLE_UNSPECIFIED", "USER_ROLE_ORG_MEMBER", "USER_ROLE_ORG_ADMIN", "USER_ROLE_ORG_GUEST".`,
 				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
 						"USER_ROLE_UNSPECIFIED",
 						"USER_ROLE_ORG_MEMBER",
 						"USER_ROLE_ORG_ADMIN",
+						"USER_ROLE_ORG_GUEST",
 					),
 				},
 			},

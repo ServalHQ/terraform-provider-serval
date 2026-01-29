@@ -27,17 +27,17 @@ resource "serval_guidance" "example_guidance" {
 
 ### Optional
 
-- `content` (String) The content of the guidance (optional).
+- `content` (String) The content of the guidance.
 - `description` (String) A description of the guidance.
+- `is_published` (Boolean) Whether the guidance is published. Set to true to publish the guidance.
 - `name` (String) The name of the guidance.
 - `should_always_use` (Boolean) Whether this guidance should always be used (optional, defaults to false).
 - `team_id` (String) The ID of the team.
 
 ### Read-Only
 
-- `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the guidance.
+- `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the guidance (computed by server).
 - `id` (String) The ID of the guidance.
-- `is_published` (Boolean) Whether the guidance has been published at least once.
 
 ## Import
 

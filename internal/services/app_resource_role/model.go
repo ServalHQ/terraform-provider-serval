@@ -40,8 +40,8 @@ type AppResourceRoleProvisioningMethodModel struct {
 }
 
 type AppResourceRoleProvisioningMethodCustomWorkflowModel struct {
-	DeprovisionWorkflowID types.String `tfsdk:"deprovision_workflow_id" json:"deprovisionWorkflowId,optional"`
-	ProvisionWorkflowID   types.String `tfsdk:"provision_workflow_id" json:"provisionWorkflowId,optional"`
+	DeprovisionWorkflowID types.String `tfsdk:"deprovision_workflow_id" json:"deprovisionWorkflowId,required"`
+	ProvisionWorkflowID   types.String `tfsdk:"provision_workflow_id" json:"provisionWorkflowId,required"`
 }
 
 type AppResourceRoleProvisioningMethodLinkedRolesModel struct {
@@ -53,6 +53,6 @@ type AppResourceRoleProvisioningMethodManualModel struct {
 }
 
 type AppResourceRoleProvisioningMethodManualAssigneesModel struct {
-	AssigneeID   types.String `tfsdk:"assignee_id" json:"assigneeId,optional"`
-	AssigneeType types.String `tfsdk:"assignee_type" json:"assigneeType,optional"`
+	AssigneeID   types.String `tfsdk:"assignee_id" json:"assigneeId,required"`
+	AssigneeType types.String `tfsdk:"assignee_type" json:"assigneeType,required"`
 }

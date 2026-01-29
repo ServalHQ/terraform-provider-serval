@@ -23,11 +23,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "A description of the resource.",
+				Description: "(OPTIONAL) A description of the resource.",
 				Computed:    true,
 			},
 			"external_id": schema.StringAttribute{
-				Description: "The external ID of the resource.",
+				Description: "(OPTIONAL) The external ID of the resource.",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{

@@ -28,16 +28,16 @@ data "serval_workflow" "example_workflow" {
 ### Read-Only
 
 - `content` (String) The content/code of the workflow.
-- `description` (String) A description of the workflow.
-- `execution_scope` (String) The execution scope of the workflow.
+- `description` (String) (OPTIONAL) A description of the workflow.
+- `execution_scope` (String) (OPTIONAL) The execution scope of the workflow.
 Available values: "WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED", "TEAM_PRIVATE", "TEAM_PUBLIC".
-- `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the workflow.
-- `is_published` (Boolean) Whether the workflow has been published at least once.
-- `is_temporary` (Boolean) Whether the workflow is temporary.
+- `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the workflow (computed by server).
+- `is_published` (Boolean) (OPTIONAL) Whether the workflow is published. Set to true to publish the workflow.
+- `is_temporary` (Boolean) (OPTIONAL) Whether the workflow is temporary.
 - `name` (String) The name of the workflow.
-- `parameters` (String) The parameters schema of the workflow (JSON).
-- `require_form_confirmation` (Boolean) Whether the workflow requires form confirmation.
-- `tag_ids` (List of String) IDs of tags associated with this workflow.
-- `team_id` (String) The ID of the team that the workflow belongs to.
+- `parameters` (String) (OPTIONAL) The parameters schema of the workflow (JSON).
+- `require_form_confirmation` (Boolean) (OPTIONAL) Whether the workflow requires form confirmation.
+- `tag_ids` (List of String) (OPTIONAL) IDs of tags associated with this workflow.
+- `team_id` (String) (IMMUTABLE) The ID of the team that the workflow belongs to.
 - `type` (String) The type of the workflow.
 Available values: "WORKFLOW_TYPE_UNSPECIFIED", "EXECUTABLE", "GUIDANCE".

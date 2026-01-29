@@ -33,7 +33,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"content": schema.StringAttribute{
-				Description: "The content/code of the workflow (optional).",
+				Description: "The content/code of the workflow.",
 				Optional:    true,
 			},
 			"description": schema.StringAttribute{
@@ -50,6 +50,10 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						"TEAM_PUBLIC",
 					),
 				},
+			},
+			"is_published": schema.BoolAttribute{
+				Description: "Whether the workflow is published. Set to true to publish the workflow.",
+				Optional:    true,
 			},
 			"is_temporary": schema.BoolAttribute{
 				Description: "Whether the workflow is temporary (optional).",
@@ -79,21 +83,20 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"has_unpublished_changes": schema.BoolAttribute{
-				Description:   "Whether there are unpublished changes to the workflow.",
-				Computed:      true,
+				Description: "Whether there are unpublished changes to the workflow (computed by server).",
+				Computed:    true,
+			},
+			"tag_ids": schema.ListAttribute{
+				Description: "(OPTIONAL) IDs of tags associated with this workflow.",
+				Computed:    true,
+				CustomType:  customfield.NewListType[types.String](ctx),
+				ElementType: types.StringType,
 				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 			},
 			"is_published": schema.BoolAttribute{
 				Description:   "Whether the workflow has been published at least once.",
 				Computed:      true,
 				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
-			},
-			"tag_ids": schema.ListAttribute{
-				Description:   "IDs of tags associated with this workflow.",
-				Computed:      true,
-				CustomType:    customfield.NewListType[types.String](ctx),
-				ElementType:   types.StringType,
-				PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()},
 			},
 		},
 	}

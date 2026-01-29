@@ -28,11 +28,15 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"content": schema.StringAttribute{
-				Description: "The content of the guidance (optional).",
+				Description: "The content of the guidance.",
 				Optional:    true,
 			},
 			"description": schema.StringAttribute{
 				Description: "A description of the guidance.",
+				Optional:    true,
+			},
+			"is_published": schema.BoolAttribute{
+				Description: "Whether the guidance is published. Set to true to publish the guidance.",
 				Optional:    true,
 			},
 			"name": schema.StringAttribute{
@@ -44,8 +48,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"has_unpublished_changes": schema.BoolAttribute{
-				Description:   "Whether there are unpublished changes to the guidance.",
-				Computed:      true,
+				Description: "Whether there are unpublished changes to the guidance (computed by server).",
+				Computed:    true,
 				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 			},
 			"is_published": schema.BoolAttribute{

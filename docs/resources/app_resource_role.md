@@ -60,7 +60,7 @@ Optional:
 <a id="nestedatt--provisioning_method--custom_workflow"></a>
 ### Nested Schema for `provisioning_method.custom_workflow`
 
-Optional:
+Required:
 
 - `deprovision_workflow_id` (String) The workflow ID to deprovision access.
 - `provision_workflow_id` (String) The workflow ID to provision access.
@@ -71,7 +71,7 @@ Optional:
 
 Optional:
 
-- `linked_role_ids` (List of String) The IDs of prerequisite roles.
+- `linked_role_ids` (List of String) (OPTIONAL) The IDs of prerequisite roles.
 
 
 <a id="nestedatt--provisioning_method--manual"></a>
@@ -79,12 +79,12 @@ Optional:
 
 Optional:
 
-- `assignees` (Attributes List) Users and groups that should be assigned/notified for manual provisioning. (see [below for nested schema](#nestedatt--provisioning_method--manual--assignees))
+- `assignees` (Attributes List) (OPTIONAL) Users and groups that should be assigned/notified for manual provisioning. (see [below for nested schema](#nestedatt--provisioning_method--manual--assignees))
 
 <a id="nestedatt--provisioning_method--manual--assignees"></a>
 ### Nested Schema for `provisioning_method.manual.assignees`
 
-Optional:
+Required:
 
 - `assignee_id` (String) The ID of the user or group.
 - `assignee_type` (String) The type of assignee.

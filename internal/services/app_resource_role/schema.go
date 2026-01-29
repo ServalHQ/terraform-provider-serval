@@ -69,11 +69,11 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Attributes: map[string]schema.Attribute{
 							"deprovision_workflow_id": schema.StringAttribute{
 								Description: "The workflow ID to deprovision access.",
-								Optional:    true,
+								Required:    true,
 							},
 							"provision_workflow_id": schema.StringAttribute{
 								Description: "The workflow ID to provision access.",
-								Optional:    true,
+								Required:    true,
 							},
 						},
 					},
@@ -82,7 +82,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"linked_role_ids": schema.ListAttribute{
-								Description: "The IDs of prerequisite roles.",
+								Description: "(OPTIONAL) The IDs of prerequisite roles.",
 								Optional:    true,
 								ElementType: types.StringType,
 							},
@@ -93,17 +93,17 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"assignees": schema.ListNestedAttribute{
-								Description: "Users and groups that should be assigned/notified for manual provisioning.",
+								Description: "(OPTIONAL) Users and groups that should be assigned/notified for manual provisioning.",
 								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"assignee_id": schema.StringAttribute{
 											Description: "The ID of the user or group.",
-											Optional:    true,
+											Required:    true,
 										},
 										"assignee_type": schema.StringAttribute{
 											Description: "The type of assignee.\nAvailable values: \"MANUAL_PROVISIONING_ASSIGNEE_TYPE_UNSPECIFIED\", \"MANUAL_PROVISIONING_ASSIGNEE_TYPE_USER\", \"MANUAL_PROVISIONING_ASSIGNEE_TYPE_GROUP\".",
-											Optional:    true,
+											Required:    true,
 											Validators: []validator.String{
 												stringvalidator.OneOfCaseInsensitive(
 													"MANUAL_PROVISIONING_ASSIGNEE_TYPE_UNSPECIFIED",
