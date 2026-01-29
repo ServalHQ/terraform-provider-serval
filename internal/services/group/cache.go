@@ -65,7 +65,7 @@ func fetchAllGroups(ctx context.Context, client *serval.Client) (map[string]*Gro
 			Data          []GroupModel `json:"data"`
 			NextPageToken *string      `json:"nextPageToken,omitempty"`
 		}
-		if err := apijson.UnmarshalComputed(bytes, &page); err != nil {
+		if err := apijson.Unmarshal(bytes, &page); err != nil {
 			return nil, err
 		}
 

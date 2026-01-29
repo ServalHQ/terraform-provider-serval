@@ -70,7 +70,7 @@ func fetchAllWorkflows(
 			Data          []WorkflowModel `json:"data"`
 			NextPageToken *string         `json:"nextPageToken,omitempty"`
 		}
-		if err := apijson.UnmarshalComputed(bytes, &page); err != nil {
+		if err := apijson.Unmarshal(bytes, &page); err != nil {
 			return nil, err
 		}
 

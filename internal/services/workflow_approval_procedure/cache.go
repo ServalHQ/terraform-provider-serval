@@ -72,7 +72,7 @@ func fetchAllForWorkflow(
 	var page struct {
 		Data []WorkflowApprovalProcedureModel `json:"data"`
 	}
-	if err := apijson.UnmarshalComputed(bytes, &page); err != nil {
+	if err := apijson.Unmarshal(bytes, &page); err != nil {
 		return nil, err
 	}
 
