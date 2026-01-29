@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.16.0 (2026-01-29)
+
+Full Changelog: [v0.15.2...v0.16.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.15.2...v0.16.0)
+
+### Features
+
+* Add cache fast path to skip API lookups when item already cached ([#49](https://github.com/ServalHQ/terraform-provider-serval/issues/49)) ([9fb98b6](https://github.com/ServalHQ/terraform-provider-serval/commit/9fb98b60a5acb402799c794c820038604f1eacf3))
+
+
+### Bug Fixes
+
+* Disable response body logging and upgrade to serval-go v0.10.0 ([#47](https://github.com/ServalHQ/terraform-provider-serval/issues/47)) ([afe02ec](https://github.com/ServalHQ/terraform-provider-serval/commit/afe02ec9896a985bc4ceb8709631d3dfe6b2c9bf))
+
 ## 0.15.2 (2026-01-24)
 
 Full Changelog: [v0.15.1...v0.15.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.15.1...v0.15.2)
