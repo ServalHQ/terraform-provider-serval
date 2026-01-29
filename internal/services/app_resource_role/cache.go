@@ -38,6 +38,12 @@ func GetCached(ctx context.Context, client *serval.Client, id string, resourceID
 		return nil, false, nil // Cache not initialized, caller should fall back to API
 	}
 
+	// FAST PATH: Check if already in any loaded cache before doing expensive API lookups
+	if item, teamID := ByTeamCache.FindInLoadedCaches(id); item != nil {
+		tflog.Debug(ctx, "[AppResourceRole] GetCached FAST PATH hit", map[string]interface{}{"id": id, "teamID": teamID})
+		return item, true, nil
+	}
+
 	// Step 1: Get the app_instance_id for this resource
 	appInstanceID, err := getAppInstanceIDForResource(ctx, client, resourceID)
 	if err != nil {
