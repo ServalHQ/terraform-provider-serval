@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -89,19 +88,14 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Description: "Whether there are unpublished changes to the workflow (computed by server).",
 				Computed:    true,
 			},
-			"tag_ids": schema.ListAttribute{
-				Description: "(OPTIONAL) IDs of tags associated with this workflow.",
-				Computed:    true,
-				CustomType:  customfield.NewListType[types.String](ctx),
-				ElementType: types.StringType,
-				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
-			},
-			"is_published": schema.BoolAttribute{
-				Description:   "Whether the workflow has been published at least once.",
-				Computed:      true,
-				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
-			},
+		"tag_ids": schema.ListAttribute{
+			Description: "(OPTIONAL) IDs of tags associated with this workflow.",
+			Computed:    true,
+			CustomType:  customfield.NewListType[types.String](ctx),
+			ElementType: types.StringType,
+			PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()},
 		},
+	},
 	}
 }
 

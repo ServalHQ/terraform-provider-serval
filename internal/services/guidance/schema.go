@@ -49,17 +49,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				Optional:    true,
 			},
-			"has_unpublished_changes": schema.BoolAttribute{
-				Description: "Whether there are unpublished changes to the guidance (computed by server).",
-				Computed:    true,
-				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
-			},
-			"is_published": schema.BoolAttribute{
-				Description:   "Whether the guidance has been published at least once.",
-				Computed:      true,
-				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
-			},
+		"has_unpublished_changes": schema.BoolAttribute{
+			Description: "Whether there are unpublished changes to the guidance (computed by server).",
+			Computed:    true,
+			PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 		},
+	},
 	}
 }
 
