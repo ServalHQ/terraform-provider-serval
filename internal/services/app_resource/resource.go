@@ -15,6 +15,7 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -148,7 +149,15 @@ func (r *AppResourceResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	// Try per-team cache first for better performance with large numbers of resources
+	// FAST PATH: Try FindInLoadedCaches first - works even without app_instance_id
+	// This is critical because during plan after import, app_instance_id may be null
+	if cached, found := FindInLoadedCachesModel(data.ID.ValueString()); found {
+		tflog.Debug(ctx, "[AppResource] Read FAST PATH cache hit", map[string]interface{}{"id": data.ID.ValueString()})
+		resp.Diagnostics.Append(resp.State.Set(ctx, cached)...)
+		return
+	}
+
+	// Try per-team cache with full lookup if we have app_instance_id
 	if !data.AppInstanceID.IsNull() && !data.AppInstanceID.IsUnknown() {
 		if cached, found, err := GetCached(ctx, r.client, data.ID.ValueString(), data.AppInstanceID.ValueString()); err != nil {
 			resp.Diagnostics.AddError("failed to load app resources cache", err.Error())
@@ -160,6 +169,7 @@ func (r *AppResourceResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	// Fall back to individual API call if cache miss (e.g., newly created resource)
+	tflog.Debug(ctx, "[AppResource] Read cache miss, falling back to API", map[string]interface{}{"id": data.ID.ValueString()})
 	res := new(http.Response)
 	env := AppResourceDataEnvelope{*data}
 	_, err := r.client.AppResources.Get(

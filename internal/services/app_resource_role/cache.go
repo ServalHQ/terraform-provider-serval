@@ -30,6 +30,16 @@ func InitCache() {
 	importLoadLock = cache.NewImportCache[AppResourceRoleModel]()
 }
 
+// FindInLoadedCachesModel returns the model if found in any loaded cache.
+// This is useful for Read operations where resource_id may not be available.
+func FindInLoadedCachesModel(id string) (*AppResourceRoleModel, bool) {
+	if ByTeamCache == nil {
+		return nil, false
+	}
+	item, _ := ByTeamCache.FindInLoadedCaches(id)
+	return item, item != nil
+}
+
 // GetCached retrieves an app resource role from the per-team cache, loading via List API if needed.
 // Returns (model, found, error). If the cache fails to load, error is non-nil.
 // If the role doesn't exist, found is false.
