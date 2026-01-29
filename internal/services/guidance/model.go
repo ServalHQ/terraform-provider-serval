@@ -16,9 +16,9 @@ type GuidanceModel struct {
 	TeamID                types.String `tfsdk:"team_id" json:"teamId,optional"`
 	Content               types.String `tfsdk:"content" json:"content,optional"`
 	Description           types.String `tfsdk:"description" json:"description,optional"`
+	IsPublished           types.Bool   `tfsdk:"is_published" json:"isPublished,optional"`
 	Name                  types.String `tfsdk:"name" json:"name,optional"`
-	IsPublished           types.Bool   `tfsdk:"is_published" json:"isPublished,computed_optional"`
-	ShouldAlwaysUse       types.Bool   `tfsdk:"should_always_use" json:"shouldAlwaysUse,computed_optional"`
+	ShouldAlwaysUse       types.Bool   `tfsdk:"should_always_use" json:"shouldAlwaysUse,optional"`
 	HasUnpublishedChanges types.Bool   `tfsdk:"has_unpublished_changes" json:"hasUnpublishedChanges,computed"`
 }
 

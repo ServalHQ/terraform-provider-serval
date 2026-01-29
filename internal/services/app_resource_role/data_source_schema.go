@@ -48,7 +48,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"resource_id": schema.StringAttribute{
-				Description: "The ID of the resource that the role belongs to.",
+				Description: "(IMMUTABLE) The ID of the resource that the role belongs to.",
 				Computed:    true,
 			},
 			"provisioning_method": schema.SingleNestedAttribute{

@@ -19,7 +19,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"app_instance_id": schema.StringAttribute{
-				Description: "The ID of the app instance that the resource belongs to.",
+				Description: "(IMMUTABLE) The ID of the app instance that the resource belongs to.",
 				Computed:    true,
 			},
 			"description": schema.StringAttribute{

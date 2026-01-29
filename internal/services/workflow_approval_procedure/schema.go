@@ -44,7 +44,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						},
 						"allow_self_approval": schema.BoolAttribute{
 							Description: "(OPTIONAL) Whether the step can be approved by the requester themselves.",
-							Computed:    true,
 							Optional:    true,
 						},
 						"custom_workflow_id": schema.StringAttribute{
