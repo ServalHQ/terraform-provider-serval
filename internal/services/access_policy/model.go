@@ -13,12 +13,12 @@ type AccessPolicyDataEnvelope struct {
 
 type AccessPolicyModel struct {
 	ID                           types.String `tfsdk:"id" json:"id,computed"`
-	TeamID                       types.String `tfsdk:"team_id" json:"teamId,optional,no_refresh"`
+	TeamID                       types.String `tfsdk:"team_id" json:"teamId,optional"`
 	Description                  types.String `tfsdk:"description" json:"description,optional"`
 	MaxAccessMinutes             types.Int64  `tfsdk:"max_access_minutes" json:"maxAccessMinutes,optional"`
 	Name                         types.String `tfsdk:"name" json:"name,optional"`
 	RecommendedAccessMinutes     types.Int64  `tfsdk:"recommended_access_minutes" json:"recommendedAccessMinutes,optional"`
-	RequireBusinessJustification types.Bool   `tfsdk:"require_business_justification" json:"requireBusinessJustification,optional"`
+	RequireBusinessJustification types.Bool   `tfsdk:"require_business_justification" json:"requireBusinessJustification,computed_optional"`
 }
 
 func (m AccessPolicyModel) MarshalJSON() (data []byte, err error) {

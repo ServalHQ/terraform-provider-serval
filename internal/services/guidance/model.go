@@ -17,9 +17,9 @@ type GuidanceModel struct {
 	Content               types.String `tfsdk:"content" json:"content,optional"`
 	Description           types.String `tfsdk:"description" json:"description,optional"`
 	Name                  types.String `tfsdk:"name" json:"name,optional"`
-	ShouldAlwaysUse       types.Bool   `tfsdk:"should_always_use" json:"shouldAlwaysUse,optional"`
+	IsPublished           types.Bool   `tfsdk:"is_published" json:"isPublished,computed_optional"`
+	ShouldAlwaysUse       types.Bool   `tfsdk:"should_always_use" json:"shouldAlwaysUse,computed_optional"`
 	HasUnpublishedChanges types.Bool   `tfsdk:"has_unpublished_changes" json:"hasUnpublishedChanges,computed"`
-	IsPublished           types.Bool   `tfsdk:"is_published" json:"isPublished,computed"`
 }
 
 func (m GuidanceModel) MarshalJSON() (data []byte, err error) {

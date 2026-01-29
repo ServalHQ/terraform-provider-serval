@@ -23,15 +23,15 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "A description of the guidance.",
+				Description: "(OPTIONAL) A description of the guidance.",
 				Computed:    true,
 			},
 			"has_unpublished_changes": schema.BoolAttribute{
-				Description: "Whether there are unpublished changes to the guidance.",
+				Description: "Whether there are unpublished changes to the guidance (computed by server).",
 				Computed:    true,
 			},
 			"is_published": schema.BoolAttribute{
-				Description: "Whether the guidance has been published at least once.",
+				Description: "(OPTIONAL) Whether the guidance is published. Set to true to publish the guidance.",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
@@ -39,11 +39,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"should_always_use": schema.BoolAttribute{
-				Description: "Whether this guidance should always be used (skipping LLM selection).",
+				Description: "(OPTIONAL) Whether this guidance should always be used (skipping LLM selection).",
 				Computed:    true,
 			},
 			"team_id": schema.StringAttribute{
-				Description: "The ID of the team that the guidance belongs to.",
+				Description: "(IMMUTABLE) The ID of the team that the guidance belongs to.",
 				Computed:    true,
 			},
 		},

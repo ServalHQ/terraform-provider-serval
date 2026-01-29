@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -33,7 +32,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"content": schema.StringAttribute{
-				Description: "The content/code of the workflow (optional).",
+				Description: "The content/code of the workflow.",
 				Optional:    true,
 			},
 			"description": schema.StringAttribute{
@@ -51,20 +50,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 					),
 				},
 			},
-			"is_temporary": schema.BoolAttribute{
-				Description: "Whether the workflow is temporary (optional).",
-				Optional:    true,
-			},
 			"name": schema.StringAttribute{
 				Description: "The name of the workflow.",
 				Optional:    true,
 			},
 			"parameters": schema.StringAttribute{
 				Description: "The parameters schema of the workflow (JSON, optional).",
-				Optional:    true,
-			},
-			"require_form_confirmation": schema.BoolAttribute{
-				Description: "Whether the workflow requires form confirmation (optional).",
 				Optional:    true,
 			},
 			"type": schema.StringAttribute{
@@ -78,24 +69,33 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 					),
 				},
 			},
-			"has_unpublished_changes": schema.BoolAttribute{
-				Description:   "Whether there are unpublished changes to the workflow.",
-				Computed:      true,
-				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
-			},
 			"is_published": schema.BoolAttribute{
-				Description:   "Whether the workflow has been published at least once.",
-				Computed:      true,
-				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
+				Description: "Whether to publish the workflow after creation (optional).",
+				Computed:    true,
+				Optional:    true,
 			},
-			"tag_ids": schema.ListAttribute{
-				Description:   "IDs of tags associated with this workflow.",
-				Computed:      true,
-				CustomType:    customfield.NewListType[types.String](ctx),
-				ElementType:   types.StringType,
-				PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()},
+			"is_temporary": schema.BoolAttribute{
+				Description: "Whether the workflow is temporary (optional).",
+				Computed:    true,
+				Optional:    true,
 			},
+			"require_form_confirmation": schema.BoolAttribute{
+				Description: "Whether the workflow requires form confirmation (optional).",
+				Computed:    true,
+				Optional:    true,
+			},
+			"has_unpublished_changes": schema.BoolAttribute{
+				Description: "Whether there are unpublished changes to the workflow (computed by server).",
+				Computed:    true,
+			},
+		"tag_ids": schema.ListAttribute{
+			Description: "(OPTIONAL) IDs of tags associated with this workflow.",
+			Computed:    true,
+			CustomType:  customfield.NewListType[types.String](ctx),
+			ElementType: types.StringType,
+			PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()},
 		},
+	},
 	}
 }
 

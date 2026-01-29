@@ -28,7 +28,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"content": schema.StringAttribute{
-				Description: "The content of the guidance (optional).",
+				Description: "The content of the guidance.",
 				Optional:    true,
 			},
 			"description": schema.StringAttribute{
@@ -39,21 +39,22 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Description: "The name of the guidance.",
 				Optional:    true,
 			},
-			"should_always_use": schema.BoolAttribute{
-				Description: "Whether this guidance should always be used (optional, defaults to false).",
+			"is_published": schema.BoolAttribute{
+				Description: "Whether to publish the guidance after creation (optional).",
+				Computed:    true,
 				Optional:    true,
 			},
-			"has_unpublished_changes": schema.BoolAttribute{
-				Description:   "Whether there are unpublished changes to the guidance.",
-				Computed:      true,
-				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
+			"should_always_use": schema.BoolAttribute{
+				Description: "Whether this guidance should always be used (optional, defaults to false).",
+				Computed:    true,
+				Optional:    true,
 			},
-			"is_published": schema.BoolAttribute{
-				Description:   "Whether the guidance has been published at least once.",
-				Computed:      true,
-				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
-			},
+		"has_unpublished_changes": schema.BoolAttribute{
+			Description: "Whether there are unpublished changes to the guidance (computed by server).",
+			Computed:    true,
+			PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 		},
+	},
 	}
 }
 

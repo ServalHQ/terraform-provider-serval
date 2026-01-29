@@ -44,6 +44,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"require_business_justification": schema.BoolAttribute{
 				Description: "Whether a business justification is required when requesting access (optional).",
+				Computed:    true,
 				Optional:    true,
 			},
 		},

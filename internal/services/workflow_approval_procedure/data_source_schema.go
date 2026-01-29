@@ -25,7 +25,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"steps": schema.ListNestedAttribute{
-				Description: "The steps in the approval procedure.",
+				Description: "(OPTIONAL) The steps in the approval procedure.",
 				Computed:    true,
 				CustomType:  customfield.NewNestedObjectListType[WorkflowApprovalProcedureStepsDataSourceModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
@@ -35,21 +35,21 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:    true,
 						},
 						"allow_self_approval": schema.BoolAttribute{
-							Description: "Whether the step can be approved by the requester themselves.",
+							Description: "(OPTIONAL) Whether the step can be approved by the requester themselves.",
 							Computed:    true,
 						},
 						"custom_workflow_id": schema.StringAttribute{
-							Description: "A workflow ID to execute to determine the approvers for this step (or to auto-approve the step).",
+							Description: "(OPTIONAL) A workflow ID to execute to determine the approvers for this step (or to auto-approve the step).",
 							Computed:    true,
 						},
 						"serval_group_ids": schema.ListAttribute{
-							Description: "The IDs of the Serval groups that can approve the step.",
+							Description: "(OPTIONAL) The IDs of the Serval groups that can approve the step.",
 							Computed:    true,
 							CustomType:  customfield.NewListType[types.String](ctx),
 							ElementType: types.StringType,
 						},
 						"specific_user_ids": schema.ListAttribute{
-							Description: "The IDs of the specific users that can approve the step.",
+							Description: "(OPTIONAL) The IDs of the specific users that can approve the step.",
 							Computed:    true,
 							CustomType:  customfield.NewListType[types.String](ctx),
 							ElementType: types.StringType,

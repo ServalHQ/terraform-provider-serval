@@ -17,4 +17,5 @@ type AccessPolicyDataSourceModel struct {
 	Name                         types.String `tfsdk:"name" json:"name,computed"`
 	RecommendedAccessMinutes     types.Int64  `tfsdk:"recommended_access_minutes" json:"recommendedAccessMinutes,computed"`
 	RequireBusinessJustification types.Bool   `tfsdk:"require_business_justification" json:"requireBusinessJustification,computed"`
+	TeamID                       types.String `tfsdk:"team_id" json:"teamId,computed"`
 }
