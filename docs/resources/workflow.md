@@ -31,10 +31,11 @@ resource "serval_workflow" "example_workflow" {
 
 ### Optional
 
-- `content` (String) The content/code of the workflow (optional).
+- `content` (String) The content/code of the workflow.
 - `description` (String) A description of the workflow.
 - `execution_scope` (String) The execution scope of the workflow.
 Available values: "WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED", "TEAM_PRIVATE", "TEAM_PUBLIC".
+- `is_published` (Boolean) Whether the workflow is published. Set to true to publish the workflow.
 - `is_temporary` (Boolean) Whether the workflow is temporary (optional).
 - `name` (String) The name of the workflow.
 - `parameters` (String) The parameters schema of the workflow (JSON, optional).
@@ -45,10 +46,9 @@ Available values: "WORKFLOW_TYPE_UNSPECIFIED", "EXECUTABLE", "GUIDANCE".
 
 ### Read-Only
 
-- `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the workflow.
+- `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the workflow (computed by server).
 - `id` (String) The ID of the workflow.
-- `is_published` (Boolean) Whether the workflow has been published at least once.
-- `tag_ids` (List of String) IDs of tags associated with this workflow.
+- `tag_ids` (List of String) (OPTIONAL) IDs of tags associated with this workflow.
 
 ## Import
 

@@ -24,11 +24,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"access_policy_id": schema.StringAttribute{
-				Description: "The default access policy for the role.",
+				Description: "(OPTIONAL) The default access policy for the role.",
 				Computed:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "A description of the role.",
+				Description: "(OPTIONAL) A description of the role.",
 				Computed:    true,
 			},
 			"external_data": schema.StringAttribute{
@@ -36,7 +36,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"external_id": schema.StringAttribute{
-				Description: "The external ID of the role in the external system (optional).",
+				Description: "(OPTIONAL) The external ID of the role in the external system (optional).",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
@@ -44,7 +44,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"requests_enabled": schema.BoolAttribute{
-				Description: "Whether requests are enabled for the role.",
+				Description: "(OPTIONAL) Whether requests are enabled for the role.",
 				Computed:    true,
 			},
 			"resource_id": schema.StringAttribute{
@@ -82,7 +82,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						CustomType:  customfield.NewNestedObjectType[AppResourceRoleProvisioningMethodLinkedRolesDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"linked_role_ids": schema.ListAttribute{
-								Description: "The IDs of prerequisite roles.",
+								Description: "(OPTIONAL) The IDs of prerequisite roles.",
 								Computed:    true,
 								CustomType:  customfield.NewListType[types.String](ctx),
 								ElementType: types.StringType,
@@ -95,7 +95,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						CustomType:  customfield.NewNestedObjectType[AppResourceRoleProvisioningMethodManualDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"assignees": schema.ListNestedAttribute{
-								Description: "Users and groups that should be assigned/notified for manual provisioning.",
+								Description: "(OPTIONAL) Users and groups that should be assigned/notified for manual provisioning.",
 								Computed:    true,
 								CustomType:  customfield.NewNestedObjectListType[AppResourceRoleProvisioningMethodManualAssigneesDataSourceModel](ctx),
 								NestedObject: schema.NestedAttributeObject{

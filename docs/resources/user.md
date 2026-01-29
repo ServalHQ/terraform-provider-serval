@@ -30,7 +30,7 @@ resource "serval_user" "example_user" {
 - `email` (String)
 - `first_name` (String)
 - `last_name` (String)
-- `role` (String) Available values: "USER_ROLE_UNSPECIFIED", "USER_ROLE_ORG_MEMBER", "USER_ROLE_ORG_ADMIN".
+- `role` (String) Available values: "USER_ROLE_UNSPECIFIED", "USER_ROLE_ORG_MEMBER", "USER_ROLE_ORG_ADMIN", "USER_ROLE_ORG_GUEST".
 
 ### Read-Only
 

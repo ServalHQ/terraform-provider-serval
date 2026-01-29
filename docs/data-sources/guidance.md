@@ -28,9 +28,9 @@ data "serval_guidance" "example_guidance" {
 ### Read-Only
 
 - `content` (String) The content of the guidance.
-- `description` (String) A description of the guidance.
-- `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the guidance.
-- `is_published` (Boolean) Whether the guidance has been published at least once.
+- `description` (String) (OPTIONAL) A description of the guidance.
+- `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the guidance (computed by server).
+- `is_published` (Boolean) (OPTIONAL) Whether the guidance is published. Set to true to publish the guidance.
 - `name` (String) The name of the guidance.
-- `should_always_use` (Boolean) Whether this guidance should always be used (skipping LLM selection).
-- `team_id` (String) The ID of the team that the guidance belongs to.
+- `should_always_use` (Boolean) (OPTIONAL) Whether this guidance should always be used (skipping LLM selection).
+- `team_id` (String) (IMMUTABLE) The ID of the team that the guidance belongs to.
