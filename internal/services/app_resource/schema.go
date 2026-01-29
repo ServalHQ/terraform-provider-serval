@@ -23,7 +23,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"app_instance_id": schema.StringAttribute{
 				Description:   "The ID of the app instance.",
-				Optional:      true,
+				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"description": schema.StringAttribute{
