@@ -27,11 +27,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "(OPTIONAL) A description of the workflow.",
+				Description: "A description of the workflow.",
 				Computed:    true,
 			},
 			"execution_scope": schema.StringAttribute{
-				Description: "(OPTIONAL) The execution scope of the workflow.\nAvailable values: \"WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED\", \"TEAM_PRIVATE\", \"TEAM_PUBLIC\".",
+				Description: "The execution scope of the workflow.\nAvailable values: \"WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED\", \"TEAM_PRIVATE\", \"TEAM_PUBLIC\".",
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -46,11 +46,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"is_published": schema.BoolAttribute{
-				Description: "(OPTIONAL) Whether the workflow is published. Set to true to publish the workflow.",
+				Description: "Whether the workflow is published. Set to true to publish the workflow.",
 				Computed:    true,
 			},
 			"is_temporary": schema.BoolAttribute{
-				Description: "(OPTIONAL) Whether the workflow is temporary.",
+				Description: "Whether the workflow is temporary.",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
@@ -58,15 +58,15 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"parameters": schema.StringAttribute{
-				Description: "(OPTIONAL) The parameters schema of the workflow (JSON).",
+				Description: "The parameters schema of the workflow (JSON).",
 				Computed:    true,
 			},
 			"require_form_confirmation": schema.BoolAttribute{
-				Description: "(OPTIONAL) Whether the workflow requires form confirmation.",
+				Description: "Whether the workflow requires form confirmation.",
 				Computed:    true,
 			},
 			"team_id": schema.StringAttribute{
-				Description: "(IMMUTABLE) The ID of the team that the workflow belongs to.",
+				Description: "The ID of the team that the workflow belongs to.",
 				Computed:    true,
 			},
 			"type": schema.StringAttribute{
@@ -81,7 +81,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"tag_ids": schema.ListAttribute{
-				Description: "(OPTIONAL) IDs of tags associated with this workflow.",
+				Description: "IDs of tags associated with this workflow.",
 				Computed:    true,
 				CustomType:  customfield.NewListType[types.String](ctx),
 				ElementType: types.StringType,

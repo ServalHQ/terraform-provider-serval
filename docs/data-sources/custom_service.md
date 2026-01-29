@@ -27,6 +27,6 @@ data "serval_custom_service" "example_custom_service" {
 
 ### Read-Only
 
-- `domain` (String) (OPTIONAL) The domain for branding/logo lookup (e.g., "hr.company.com").
+- `domain` (String) The domain for branding/logo lookup (e.g., "hr.company.com").
 - `name` (String) The name of the custom service (e.g., "Internal HR System").
-- `team_id` (String) (IMMUTABLE) The ID of the team that the custom service belongs to.
+- `team_id` (String) The ID of the team that the custom service belongs to.

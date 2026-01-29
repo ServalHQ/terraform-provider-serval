@@ -14,7 +14,7 @@ type GroupDataEnvelope struct {
 
 type GroupModel struct {
 	ID             types.String      `tfsdk:"id" json:"id,computed"`
-	Name           types.String      `tfsdk:"name" json:"name,optional"`
+	Name           types.String      `tfsdk:"name" json:"name,required"`
 	UserIDs        *[]types.String   `tfsdk:"user_ids" json:"userIds,optional"`
 	CreatedAt      timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
 	DeletedAt      timetypes.RFC3339 `tfsdk:"deleted_at" json:"deletedAt,computed" format:"date-time"`

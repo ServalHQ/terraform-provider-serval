@@ -27,12 +27,27 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"team_id": schema.StringAttribute{
 				Description:   "The ID of the team.",
-				Optional:      true,
+				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"content": schema.StringAttribute{
 				Description: "The content/code of the workflow.",
-				Optional:    true,
+				Required:    true,
+			},
+			"name": schema.StringAttribute{
+				Description: "The name of the workflow.",
+				Required:    true,
+			},
+			"type": schema.StringAttribute{
+				Description: "The type of the workflow.\nAvailable values: \"WORKFLOW_TYPE_UNSPECIFIED\", \"EXECUTABLE\", \"GUIDANCE\".",
+				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(
+						"WORKFLOW_TYPE_UNSPECIFIED",
+						"EXECUTABLE",
+						"GUIDANCE",
+					),
+				},
 			},
 			"description": schema.StringAttribute{
 				Description: "A description of the workflow.",
@@ -49,24 +64,9 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 					),
 				},
 			},
-			"name": schema.StringAttribute{
-				Description: "The name of the workflow.",
-				Optional:    true,
-			},
 			"parameters": schema.StringAttribute{
 				Description: "The parameters schema of the workflow (JSON, optional).",
 				Optional:    true,
-			},
-			"type": schema.StringAttribute{
-				Description: "The type of the workflow.\nAvailable values: \"WORKFLOW_TYPE_UNSPECIFIED\", \"EXECUTABLE\", \"GUIDANCE\".",
-				Optional:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOfCaseInsensitive(
-						"WORKFLOW_TYPE_UNSPECIFIED",
-						"EXECUTABLE",
-						"GUIDANCE",
-					),
-				},
 			},
 			"is_published": schema.BoolAttribute{
 				Description: "Whether to publish the workflow after creation (optional).",
@@ -88,7 +88,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"tag_ids": schema.ListAttribute{
-				Description: "(OPTIONAL) IDs of tags associated with this workflow.",
+				Description: "IDs of tags associated with this workflow.",
 				Computed:    true,
 				CustomType:  customfield.NewListType[types.String](ctx),
 				ElementType: types.StringType,

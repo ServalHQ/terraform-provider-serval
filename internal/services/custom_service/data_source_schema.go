@@ -19,7 +19,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"domain": schema.StringAttribute{
-				Description: `(OPTIONAL) The domain for branding/logo lookup (e.g., "hr.company.com").`,
+				Description: `The domain for branding/logo lookup (e.g., "hr.company.com").`,
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
@@ -27,7 +27,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"team_id": schema.StringAttribute{
-				Description: "(IMMUTABLE) The ID of the team that the custom service belongs to.",
+				Description: "The ID of the team that the custom service belongs to.",
 				Computed:    true,
 			},
 		},

@@ -23,10 +23,10 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
-			"avatar_url": schema.StringAttribute{
-				Optional: true,
-			},
 			"email": schema.StringAttribute{
+				Required: true,
+			},
+			"avatar_url": schema.StringAttribute{
 				Optional: true,
 			},
 			"first_name": schema.StringAttribute{

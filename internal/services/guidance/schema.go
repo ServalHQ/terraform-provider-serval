@@ -23,19 +23,19 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"team_id": schema.StringAttribute{
 				Description:   "The ID of the team.",
-				Optional:      true,
+				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"content": schema.StringAttribute{
 				Description: "The content of the guidance.",
-				Optional:    true,
-			},
-			"description": schema.StringAttribute{
-				Description: "A description of the guidance.",
-				Optional:    true,
+				Required:    true,
 			},
 			"name": schema.StringAttribute{
 				Description: "The name of the guidance.",
+				Required:    true,
+			},
+			"description": schema.StringAttribute{
+				Description: "A description of the guidance.",
 				Optional:    true,
 			},
 			"is_published": schema.BoolAttribute{

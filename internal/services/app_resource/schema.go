@@ -26,20 +26,20 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
+			"name": schema.StringAttribute{
+				Description: "The name of the resource.",
+				Required:    true,
+			},
+			"resource_type": schema.StringAttribute{
+				Description: "The type of the resource.",
+				Required:    true,
+			},
 			"description": schema.StringAttribute{
 				Description: "A description of the resource.",
 				Optional:    true,
 			},
 			"external_id": schema.StringAttribute{
 				Description: "The external ID of the resource (optional).",
-				Optional:    true,
-			},
-			"name": schema.StringAttribute{
-				Description: "The name of the resource.",
-				Optional:    true,
-			},
-			"resource_type": schema.StringAttribute{
-				Description: "The type of the resource.",
 				Optional:    true,
 			},
 		},

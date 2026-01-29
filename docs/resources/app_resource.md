@@ -15,10 +15,10 @@ description: |-
 ```terraform
 resource "serval_app_resource" "example_app_resource" {
   app_instance_id = "appInstanceId"
-  description = "description"
-  external_id = "externalId"
   name = "name"
   resource_type = "resourceType"
+  description = "description"
+  external_id = "externalId"
 }
 ```
 
@@ -28,13 +28,13 @@ resource "serval_app_resource" "example_app_resource" {
 ### Required
 
 - `app_instance_id` (String) The ID of the app instance.
+- `name` (String) The name of the resource.
+- `resource_type` (String) The type of the resource.
 
 ### Optional
 
 - `description` (String) A description of the resource.
 - `external_id` (String) The external ID of the resource (optional).
-- `name` (String) The name of the resource.
-- `resource_type` (String) The type of the resource.
 
 ### Read-Only
 

@@ -27,8 +27,8 @@ data "serval_app_resource" "example_app_resource" {
 
 ### Read-Only
 
-- `app_instance_id` (String) (IMMUTABLE) The ID of the app instance that the resource belongs to.
-- `description` (String) (OPTIONAL) A description of the resource.
-- `external_id` (String) (OPTIONAL) The external ID of the resource.
+- `app_instance_id` (String) The ID of the app instance that the resource belongs to.
+- `description` (String) A description of the resource.
+- `external_id` (String) The external ID of the resource.
 - `name` (String) The name of the resource.
 - `resource_type` (String) The type of the resource.

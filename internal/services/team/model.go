@@ -14,8 +14,8 @@ type TeamDataEnvelope struct {
 
 type TeamModel struct {
 	ID             types.String      `tfsdk:"id" json:"id,computed"`
+	Name           types.String      `tfsdk:"name" json:"name,required"`
 	Description    types.String      `tfsdk:"description" json:"description,optional"`
-	Name           types.String      `tfsdk:"name" json:"name,optional"`
 	Prefix         types.String      `tfsdk:"prefix" json:"prefix,optional"`
 	UserIDs        *[]types.String   `tfsdk:"user_ids" json:"userIds,optional"`
 	CreatedAt      timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`

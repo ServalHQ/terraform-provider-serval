@@ -14,13 +14,13 @@ type AppResourceRoleDataEnvelope struct {
 
 type AppResourceRoleModel struct {
 	ID                 types.String                            `tfsdk:"id" json:"id,computed"`
-	ResourceID         types.String                            `tfsdk:"resource_id" json:"resourceId,optional"`
+	ResourceID         types.String                            `tfsdk:"resource_id" json:"resourceId,required"`
+	Name               types.String                            `tfsdk:"name" json:"name,required"`
+	ProvisioningMethod *AppResourceRoleProvisioningMethodModel `tfsdk:"provisioning_method" json:"provisioningMethod,required"`
 	AccessPolicyID     types.String                            `tfsdk:"access_policy_id" json:"accessPolicyId,optional"`
 	Description        types.String                            `tfsdk:"description" json:"description,optional"`
 	ExternalData       types.String                            `tfsdk:"external_data" json:"externalData,optional"`
 	ExternalID         types.String                            `tfsdk:"external_id" json:"externalId,optional"`
-	Name               types.String                            `tfsdk:"name" json:"name,optional"`
-	ProvisioningMethod *AppResourceRoleProvisioningMethodModel `tfsdk:"provisioning_method" json:"provisioningMethod,optional"`
 	RequestsEnabled    types.Bool                              `tfsdk:"requests_enabled" json:"requestsEnabled,computed_optional"`
 }
 
@@ -40,8 +40,8 @@ type AppResourceRoleProvisioningMethodModel struct {
 }
 
 type AppResourceRoleProvisioningMethodCustomWorkflowModel struct {
-	DeprovisionWorkflowID types.String `tfsdk:"deprovision_workflow_id" json:"deprovisionWorkflowId,required"`
-	ProvisionWorkflowID   types.String `tfsdk:"provision_workflow_id" json:"provisionWorkflowId,required"`
+	DeprovisionWorkflowID types.String `tfsdk:"deprovision_workflow_id" json:"deprovisionWorkflowId,optional"`
+	ProvisionWorkflowID   types.String `tfsdk:"provision_workflow_id" json:"provisionWorkflowId,optional"`
 }
 
 type AppResourceRoleProvisioningMethodLinkedRolesModel struct {
@@ -53,6 +53,6 @@ type AppResourceRoleProvisioningMethodManualModel struct {
 }
 
 type AppResourceRoleProvisioningMethodManualAssigneesModel struct {
-	AssigneeID   types.String `tfsdk:"assignee_id" json:"assigneeId,required"`
-	AssigneeType types.String `tfsdk:"assignee_type" json:"assigneeType,required"`
+	AssigneeID   types.String `tfsdk:"assignee_id" json:"assigneeId,optional"`
+	AssigneeType types.String `tfsdk:"assignee_type" json:"assigneeType,optional"`
 }

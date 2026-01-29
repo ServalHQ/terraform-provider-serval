@@ -13,9 +13,9 @@ type CustomServiceDataEnvelope struct {
 
 type CustomServiceModel struct {
 	ID     types.String `tfsdk:"id" json:"id,computed"`
-	TeamID types.String `tfsdk:"team_id" json:"teamId,optional"`
+	TeamID types.String `tfsdk:"team_id" json:"teamId,required"`
+	Name   types.String `tfsdk:"name" json:"name,required"`
 	Domain types.String `tfsdk:"domain" json:"domain,optional"`
-	Name   types.String `tfsdk:"name" json:"name,optional"`
 }
 
 func (m CustomServiceModel) MarshalJSON() (data []byte, err error) {
