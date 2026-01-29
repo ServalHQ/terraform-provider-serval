@@ -13,8 +13,10 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_instance"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_resource"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_resource_role"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/custom_service"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/group"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/guidance"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/tag"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/team"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/user"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow"
@@ -141,6 +143,7 @@ func (p *ServalProvider) Resources(ctx context.Context) []func() resource.Resour
 		user.NewResource,
 		group.NewResource,
 		team.NewResource,
+		custom_service.NewResource,
 	}
 }
 
@@ -157,6 +160,8 @@ func (p *ServalProvider) DataSources(ctx context.Context) []func() datasource.Da
 		user.NewUserDataSource,
 		group.NewGroupDataSource,
 		team.NewTeamDataSource,
+		tag.NewTagDataSource,
+		custom_service.NewCustomServiceDataSource,
 	}
 }
 
