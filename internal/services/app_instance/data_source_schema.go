@@ -19,19 +19,19 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"access_requests_enabled": schema.BoolAttribute{
-				Description: "(OPTIONAL) Whether access requests are enabled for the app instance.",
+				Description: "Whether access requests are enabled for the app instance.",
 				Computed:    true,
 			},
 			"custom_service_id": schema.StringAttribute{
-				Description: "**Option: custom_service_id** — (IMMUTABLE) The ID of the custom service (for custom apps).",
+				Description: "**Option: custom_service_id** — The ID of the custom service (for custom apps).",
 				Computed:    true,
 			},
 			"default_access_policy_id": schema.StringAttribute{
-				Description: "(OPTIONAL) The default access policy for the app instance.",
+				Description: "The default access policy for the app instance.",
 				Computed:    true,
 			},
-			"instance_id": schema.StringAttribute{
-				Description: "The instance ID of the app instance.",
+			"external_service_instance_id": schema.StringAttribute{
+				Description: "The external service instance ID (e.g., GitHub org name, Okta domain, AWS account ID).",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
@@ -39,11 +39,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"service": schema.StringAttribute{
-				Description: `**Option: service** — (IMMUTABLE) The service identifier (for built-in services like "github", "okta", "aws").`,
+				Description: `**Option: service** — The service identifier (for built-in services like "github", "okta", "aws").`,
 				Computed:    true,
 			},
 			"team_id": schema.StringAttribute{
-				Description: "(IMMUTABLE) The ID of the Serval team that the app instance belongs to.",
+				Description: "The ID of the Serval team that the app instance belongs to.",
 				Computed:    true,
 			},
 		},

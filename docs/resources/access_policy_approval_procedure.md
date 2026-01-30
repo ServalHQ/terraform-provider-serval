@@ -44,10 +44,10 @@ resource "serval_access_policy_approval_procedure" "example_access_policy_approv
 
 Optional:
 
-- `allow_self_approval` (Boolean) (OPTIONAL) Whether the step can be approved by the requester themselves.
-- `custom_workflow_id` (String) (OPTIONAL) A workflow ID to execute to determine the approvers for this step (or to auto-approve the step).
-- `serval_group_ids` (List of String) (OPTIONAL) The IDs of the Serval groups that can approve the step.
-- `specific_user_ids` (List of String) (OPTIONAL) The IDs of the specific users that can approve the step.
+- `allow_self_approval` (Boolean) Whether the step can be approved by the requester themselves.
+- `custom_workflow_id` (String) A workflow ID to execute to determine the approvers for this step (or to auto-approve the step).
+- `serval_group_ids` (List of String) The IDs of the Serval groups that can approve the step.
+- `specific_user_ids` (List of String) The IDs of the specific users that can approve the step.
 
 Read-Only:
 

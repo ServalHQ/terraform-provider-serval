@@ -21,6 +21,11 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
+			"team_id": schema.StringAttribute{
+				Description:   "The ID of the team.",
+				Required:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
 			"custom_service_id": schema.StringAttribute{
 				Description:   "**Option: custom_service_id** — The ID of a custom service to create the app instance for.",
 				Optional:      true,
@@ -31,21 +36,16 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
-			"team_id": schema.StringAttribute{
-				Description:   "The ID of the team.",
-				Optional:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-			},
-			"default_access_policy_id": schema.StringAttribute{
-				Description: "The default access policy for the app instance (optional).",
-				Optional:    true,
-			},
-			"instance_id": schema.StringAttribute{
-				Description: "The instance ID of the app instance.",
-				Optional:    true,
+			"external_service_instance_id": schema.StringAttribute{
+				Description: "The external service instance ID (e.g., GitHub org name, Okta domain, AWS account ID).",
+				Required:    true,
 			},
 			"name": schema.StringAttribute{
 				Description: "The name of the app instance.",
+				Required:    true,
+			},
+			"default_access_policy_id": schema.StringAttribute{
+				Description: "The default access policy for the app instance (optional).",
 				Optional:    true,
 			},
 			"access_requests_enabled": schema.BoolAttribute{

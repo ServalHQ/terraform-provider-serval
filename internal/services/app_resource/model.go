@@ -13,11 +13,11 @@ type AppResourceDataEnvelope struct {
 
 type AppResourceModel struct {
 	ID            types.String `tfsdk:"id" json:"id,computed"`
-	AppInstanceID types.String `tfsdk:"app_instance_id" json:"appInstanceId,optional"`
+	AppInstanceID types.String `tfsdk:"app_instance_id" json:"appInstanceId,required"`
+	Name          types.String `tfsdk:"name" json:"name,required"`
+	ResourceType  types.String `tfsdk:"resource_type" json:"resourceType,required"`
 	Description   types.String `tfsdk:"description" json:"description,optional"`
 	ExternalID    types.String `tfsdk:"external_id" json:"externalId,optional"`
-	Name          types.String `tfsdk:"name" json:"name,optional"`
-	ResourceType  types.String `tfsdk:"resource_type" json:"resourceType,optional"`
 }
 
 func (m AppResourceModel) MarshalJSON() (data []byte, err error) {

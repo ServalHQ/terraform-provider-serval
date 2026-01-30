@@ -27,10 +27,10 @@ data "serval_app_instance" "example_app_instance" {
 
 ### Read-Only
 
-- `access_requests_enabled` (Boolean) (OPTIONAL) Whether access requests are enabled for the app instance.
-- `custom_service_id` (String) **Option: custom_service_id** — (IMMUTABLE) The ID of the custom service (for custom apps).
-- `default_access_policy_id` (String) (OPTIONAL) The default access policy for the app instance.
-- `instance_id` (String) The instance ID of the app instance.
+- `access_requests_enabled` (Boolean) Whether access requests are enabled for the app instance.
+- `custom_service_id` (String) **Option: custom_service_id** — The ID of the custom service (for custom apps).
+- `default_access_policy_id` (String) The default access policy for the app instance.
+- `external_service_instance_id` (String) The external service instance ID (e.g., GitHub org name, Okta domain, AWS account ID).
 - `name` (String) The name of the app instance.
-- `service` (String) **Option: service** — (IMMUTABLE) The service identifier (for built-in services like "github", "okta", "aws").
-- `team_id` (String) (IMMUTABLE) The ID of the Serval team that the app instance belongs to.
+- `service` (String) **Option: service** — The service identifier (for built-in services like "github", "okta", "aws").
+- `team_id` (String) The ID of the Serval team that the app instance belongs to.

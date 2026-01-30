@@ -23,15 +23,15 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"team_id": schema.StringAttribute{
 				Description:   "The ID of the team.",
-				Optional:      true,
+				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-			},
-			"domain": schema.StringAttribute{
-				Description: `The domain for branding/logo lookup (e.g., "hr.company.com").`,
-				Optional:    true,
 			},
 			"name": schema.StringAttribute{
 				Description: `The name of the custom service (e.g., "Internal HR System").`,
+				Required:    true,
+			},
+			"domain": schema.StringAttribute{
+				Description: `The domain for branding/logo lookup (e.g., "hr.company.com").`,
 				Optional:    true,
 			},
 		},

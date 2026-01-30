@@ -1,6 +1,6 @@
 resource "serval_team" "example_team" {
-  description = "description"
   name = "name"
+  description = "description"
   prefix = "prefix"
   user_ids = ["string"]
 }
