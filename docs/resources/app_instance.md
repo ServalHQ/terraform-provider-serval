@@ -14,7 +14,7 @@ description: |-
 
 ```terraform
 resource "serval_app_instance" "example_app_instance" {
-  instance_id = "instanceId"
+  external_service_instance_id = "externalServiceInstanceId"
   name = "name"
   team_id = "teamId"
   access_requests_enabled = true
@@ -29,7 +29,7 @@ resource "serval_app_instance" "example_app_instance" {
 
 ### Required
 
-- `instance_id` (String) The instance ID of the app instance.
+- `external_service_instance_id` (String) The external service instance ID (e.g., GitHub org name, Okta domain, AWS account ID).
 - `name` (String) The name of the app instance.
 - `team_id` (String) The ID of the team.
 
