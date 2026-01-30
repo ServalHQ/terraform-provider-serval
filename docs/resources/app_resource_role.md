@@ -53,7 +53,7 @@ resource "serval_app_resource_role" "example_app_resource_role" {
 <a id="nestedatt--provisioning_method"></a>
 ### Nested Schema for `provisioning_method`
 
-Required:
+Optional:
 
 - `builtin_workflow` (String) Provisioning is handled by the service's builtin workflow integration.
 - `custom_workflow` (Attributes) Provisioning is handled by custom workflows for provision + deprovision. (see [below for nested schema](#nestedatt--provisioning_method--custom_workflow))

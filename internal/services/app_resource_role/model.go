@@ -33,10 +33,10 @@ func (m AppResourceRoleModel) MarshalJSONForUpdate(state AppResourceRoleModel) (
 }
 
 type AppResourceRoleProvisioningMethodModel struct {
-	BuiltinWorkflow jsontypes.Normalized                                  `tfsdk:"builtin_workflow" json:"builtinWorkflow,required"`
-	CustomWorkflow  *AppResourceRoleProvisioningMethodCustomWorkflowModel `tfsdk:"custom_workflow" json:"customWorkflow,required"`
-	LinkedRoles     *AppResourceRoleProvisioningMethodLinkedRolesModel    `tfsdk:"linked_roles" json:"linkedRoles,required"`
-	Manual          *AppResourceRoleProvisioningMethodManualModel         `tfsdk:"manual" json:"manual,required"`
+	BuiltinWorkflow jsontypes.Normalized                                  `tfsdk:"builtin_workflow" json:"builtinWorkflow,optional"`
+	CustomWorkflow  *AppResourceRoleProvisioningMethodCustomWorkflowModel `tfsdk:"custom_workflow" json:"customWorkflow,optional"`
+	LinkedRoles     *AppResourceRoleProvisioningMethodLinkedRolesModel    `tfsdk:"linked_roles" json:"linkedRoles,optional"`
+	Manual          *AppResourceRoleProvisioningMethodManualModel         `tfsdk:"manual" json:"manual,optional"`
 }
 
 type AppResourceRoleProvisioningMethodCustomWorkflowModel struct {
