@@ -1,5 +1,5 @@
 resource "serval_app_instance" "example_app_instance" {
-  instance_id = "instanceId"
+  external_service_instance_id = "externalServiceInstanceId"
   name = "name"
   team_id = "teamId"
   access_requests_enabled = true

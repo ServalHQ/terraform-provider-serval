@@ -30,8 +30,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "The default access policy for the app instance.",
 				Computed:    true,
 			},
-			"instance_id": schema.StringAttribute{
-				Description: "The instance ID of the app instance.",
+			"external_service_instance_id": schema.StringAttribute{
+				Description: "The external service instance ID (e.g., GitHub org name, Okta domain, AWS account ID).",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{

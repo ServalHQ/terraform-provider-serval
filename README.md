@@ -29,6 +29,7 @@ terraform {
 provider "serval" {
   client_id = "My Client ID" # or set SERVAL_CLIENT_ID env variable
   client_secret = "My Client Secret" # or set SERVAL_CLIENT_SECRET env variable
+  bearer_token = "My Bearer Token" # or set SERVAL_BEARER_TOKEN env variable
 }
 
 # Configure a resource
@@ -51,8 +52,9 @@ If an environment variable is provided, then the option does not need to be set 
 
 | Property      | Environment variable   | Required | Default value |
 | ------------- | ---------------------- | -------- | ------------- |
-| client_secret | `SERVAL_CLIENT_SECRET` | true     | —             |
-| client_id     | `SERVAL_CLIENT_ID`     | true     | —             |
+| client_secret | `SERVAL_CLIENT_SECRET` | false    | —             |
+| client_id     | `SERVAL_CLIENT_ID`     | false    | —             |
+| bearer_token  | `SERVAL_BEARER_TOKEN`  | false    | —             |
 
 ## Semantic versioning
 
