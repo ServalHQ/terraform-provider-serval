@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.18.0 (2026-01-30)
+
+Full Changelog: [v0.17.0...v0.18.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.17.0...v0.18.0)
+
+### Features
+
+* **api:** manual updates ([28e9e19](https://github.com/ServalHQ/terraform-provider-serval/commit/28e9e194addd17f71b2e857a682d7c7df8750d7e))
+* **api:** manual updates ([a0248fe](https://github.com/ServalHQ/terraform-provider-serval/commit/a0248feeb0a0542e35e29a74e13501a43fdfccc5))
+* **api:** manual updates ([51ea975](https://github.com/ServalHQ/terraform-provider-serval/commit/51ea975802d9bb19183f3dc9378a8d5c7122b1bc))
+* **api:** manual updates ([89c19b7](https://github.com/ServalHQ/terraform-provider-serval/commit/89c19b7e90ce304d306295ad05bd104979936b06))
+* **api:** manual updates ([1e8e806](https://github.com/ServalHQ/terraform-provider-serval/commit/1e8e8064d6c9ca8e40a575d1b49d615f00d467f2))
+* **api:** manual updates ([008ecd1](https://github.com/ServalHQ/terraform-provider-serval/commit/008ecd194d99a1f0e0a740f104d6ada9b1428a37))
+* **api:** manual updates ([1d90387](https://github.com/ServalHQ/terraform-provider-serval/commit/1d903873597eb07b4e4bff869a89699b1ed57acc))
+
 ## 0.17.0 (2026-01-29)
 
 Full Changelog: [v0.16.2...v0.17.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.16.2...v0.17.0)
