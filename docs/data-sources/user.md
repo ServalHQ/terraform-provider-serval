@@ -36,7 +36,6 @@ data "serval_user" "example_user_by_email" {
 - `avatar_url` (String)
 - `created_at` (String) A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").
 - `deactivated_at` (String) A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").
-- `email` (String)
 - `first_name` (String)
 - `id` (String) The ID of this resource.
 - `last_name` (String)

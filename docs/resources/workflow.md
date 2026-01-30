@@ -52,7 +52,7 @@ Available values: "WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED", "TEAM_PRIVATE", "TEAM_
 
 - `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the workflow (computed by server).
 - `id` (String) The ID of the workflow.
-- `tag_ids` (List of String) IDs of tags associated with this workflow.
+- `tag_ids` (List of String) (OPTIONAL) IDs of tags associated with this workflow.
 
 ## Import
 

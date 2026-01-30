@@ -16,6 +16,7 @@ description: |-
 provider "serval" {
   client_id = "My Client ID"
   client_secret = "My Client Secret"
+  bearer_token = "My Bearer Token"
 }
 ```
 
@@ -25,5 +26,6 @@ provider "serval" {
 ### Optional
 
 - `base_url` (String) Set the base url that the provider connects to.
+- `bearer_token` (String)
 - `client_id` (String)
 - `client_secret` (String)
