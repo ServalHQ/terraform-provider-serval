@@ -36,8 +36,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
-			"instance_id": schema.StringAttribute{
-				Description: "The instance ID of the app instance.",
+			"external_service_instance_id": schema.StringAttribute{
+				Description: "The external service instance ID (e.g., GitHub org name, Okta domain, AWS account ID).",
 				Required:    true,
 			},
 			"name": schema.StringAttribute{

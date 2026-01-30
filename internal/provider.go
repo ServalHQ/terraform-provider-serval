@@ -16,12 +16,12 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/custom_service"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/group"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/guidance"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/tag"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/team"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/user"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow_approval_procedure"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -43,6 +43,7 @@ type ServalProviderModel struct {
 	BaseURL      types.String `tfsdk:"base_url" json:"base_url,optional"`
 	ClientID     types.String `tfsdk:"client_id" json:"client_id,optional"`
 	ClientSecret types.String `tfsdk:"client_secret" json:"client_secret,optional"`
+	BearerToken  types.String `tfsdk:"bearer_token" json:"bearer_token,optional"`
 }
 
 func (p *ServalProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -61,6 +62,9 @@ func ProviderSchema(ctx context.Context) schema.Schema {
 				Optional: true,
 			},
 			"client_secret": schema.StringAttribute{
+				Optional: true,
+			},
+			"bearer_token": schema.StringAttribute{
 				Optional: true,
 			},
 		},
@@ -89,26 +93,18 @@ func (p *ServalProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		opts = append(opts, option.WithClientID(data.ClientID.ValueString()))
 	} else if o, ok := os.LookupEnv("SERVAL_CLIENT_ID"); ok {
 		opts = append(opts, option.WithClientID(o))
-	} else {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("client_id"),
-			"Missing client_id value",
-			"The client_id field is required. Set it in provider configuration or via the \"SERVAL_CLIENT_ID\" environment variable.",
-		)
-		return
 	}
 
 	if !data.ClientSecret.IsNull() && !data.ClientSecret.IsUnknown() {
 		opts = append(opts, option.WithClientSecret(data.ClientSecret.ValueString()))
 	} else if o, ok := os.LookupEnv("SERVAL_CLIENT_SECRET"); ok {
 		opts = append(opts, option.WithClientSecret(o))
-	} else {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("client_secret"),
-			"Missing client_secret value",
-			"The client_secret field is required. Set it in provider configuration or via the \"SERVAL_CLIENT_SECRET\" environment variable.",
-		)
-		return
+	}
+
+	if !data.BearerToken.IsNull() && !data.BearerToken.IsUnknown() {
+		opts = append(opts, option.WithBearerToken(data.BearerToken.ValueString()))
+	} else if o, ok := os.LookupEnv("SERVAL_BEARER_TOKEN"); ok {
+		opts = append(opts, option.WithBearerToken(o))
 	}
 
 	client := serval.NewClient(
@@ -153,6 +149,7 @@ func (p *ServalProvider) DataSources(ctx context.Context) []func() datasource.Da
 		user.NewUserDataSource,
 		group.NewGroupDataSource,
 		team.NewTeamDataSource,
+		tag.NewTagDataSource,
 		custom_service.NewCustomServiceDataSource,
 	}
 }
