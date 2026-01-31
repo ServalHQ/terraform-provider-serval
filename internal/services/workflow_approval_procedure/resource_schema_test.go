@@ -15,8 +15,5 @@ func TestWorkflowApprovalProcedureModelSchemaParity(t *testing.T) {
 	model := (*workflow_approval_procedure.WorkflowApprovalProcedureModel)(nil)
 	schema := workflow_approval_procedure.ResourceSchema(context.TODO())
 	errs := test_helpers.ValidateResourceModelSchemaIntegrity(model, schema)
-	// WORKAROUND: steps[].id is intentionally Optional+Computed (not just Computed) to fix
-	// OpenTofu import config generation. The model tag says "computed" but schema is "computed_optional".
-	errs.Ignore(t, ".@WorkflowApprovalProcedureModel.steps.[].@WorkflowApprovalProcedureStepsModel.id")
 	errs.Report(t)
 }

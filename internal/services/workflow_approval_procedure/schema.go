@@ -37,13 +37,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:    customfield.NewNestedObjectListType[WorkflowApprovalProcedureStepsModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						// WORKAROUND: id is semantically computed-only (server-generated, user input ignored).
-						// However, OpenTofu's `tofu plan -generate-config-out` fails validation for
-						// computed-only fields in nested list objects during import. Making it Optional
-						// allows the generated config to omit the field while still computing the value.
-						"id": schema.StringAttribute{
+							"id": schema.StringAttribute{
 							Description:   "The ID of the approval step.",
-							Optional:      true,
 							Computed:      true,
 							PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 						},
