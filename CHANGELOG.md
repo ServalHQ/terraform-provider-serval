@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.19.1 (2026-01-31)
+
+Full Changelog: [v0.19.0...v0.19.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.19.0...v0.19.1)
+
+### Bug Fixes
+
+* make ApprovalStep.id optional to fix OpenTofu import config generation ([#57](https://github.com/ServalHQ/terraform-provider-serval/issues/57)) ([fc6cdad](https://github.com/ServalHQ/terraform-provider-serval/commit/fc6cdaddafde3b69e35b4ddeb1440c7e5fd83c16))
+* make ApprovalStep.id optional to fix OpenTofu import config generation ([#59](https://github.com/ServalHQ/terraform-provider-serval/issues/59)) ([24edc0c](https://github.com/ServalHQ/terraform-provider-serval/commit/24edc0c820e79d2c90f46514a1a03c6ce4f1d95b))
+
 ## 0.19.0 (2026-01-30)
 
 Full Changelog: [v0.18.0...v0.19.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.18.0...v0.19.0)
