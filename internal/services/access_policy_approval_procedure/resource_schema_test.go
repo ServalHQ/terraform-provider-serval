@@ -15,8 +15,5 @@ func TestAccessPolicyApprovalProcedureModelSchemaParity(t *testing.T) {
 	model := (*access_policy_approval_procedure.AccessPolicyApprovalProcedureModel)(nil)
 	schema := access_policy_approval_procedure.ResourceSchema(context.TODO())
 	errs := test_helpers.ValidateResourceModelSchemaIntegrity(model, schema)
-	// WORKAROUND: steps[].id is intentionally Optional+Computed (not just Computed) to fix
-	// OpenTofu import config generation. The model tag says "computed" but schema is "computed_optional".
-	errs.Ignore(t, ".@AccessPolicyApprovalProcedureModel.steps.[].@AccessPolicyApprovalProcedureStepsModel.id")
 	errs.Report(t)
 }
