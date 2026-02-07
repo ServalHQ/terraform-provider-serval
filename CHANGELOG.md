@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.19.2 (2026-02-07)
+
+Full Changelog: [v0.19.1...v0.19.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.19.1...v0.19.2)
+
+### Reverts
+
+* remove ApprovalStep.id optional workaround ([#60](https://github.com/ServalHQ/terraform-provider-serval/issues/60)) ([86d38a8](https://github.com/ServalHQ/terraform-provider-serval/commit/86d38a8eb216468186ae2ad7e958585bf9e4ee5b))
+
 ## 0.19.1 (2026-01-31)
 
 Full Changelog: [v0.19.0...v0.19.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.19.0...v0.19.1)
