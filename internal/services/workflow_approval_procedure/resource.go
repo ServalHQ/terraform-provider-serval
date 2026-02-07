@@ -151,6 +151,10 @@ func (r *WorkflowApprovalProcedureResource) Read(ctx context.Context, req resour
 		return
 	}
 
+	if item, ok, err := TryRead(data.ID.ValueString()); err != nil {
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
+	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
+
 	res := new(http.Response)
 	env := WorkflowApprovalProcedureDataEnvelope{*data}
 	_, err := r.client.Workflows.ApprovalProcedures.Get(
@@ -225,6 +229,10 @@ func (r *WorkflowApprovalProcedureResource) ImportState(ctx context.Context, req
 
 	data.WorkflowID = types.StringValue(path_workflow_id)
 	data.ID = types.StringValue(path_id)
+
+	if item, ok, err := TryRead(path_id); err != nil {
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
+	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
 
 	res := new(http.Response)
 	env := WorkflowApprovalProcedureDataEnvelope{*data}

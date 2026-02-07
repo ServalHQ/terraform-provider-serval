@@ -148,16 +148,10 @@ func (r *GroupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	// Try cache first for better performance with large numbers of resources
-	if cached, found, err := GetCached(ctx, r.client, data.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("failed to load groups cache", err.Error())
-		return
-	} else if found {
-		resp.Diagnostics.Append(resp.State.Set(ctx, cached)...)
-		return
-	}
+	if item, ok, err := TryRead(data.ID.ValueString()); err != nil {
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
+	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
 
-	// Fall back to individual API call if cache miss (e.g., newly created resource)
 	res := new(http.Response)
 	env := GroupDataEnvelope{*data}
 	_, err := r.client.Groups.Get(
@@ -224,16 +218,10 @@ func (r *GroupResource) ImportState(ctx context.Context, req resource.ImportStat
 
 	data.ID = types.StringValue(path)
 
-	// Try cache first for better performance with bulk imports
-	if cached, found, err := GetCached(ctx, r.client, path); err != nil {
-		resp.Diagnostics.AddError("failed to load groups cache", err.Error())
-		return
-	} else if found {
-		resp.Diagnostics.Append(resp.State.Set(ctx, cached)...)
-		return
-	}
+	if item, ok, err := TryRead(path); err != nil {
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
+	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
 
-	// Fall back to individual API call if cache miss
 	res := new(http.Response)
 	env := GroupDataEnvelope{*data}
 	_, err := r.client.Groups.Get(

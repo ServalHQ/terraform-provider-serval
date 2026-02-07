@@ -15,7 +15,6 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -149,27 +148,10 @@ func (r *AppResourceRoleResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	// FAST PATH: Try FindInLoadedCaches first - works even without resource_id
-	// This is critical because during plan after import, resource_id may be null
-	if cached, found := FindInLoadedCachesModel(data.ID.ValueString()); found {
-		tflog.Debug(ctx, "[AppResourceRole] Read FAST PATH cache hit", map[string]interface{}{"id": data.ID.ValueString()})
-		resp.Diagnostics.Append(resp.State.Set(ctx, cached)...)
-		return
-	}
+	if item, ok, err := TryRead(data.ID.ValueString()); err != nil {
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
+	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
 
-	// Try per-team cache with full lookup if we have resource_id
-	if !data.ResourceID.IsNull() && !data.ResourceID.IsUnknown() {
-		if cached, found, err := GetCached(ctx, r.client, data.ID.ValueString(), data.ResourceID.ValueString()); err != nil {
-			resp.Diagnostics.AddError("failed to load app resource roles cache", err.Error())
-			return
-		} else if found {
-			resp.Diagnostics.Append(resp.State.Set(ctx, cached)...)
-			return
-		}
-	}
-
-	// Fall back to individual API call if cache miss (e.g., newly created resource)
-	tflog.Debug(ctx, "[AppResourceRole] Read cache miss, falling back to API", map[string]interface{}{"id": data.ID.ValueString()})
 	res := new(http.Response)
 	env := AppResourceRoleDataEnvelope{*data}
 	_, err := r.client.AppResourceRoles.Get(
@@ -236,16 +218,10 @@ func (r *AppResourceRoleResource) ImportState(ctx context.Context, req resource.
 
 	data.ID = types.StringValue(path)
 
-	// Try per-team cache first for better performance with bulk imports
-	if cached, found, err := GetCachedForImport(ctx, r.client, path); err != nil {
-		resp.Diagnostics.AddError("failed to load app resource roles cache", err.Error())
-		return
-	} else if found {
-		resp.Diagnostics.Append(resp.State.Set(ctx, cached)...)
-		return
-	}
+	if item, ok, err := TryRead(path); err != nil {
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
+	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
 
-	// Fall back to individual API call if cache not initialized
 	res := new(http.Response)
 	env := AppResourceRoleDataEnvelope{*data}
 	_, err := r.client.AppResourceRoles.Get(

@@ -151,6 +151,10 @@ func (r *AccessPolicyApprovalProcedureResource) Read(ctx context.Context, req re
 		return
 	}
 
+	if item, ok, err := TryRead(data.ID.ValueString()); err != nil {
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
+	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
+
 	res := new(http.Response)
 	env := AccessPolicyApprovalProcedureDataEnvelope{*data}
 	_, err := r.client.AccessPolicies.ApprovalProcedures.Get(
@@ -225,6 +229,10 @@ func (r *AccessPolicyApprovalProcedureResource) ImportState(ctx context.Context,
 
 	data.AccessPolicyID = types.StringValue(path_access_policy_id)
 	data.ID = types.StringValue(path_id)
+
+	if item, ok, err := TryRead(path_id); err != nil {
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
+	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
 
 	res := new(http.Response)
 	env := AccessPolicyApprovalProcedureDataEnvelope{*data}

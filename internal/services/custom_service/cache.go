@@ -1,4 +1,4 @@
-package guidance
+package custom_service
 
 import (
 	"context"
@@ -14,15 +14,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-var Cache *cache.Store[GuidanceModel]
+var Cache *cache.Store[CustomServiceModel]
 
 func Prefetch(ctx context.Context, client *serval.Client, teamIDs []string) (int, error) {
-	Cache = cache.NewStore[GuidanceModel]()
+	Cache = cache.NewStore[CustomServiceModel]()
 	apiCalls := 0
 	for _, teamID := range teamIDs {
 		var pageToken *string
 		for {
-			params := serval.GuidanceListParams{
+			params := serval.CustomServiceListParams{
 				PageSize: serval.Int(1000),
 				TeamID:   serval.String(teamID),
 			}
@@ -30,14 +30,14 @@ func Prefetch(ctx context.Context, client *serval.Client, teamIDs []string) (int
 				params.PageToken = serval.String(*pageToken)
 			}
 			res := new(http.Response)
-			_, err := client.Guidances.List(ctx, params,
+			_, err := client.CustomServices.List(ctx, params,
 				option.WithResponseBodyInto(&res),
 				option.WithMiddleware(logging.Middleware(ctx)),
 			)
 			apiCalls++
 			if err != nil {
 				if cache.IsServerError(err) {
-					tflog.Warn(ctx, fmt.Sprintf("prefetch: skipping guidances for team %s due to server error: %s", teamID, err))
+					tflog.Warn(ctx, fmt.Sprintf("prefetch: skipping custom_services for team %s due to server error: %s", teamID, err))
 					break
 				}
 				return apiCalls, err
@@ -48,8 +48,8 @@ func Prefetch(ctx context.Context, client *serval.Client, teamIDs []string) (int
 				return apiCalls, err
 			}
 			var page struct {
-				Data          []GuidanceModel `json:"data"`
-				NextPageToken *string         `json:"nextPageToken,omitempty"`
+				Data          []CustomServiceModel `json:"data"`
+				NextPageToken *string              `json:"nextPageToken,omitempty"`
 			}
 			if err := apijson.Unmarshal(bytes, &page); err != nil {
 				return apiCalls, err
@@ -67,6 +67,6 @@ func Prefetch(ctx context.Context, client *serval.Client, teamIDs []string) (int
 	return apiCalls, nil
 }
 
-func TryRead(id string) (*GuidanceModel, bool, error) {
+func TryRead(id string) (*CustomServiceModel, bool, error) {
 	return cache.TryRead(Cache, id)
 }
