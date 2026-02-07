@@ -12,36 +12,12 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 )
 
-// Cache is the global team cache, initialized by the provider.
-var Cache *cache.ResourceCache[TeamModel]
+var Cache *cache.Store[TeamModel]
 
-// InitCache initializes the team cache. Call this from provider.Configure().
-func InitCache() {
-	Cache = cache.NewResourceCache[TeamModel]()
-}
-
-// GetCached retrieves a team from the cache, loading via List API if needed.
-func GetCached(
-	ctx context.Context,
-	client *serval.Client,
-	id string,
-) (*TeamModel, bool, error) {
-	if Cache == nil {
-		return nil, false, nil
-	}
-
-	return Cache.GetOrLoad(id, func() (map[string]*TeamModel, error) {
-		return fetchAllTeams(ctx, client)
-	})
-}
-
-func fetchAllTeams(
-	ctx context.Context,
-	client *serval.Client,
-) (map[string]*TeamModel, error) {
-	result := make(map[string]*TeamModel)
+func Prefetch(ctx context.Context, client *serval.Client) (int, error) {
+	Cache = cache.NewStore[TeamModel]()
+	apiCalls := 0
 	var pageToken *string
-
 	for {
 		params := serval.TeamListParams{
 			PageSize: serval.Int(1000),
@@ -49,40 +25,39 @@ func fetchAllTeams(
 		if pageToken != nil {
 			params.PageToken = serval.String(*pageToken)
 		}
-
 		res := new(http.Response)
 		_, err := client.Teams.List(ctx, params,
 			option.WithResponseBodyInto(&res),
 			option.WithMiddleware(logging.Middleware(ctx)),
 		)
+		apiCalls++
 		if err != nil {
-			return nil, err
+			return apiCalls, err
 		}
-
 		bytes, err := io.ReadAll(res.Body)
 		res.Body.Close()
 		if err != nil {
-			return nil, err
+			return apiCalls, err
 		}
-
 		var page struct {
 			Data          []TeamModel `json:"data"`
 			NextPageToken *string     `json:"nextPageToken,omitempty"`
 		}
 		if err := apijson.Unmarshal(bytes, &page); err != nil {
-			return nil, err
+			return apiCalls, err
 		}
-
 		for i := range page.Data {
 			item := page.Data[i]
-			result[item.ID.ValueString()] = &item
+			Cache.Put(item.ID.ValueString(), &item)
 		}
-
 		if page.NextPageToken == nil || *page.NextPageToken == "" {
 			break
 		}
 		pageToken = page.NextPageToken
 	}
+	return apiCalls, nil
+}
 
-	return result, nil
+func TryRead(id string) (*TeamModel, bool, error) {
+	return cache.TryRead(Cache, id)
 }

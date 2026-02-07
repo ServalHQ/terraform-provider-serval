@@ -148,6 +148,10 @@ func (r *WorkflowResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
+	if item, ok, err := TryRead(data.ID.ValueString()); err != nil {
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
+	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
+
 	res := new(http.Response)
 	env := WorkflowDataEnvelope{*data}
 	_, err := r.client.Workflows.Get(
@@ -213,6 +217,10 @@ func (r *WorkflowResource) ImportState(ctx context.Context, req resource.ImportS
 	}
 
 	data.ID = types.StringValue(path)
+
+	if item, ok, err := TryRead(path); err != nil {
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
+	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
 
 	res := new(http.Response)
 	env := WorkflowDataEnvelope{*data}
