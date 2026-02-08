@@ -6,9 +6,11 @@ import (
 	"context"
 
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -20,7 +22,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The ID of the workflow.",
-				Required:    true,
+				Computed:    true,
+				Optional:    true,
 			},
 			"content": schema.StringAttribute{
 				Description: "The content/code of the workflow.",
@@ -86,6 +89,19 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  customfield.NewListType[types.String](ctx),
 				ElementType: types.StringType,
 			},
+			"find_one_by": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"include_temporary": schema.BoolAttribute{
+						Description: "Whether to include temporary workflows (optional, defaults to false).",
+						Optional:    true,
+					},
+					"team_id": schema.StringAttribute{
+						Description: "The ID of the team.",
+						Optional:    true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -95,5 +111,7 @@ func (d *WorkflowDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 }
 
 func (d *WorkflowDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
-	return []datasource.ConfigValidator{}
+	return []datasource.ConfigValidator{
+		datasourcevalidator.ExactlyOneOf(path.MatchRoot("id"), path.MatchRoot("find_one_by")),
+	}
 }

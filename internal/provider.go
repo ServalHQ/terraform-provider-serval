@@ -142,20 +142,33 @@ func (p *ServalProvider) Resources(ctx context.Context) []func() resource.Resour
 func (p *ServalProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		access_policy.NewAccessPolicyDataSource,
+		access_policy.NewAccessPoliciesDataSource,
 		access_policy_approval_procedure.NewAccessPolicyApprovalProcedureDataSource,
 		guidance.NewGuidanceDataSource,
+		guidance.NewGuidancesDataSource,
 		workflow.NewWorkflowDataSource,
+		workflow.NewWorkflowsDataSource,
 		workflow_approval_procedure.NewWorkflowApprovalProcedureDataSource,
 		workflow_run.NewWorkflowRunDataSource,
+		workflow_run.NewWorkflowRunsDataSource,
 		access_request.NewAccessRequestDataSource,
+		access_request.NewAccessRequestsDataSource,
 		app_instance.NewAppInstanceDataSource,
+		app_instance.NewAppInstancesDataSource,
 		app_resource.NewAppResourceDataSource,
+		app_resource.NewAppResourcesDataSource,
 		app_resource_role.NewAppResourceRoleDataSource,
+		app_resource_role.NewAppResourceRolesDataSource,
 		user.NewUserDataSource,
+		user.NewUsersDataSource,
 		group.NewGroupDataSource,
+		group.NewGroupsDataSource,
 		team.NewTeamDataSource,
+		team.NewTeamsDataSource,
 		team_user.NewTeamUserDataSource,
+		team_user.NewTeamUsersDataSource,
 		custom_service.NewCustomServiceDataSource,
+		custom_service.NewCustomServicesDataSource,
 	}
 }
 

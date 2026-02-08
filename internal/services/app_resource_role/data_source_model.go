@@ -3,8 +3,13 @@
 package app_resource_role
 
 import (
+	"context"
+
+	"github.com/ServalHQ/serval-go"
+	"github.com/ServalHQ/serval-go/packages/param"
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -13,7 +18,7 @@ type AppResourceRoleDataDataSourceEnvelope struct {
 }
 
 type AppResourceRoleDataSourceModel struct {
-	ID                 types.String                                                               `tfsdk:"id" path:"id,required"`
+	ID                 types.String                                                               `tfsdk:"id" path:"id,computed_optional"`
 	AccessPolicyID     types.String                                                               `tfsdk:"access_policy_id" json:"accessPolicyId,computed"`
 	Description        types.String                                                               `tfsdk:"description" json:"description,computed"`
 	ExternalData       types.String                                                               `tfsdk:"external_data" json:"externalData,computed"`
@@ -22,6 +27,23 @@ type AppResourceRoleDataSourceModel struct {
 	RequestsEnabled    types.Bool                                                                 `tfsdk:"requests_enabled" json:"requestsEnabled,computed"`
 	ResourceID         types.String                                                               `tfsdk:"resource_id" json:"resourceId,computed"`
 	ProvisioningMethod customfield.NestedObject[AppResourceRoleProvisioningMethodDataSourceModel] `tfsdk:"provisioning_method" json:"provisioningMethod,computed"`
+	FindOneBy          *AppResourceRoleFindOneByDataSourceModel                                   `tfsdk:"find_one_by"`
+}
+
+func (m *AppResourceRoleDataSourceModel) toListParams(_ context.Context) (params serval.AppResourceRoleListParams, diags diag.Diagnostics) {
+	params = serval.AppResourceRoleListParams{}
+
+	if !m.FindOneBy.AppInstanceID.IsNull() {
+		params.AppInstanceID = param.NewOpt(m.FindOneBy.AppInstanceID.ValueString())
+	}
+	if !m.FindOneBy.ResourceID.IsNull() {
+		params.ResourceID = param.NewOpt(m.FindOneBy.ResourceID.ValueString())
+	}
+	if !m.FindOneBy.TeamID.IsNull() {
+		params.TeamID = param.NewOpt(m.FindOneBy.TeamID.ValueString())
+	}
+
+	return
 }
 
 type AppResourceRoleProvisioningMethodDataSourceModel struct {
@@ -47,4 +69,10 @@ type AppResourceRoleProvisioningMethodManualDataSourceModel struct {
 type AppResourceRoleProvisioningMethodManualAssigneesDataSourceModel struct {
 	AssigneeID   types.String `tfsdk:"assignee_id" json:"assigneeId,computed"`
 	AssigneeType types.String `tfsdk:"assignee_type" json:"assigneeType,computed"`
+}
+
+type AppResourceRoleFindOneByDataSourceModel struct {
+	AppInstanceID types.String `tfsdk:"app_instance_id" query:"appInstanceId,optional"`
+	ResourceID    types.String `tfsdk:"resource_id" query:"resourceId,optional"`
+	TeamID        types.String `tfsdk:"team_id" query:"teamId,optional"`
 }

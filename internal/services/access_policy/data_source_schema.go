@@ -5,8 +5,10 @@ package access_policy
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
 var _ datasource.DataSourceWithConfigValidators = (*AccessPolicyDataSource)(nil)
@@ -16,7 +18,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The ID of the access policy.",
-				Required:    true,
+				Computed:    true,
+				Optional:    true,
 			},
 			"description": schema.StringAttribute{
 				Description: "A description of the access policy.",
@@ -42,6 +45,15 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "The ID of the team that the access policy belongs to.",
 				Computed:    true,
 			},
+			"find_one_by": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"team_id": schema.StringAttribute{
+						Description: "The ID of the team.",
+						Optional:    true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -51,5 +63,7 @@ func (d *AccessPolicyDataSource) Schema(ctx context.Context, req datasource.Sche
 }
 
 func (d *AccessPolicyDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
-	return []datasource.ConfigValidator{}
+	return []datasource.ConfigValidator{
+		datasourcevalidator.ExactlyOneOf(path.MatchRoot("id"), path.MatchRoot("find_one_by")),
+	}
 }
