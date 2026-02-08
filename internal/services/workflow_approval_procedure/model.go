@@ -14,7 +14,7 @@ type WorkflowApprovalProcedureDataEnvelope struct {
 
 type WorkflowApprovalProcedureModel struct {
 	ID         types.String                                                      `tfsdk:"id" json:"id,computed"`
-	WorkflowID types.String                                                      `tfsdk:"workflow_id" path:"workflow_id,required"`
+	WorkflowID types.String                                                      `tfsdk:"workflow_id" json:"workflowId" path:"workflow_id,required"`
 	Steps      customfield.NestedObjectList[WorkflowApprovalProcedureStepsModel] `tfsdk:"steps" json:"steps,computed_optional"`
 }
 

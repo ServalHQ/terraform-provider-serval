@@ -14,7 +14,7 @@ type AccessPolicyApprovalProcedureDataEnvelope struct {
 
 type AccessPolicyApprovalProcedureModel struct {
 	ID             types.String                                                          `tfsdk:"id" json:"id,computed"`
-	AccessPolicyID types.String                                                          `tfsdk:"access_policy_id" path:"access_policy_id,required"`
+	AccessPolicyID types.String                                                          `tfsdk:"access_policy_id" json:"accessPolicyId" path:"access_policy_id,required"`
 	Steps          customfield.NestedObjectList[AccessPolicyApprovalProcedureStepsModel] `tfsdk:"steps" json:"steps,computed_optional"`
 }
 
