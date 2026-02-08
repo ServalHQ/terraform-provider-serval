@@ -17,7 +17,6 @@ resource "serval_team" "example_team" {
   name = "name"
   description = "description"
   prefix = "prefix"
-  user_ids = ["string"]
 }
 ```
 
@@ -32,7 +31,6 @@ resource "serval_team" "example_team" {
 
 - `description` (String)
 - `prefix` (String)
-- `user_ids` (List of String)
 
 ### Read-Only
 
