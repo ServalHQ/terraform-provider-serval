@@ -20,7 +20,7 @@ terraform {
   required_providers {
     serval = {
       source  = "ServalHQ/serval"
-      version = "~> 0.19.2"
+      version = "~> 0.20.0"
     }
   }
 }

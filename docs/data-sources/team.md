@@ -29,4 +29,3 @@ data "serval_team" "example_team" {
 - `name` (String)
 - `organization_id` (String)
 - `prefix` (String)
-- `user_ids` (List of String)
