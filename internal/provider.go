@@ -189,8 +189,8 @@ func (p *ServalProvider) Configure(ctx context.Context, req provider.ConfigureRe
 			len  func() int
 		}
 
-		// Phase 1: All org-scoped + team-scoped resources in parallel
-		phase1 := []prefetchJob{
+		// All resources prefetched in a single parallel phase (team-scoped endpoints)
+		jobs := []prefetchJob{
 			{"users", func() (int, error) { return user.Prefetch(ctx, &client) }, func() int { return user.Cache.Len() }},
 			{"groups", func() (int, error) { return group.Prefetch(ctx, &client) }, func() int { return group.Cache.Len() }},
 			{"teams", func() (int, error) { return team.Prefetch(ctx, &client) }, func() int { return team.Cache.Len() }},
@@ -201,46 +201,16 @@ func (p *ServalProvider) Configure(ctx context.Context, req provider.ConfigureRe
 			{"custom_services", func() (int, error) { return custom_service.Prefetch(ctx, &client, teamIDs) }, func() int { return custom_service.Cache.Len() }},
 			{"app_resources", func() (int, error) { return app_resource.Prefetch(ctx, &client, teamIDs) }, func() int { return app_resource.Cache.Len() }},
 			{"app_resource_roles", func() (int, error) { return app_resource_role.Prefetch(ctx, &client, teamIDs) }, func() int { return app_resource_role.Cache.Len() }},
-		}
-
-		var wg sync.WaitGroup
-		for _, pf := range phase1 {
-			wg.Add(1)
-			go func(j prefetchJob) {
-				defer wg.Done()
-				start := time.Now()
-				apiCalls, err := j.fn()
-				dur := time.Since(start).Milliseconds()
-				if err != nil {
-					recordError(j.name, err)
-					return
-				}
-				recordStats(j.name, dur, apiCalls, j.len())
-			}(pf)
-		}
-		wg.Wait()
-
-		if len(allErrors) > 0 {
-			for _, e := range allErrors {
-				resp.Diagnostics.AddError("prefetch failed", e)
-			}
-			return
-		}
-
-		// Phase 2: Approval procedures (need workflow/access_policy IDs from Phase 1)
-		workflowIDs := workflow.Cache.Keys()
-		accessPolicyIDs := access_policy.Cache.Keys()
-
-		phase2 := []prefetchJob{
 			{"workflow_approval_procedures", func() (int, error) {
-				return workflow_approval_procedure.Prefetch(ctx, &client, workflowIDs)
+				return workflow_approval_procedure.Prefetch(ctx, &client, teamIDs)
 			}, func() int { return workflow_approval_procedure.Cache.Len() }},
 			{"access_policy_approval_procedures", func() (int, error) {
-				return access_policy_approval_procedure.Prefetch(ctx, &client, accessPolicyIDs)
+				return access_policy_approval_procedure.Prefetch(ctx, &client, teamIDs)
 			}, func() int { return access_policy_approval_procedure.Cache.Len() }},
 		}
 
-		for _, pf := range phase2 {
+		var wg sync.WaitGroup
+		for _, pf := range jobs {
 			wg.Add(1)
 			go func(j prefetchJob) {
 				defer wg.Done()
