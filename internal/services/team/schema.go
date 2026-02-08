@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var _ resource.ResourceWithConfigValidators = (*TeamResource)(nil)
@@ -30,10 +29,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"prefix": schema.StringAttribute{
 				Optional: true,
-			},
-			"user_ids": schema.ListAttribute{
-				Optional:    true,
-				ElementType: types.StringType,
 			},
 			"created_at": schema.StringAttribute{
 				Description:   `A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").`,

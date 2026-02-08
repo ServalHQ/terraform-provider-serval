@@ -63,6 +63,10 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
+			"timezone": schema.StringAttribute{
+				Description: `IANA timezone, e.g., "America/New_York"`,
+				Computed:    true,
+			},
 		},
 	}
 }
