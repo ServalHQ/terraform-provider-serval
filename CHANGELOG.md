@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.20.0 (2026-02-08)
+
+Full Changelog: [v0.19.2...v0.20.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.19.2...v0.20.0)
+
+### Features
+
+* **api:** manual updates ([4f2f3db](https://github.com/ServalHQ/terraform-provider-serval/commit/4f2f3db452e2c9bacf7320c011d031609f91f048))
+* eliminate two-phase prefetch using team-scoped approval procedure endpoints ([#64](https://github.com/ServalHQ/terraform-provider-serval/issues/64)) ([a11d9ed](https://github.com/ServalHQ/terraform-provider-serval/commit/a11d9ed53dfd813ab31cf0cd74d2af213df44201))
+
 ## 0.19.2 (2026-02-07)
 
 Full Changelog: [v0.19.1...v0.19.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.19.1...v0.19.2)
