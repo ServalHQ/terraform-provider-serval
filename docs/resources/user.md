@@ -41,6 +41,7 @@ resource "serval_user" "example_user" {
 - `deactivated_at` (String) A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").
 - `id` (String) The ID of this resource.
 - `name` (String)
+- `timezone` (String) IANA timezone, e.g., "America/New_York"
 
 ## Import
 

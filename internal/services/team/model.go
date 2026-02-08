@@ -17,7 +17,6 @@ type TeamModel struct {
 	Name           types.String      `tfsdk:"name" json:"name,required"`
 	Description    types.String      `tfsdk:"description" json:"description,optional"`
 	Prefix         types.String      `tfsdk:"prefix" json:"prefix,optional"`
-	UserIDs        *[]types.String   `tfsdk:"user_ids" json:"userIds,optional"`
 	CreatedAt      timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
 	OrganizationID types.String      `tfsdk:"organization_id" json:"organizationId,computed"`
 }

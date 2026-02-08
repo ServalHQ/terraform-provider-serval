@@ -41,3 +41,4 @@ data "serval_user" "example_user_by_email" {
 - `last_name` (String)
 - `name` (String)
 - `role` (String) Available values: "USER_ROLE_UNSPECIFIED", "USER_ROLE_ORG_MEMBER", "USER_ROLE_ORG_ADMIN", "USER_ROLE_ORG_GUEST".
+- `timezone` (String) IANA timezone, e.g., "America/New_York"

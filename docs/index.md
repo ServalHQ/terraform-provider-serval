@@ -29,3 +29,5 @@ provider "serval" {
 - `bearer_token` (String)
 - `client_id` (String)
 - `client_secret` (String)
+- `prefetch_cache_path` (String) Path to a directory containing pre-built cache files. When set, loads cache from files instead of making API calls. For internal use by Serval tooling.
+- `prefetch_for_teams` (List of String) List of team IDs to pre-fetch resources for. When set, all resources for these teams are loaded into memory during initialization. Optimized for bulk import operations.

@@ -14,6 +14,7 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/cache"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_policy"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_policy_approval_procedure"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_request"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_instance"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_resource"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_resource_role"
@@ -21,9 +22,11 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/group"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/guidance"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/team"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/team_user"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/user"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow_approval_procedure"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow_run"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -275,6 +278,7 @@ func (p *ServalProvider) Resources(ctx context.Context) []func() resource.Resour
 		user.NewResource,
 		group.NewResource,
 		team.NewResource,
+		team_user.NewResource,
 		custom_service.NewResource,
 	}
 }
@@ -286,12 +290,15 @@ func (p *ServalProvider) DataSources(ctx context.Context) []func() datasource.Da
 		guidance.NewGuidanceDataSource,
 		workflow.NewWorkflowDataSource,
 		workflow_approval_procedure.NewWorkflowApprovalProcedureDataSource,
+		workflow_run.NewWorkflowRunDataSource,
+		access_request.NewAccessRequestDataSource,
 		app_instance.NewAppInstanceDataSource,
 		app_resource.NewAppResourceDataSource,
 		app_resource_role.NewAppResourceRoleDataSource,
 		user.NewUserDataSource,
 		group.NewGroupDataSource,
 		team.NewTeamDataSource,
+		team_user.NewTeamUserDataSource,
 		custom_service.NewCustomServiceDataSource,
 	}
 }

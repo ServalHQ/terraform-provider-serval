@@ -61,6 +61,10 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 					),
 				},
 			},
+			"timezone": schema.StringAttribute{
+				Description: `IANA timezone, e.g., "America/New_York"`,
+				Computed:    true,
+			},
 		},
 	}
 }

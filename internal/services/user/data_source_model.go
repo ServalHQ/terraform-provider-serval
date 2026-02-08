@@ -21,4 +21,5 @@ type UserDataSourceModel struct {
 	LastName      types.String      `tfsdk:"last_name" json:"lastName,computed"`
 	Name          types.String      `tfsdk:"name" json:"name,computed"`
 	Role          types.String      `tfsdk:"role" json:"role,computed"`
+	Timezone      types.String      `tfsdk:"timezone" json:"timezone,computed"`
 }

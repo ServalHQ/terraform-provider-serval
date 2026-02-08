@@ -40,4 +40,3 @@ data "serval_team" "example_team_by_prefix" {
 - `description` (String)
 - `id` (String) The ID of this resource.
 - `organization_id` (String)
-- `user_ids` (List of String)
