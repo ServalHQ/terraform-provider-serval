@@ -60,6 +60,10 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Computed: true,
 			},
+			"timezone": schema.StringAttribute{
+				Description: `IANA timezone, e.g., "America/New_York"`,
+				Computed:    true,
+			},
 		},
 	}
 }

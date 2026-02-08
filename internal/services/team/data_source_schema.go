@@ -5,11 +5,9 @@ package team
 import (
 	"context"
 
-	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var _ datasource.DataSourceWithConfigValidators = (*TeamDataSource)(nil)
@@ -36,11 +34,6 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"prefix": schema.StringAttribute{
 				Computed: true,
-			},
-			"user_ids": schema.ListAttribute{
-				Computed:    true,
-				CustomType:  customfield.NewListType[types.String](ctx),
-				ElementType: types.StringType,
 			},
 		},
 	}

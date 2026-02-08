@@ -22,6 +22,7 @@ type UserModel struct {
 	CreatedAt     timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
 	DeactivatedAt timetypes.RFC3339 `tfsdk:"deactivated_at" json:"deactivatedAt,computed" format:"date-time"`
 	Name          types.String      `tfsdk:"name" json:"name,computed"`
+	Timezone      types.String      `tfsdk:"timezone" json:"timezone,computed"`
 }
 
 func (m UserModel) MarshalJSON() (data []byte, err error) {
