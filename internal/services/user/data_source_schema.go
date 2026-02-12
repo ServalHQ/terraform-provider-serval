@@ -22,7 +22,6 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
-				Optional: true,
 			},
 			"avatar_url": schema.StringAttribute{
 				Computed: true,
