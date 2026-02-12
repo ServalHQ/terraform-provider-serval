@@ -26,6 +26,9 @@ func extractFromAttributes(attrs map[string]schema.Attribute, info hclcodec.Sche
 		switch a := attr.(type) {
 		case schema.SingleNestedAttribute:
 			entry := hclcodec.FieldSchema{NestedMode: hclcodec.NestedModeAttr}
+			if a.Computed && !a.Optional {
+				entry.ComputedOnly = true
+			}
 			if len(a.Attributes) > 0 {
 				entry.Children = make(hclcodec.SchemaInfo)
 				extractFromAttributes(a.Attributes, entry.Children)
@@ -34,6 +37,9 @@ func extractFromAttributes(attrs map[string]schema.Attribute, info hclcodec.Sche
 
 		case schema.ListNestedAttribute:
 			entry := hclcodec.FieldSchema{NestedMode: hclcodec.NestedModeAttr}
+			if a.Computed && !a.Optional {
+				entry.ComputedOnly = true
+			}
 			if len(a.NestedObject.Attributes) > 0 {
 				entry.Children = make(hclcodec.SchemaInfo)
 				extractFromAttributes(a.NestedObject.Attributes, entry.Children)
@@ -41,8 +47,30 @@ func extractFromAttributes(attrs map[string]schema.Attribute, info hclcodec.Sche
 			info[name] = entry
 
 		case schema.StringAttribute:
+			entry := hclcodec.FieldSchema{}
+			if a.Computed && !a.Optional {
+				entry.ComputedOnly = true
+			}
 			if vals := extractEnumValues(a.Validators); len(vals) > 0 {
-				info[name] = hclcodec.FieldSchema{AllowedValues: vals}
+				entry.AllowedValues = vals
+			}
+			if entry.ComputedOnly || len(entry.AllowedValues) > 0 {
+				info[name] = entry
+			}
+
+		case schema.BoolAttribute:
+			if a.Computed && !a.Optional {
+				info[name] = hclcodec.FieldSchema{ComputedOnly: true}
+			}
+
+		case schema.Int64Attribute:
+			if a.Computed && !a.Optional {
+				info[name] = hclcodec.FieldSchema{ComputedOnly: true}
+			}
+
+		case schema.ListAttribute:
+			if a.Computed && !a.Optional {
+				info[name] = hclcodec.FieldSchema{ComputedOnly: true}
 			}
 		}
 	}

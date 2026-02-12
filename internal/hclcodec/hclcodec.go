@@ -44,6 +44,10 @@ type FieldSchema struct {
 	// from schema validators (e.g., OneOfCaseInsensitive). When non-nil, the codec
 	// maps the model's value to the matching canonical value before emitting HCL.
 	AllowedValues []string
+
+	// ComputedOnly is true for attributes that are Computed but not Optional.
+	// These fields should appear in state but NOT in HCL configuration.
+	ComputedOnly bool
 }
 
 // lookup returns the FieldSchema for a given tfsdk attribute name.
@@ -319,7 +323,7 @@ func serializeAttrValueToHCL(name string, attrVal attr.Value, v reflect.Value, p
 		return fmt.Sprintf("%s%s = %g\n", prefix, name, val.ValueFloat64()), nil
 
 	case basetypes.ListValue:
-		return serializeListValueToHCL(name, val, prefix, indent, fs.Children)
+		return serializeListValueToHCL(name, val, prefix, indent, fs.NestedMode == NestedModeAttr, fs.Children)
 
 	case basetypes.ObjectValue:
 		return serializeObjectValueToHCL(name, val, prefix, indent, fs.NestedMode == NestedModeAttr, fs.Children)
@@ -335,7 +339,7 @@ func serializeAttrValueToHCL(name string, attrVal attr.Value, v reflect.Value, p
 		if lv.IsNull() || lv.IsUnknown() {
 			return "", nil
 		}
-		return serializeListValueToHCL(name, lv, prefix, indent, fs.Children)
+		return serializeListValueToHCL(name, lv, prefix, indent, fs.NestedMode == NestedModeAttr, fs.Children)
 	}
 
 	return "", fmt.Errorf("unsupported attr.Value type %T for HCL", attrVal)
@@ -347,12 +351,17 @@ type stringValuer interface {
 }
 
 // serializeListValueToHCL serializes a list to HCL.
-func serializeListValueToHCL(name string, lv basetypes.ListValue, prefix string, indent int, childSchema SchemaInfo) (string, error) {
+// When asAttr is true and elements are objects, it uses attribute syntax: name = [{ ... }]
+// When asAttr is false and elements are objects, it uses repeated block syntax: name { ... }
+func serializeListValueToHCL(name string, lv basetypes.ListValue, prefix string, indent int, asAttr bool, childSchema SchemaInfo) (string, error) {
 	elements := lv.Elements()
 
-	// Check if elements are objects (nested blocks)
+	// Check if elements are objects (nested blocks or attribute list-of-objects)
 	if len(elements) > 0 {
 		if _, isObj := elements[0].(basetypes.ObjectValue); isObj {
+			if asAttr {
+				return serializeListOfObjectsAsAttrToHCL(name, elements, prefix, indent, childSchema)
+			}
 			return serializeListOfObjectsToHCL(name, elements, indent, childSchema)
 		}
 	}
@@ -370,6 +379,60 @@ func serializeListValueToHCL(name string, lv basetypes.ListValue, prefix string,
 			return "", err
 		}
 		sb.WriteString(hcl)
+	}
+
+	sb.WriteString("]\n")
+	return sb.String(), nil
+}
+
+// serializeListOfObjectsAsAttrToHCL serializes a list of objects using attribute syntax:
+//
+//	name = [{
+//	  key = value
+//	}]
+//
+// This is required for ListNestedAttribute fields in the Terraform Plugin Framework.
+func serializeListOfObjectsAsAttrToHCL(name string, elements []attr.Value, prefix string, indent int, childSchema SchemaInfo) (string, error) {
+	var sb strings.Builder
+	innerPrefix := strings.Repeat(" ", indent+2)
+
+	fmt.Fprintf(&sb, "%s%s = [", prefix, name)
+
+	for i, elem := range elements {
+		ov, ok := elem.(basetypes.ObjectValue)
+		if !ok {
+			continue
+		}
+		if ov.IsNull() || ov.IsUnknown() {
+			continue
+		}
+
+		if i > 0 {
+			sb.WriteString(", ")
+		}
+		sb.WriteString("{\n")
+		attrs := ov.Attributes()
+
+		keys := make([]string, 0, len(attrs))
+		for k := range attrs {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		for _, key := range keys {
+			val := attrs[key]
+			if val.IsNull() || val.IsUnknown() {
+				continue
+			}
+
+			cfs := childSchema.lookup(key)
+			hcl, err := serializeObjectAttrToHCL(key, val, innerPrefix, indent+2, cfs)
+			if err != nil {
+				return "", err
+			}
+			sb.WriteString(hcl)
+		}
+		fmt.Fprintf(&sb, "%s}", prefix)
 	}
 
 	sb.WriteString("]\n")
@@ -401,33 +464,24 @@ func serializeListOfObjectsToHCL(name string, elements []attr.Value, indent int,
 		}
 		sort.Strings(keys)
 
-		for _, key := range keys {
-			val := attrs[key]
-			if val.IsNull() || val.IsUnknown() {
-				continue
-			}
-
-			// Check if this child field has nested schema info.
-			cfs := childSchema.lookup(key)
-
-			switch v := val.(type) {
-			case basetypes.ObjectValue:
-				nested, err := serializeObjectValueToHCL(key, v, innerPrefix, indent+2, cfs.NestedMode == NestedModeAttr, cfs.Children)
-				if err != nil {
-					return "", err
-				}
-				sb.WriteString(nested)
-			default:
-				hcl, err := elementToHCL(val)
-				if err != nil {
-					return "", err
-				}
-				fmt.Fprintf(&sb, "%s%s = %s\n", innerPrefix, key, hcl)
-			}
+	for _, key := range keys {
+		val := attrs[key]
+		if val.IsNull() || val.IsUnknown() {
+			continue
 		}
 
-		fmt.Fprintf(&sb, "%s}\n", prefix)
+		// Check if this child field has nested schema info.
+		cfs := childSchema.lookup(key)
+
+		hcl, err := serializeObjectAttrToHCL(key, val, innerPrefix, indent+2, cfs)
+		if err != nil {
+			return "", err
+		}
+		sb.WriteString(hcl)
 	}
+
+	fmt.Fprintf(&sb, "%s}\n", prefix)
+}
 
 	return sb.String(), nil
 }
@@ -461,20 +515,11 @@ func serializeObjectValueToHCL(name string, ov basetypes.ObjectValue, prefix str
 		// Check if this child field has nested schema info.
 		cfs := childSchema.lookup(key)
 
-		switch v := val.(type) {
-		case basetypes.ObjectValue:
-			nested, err := serializeObjectValueToHCL(key, v, innerPrefix, indent+2, cfs.NestedMode == NestedModeAttr, cfs.Children)
-			if err != nil {
-				return "", err
-			}
-			sb.WriteString(nested)
-		default:
-			hcl, err := elementToHCL(val)
-			if err != nil {
-				return "", err
-			}
-			fmt.Fprintf(&sb, "%s%s = %s\n", innerPrefix, key, hcl)
+		hcl, err := serializeObjectAttrToHCL(key, val, innerPrefix, indent+2, cfs)
+		if err != nil {
+			return "", err
 		}
+		sb.WriteString(hcl)
 	}
 
 	fmt.Fprintf(&sb, "%s}\n", prefix)
@@ -551,6 +596,27 @@ func serializeNestedStructToHCL(name string, v reflect.Value, indent int, asAttr
 	sb.WriteString(body)
 	fmt.Fprintf(&sb, "%s}\n", prefix)
 	return sb.String(), nil
+}
+
+// serializeObjectAttrToHCL serializes a single attribute within an object to HCL.
+// Unlike elementToHCL, this handles complex types (lists, nested objects) as well as scalars.
+// Fields marked ComputedOnly in the schema are skipped (they belong in state, not HCL config).
+func serializeObjectAttrToHCL(key string, val attr.Value, prefix string, indent int, cfs FieldSchema) (string, error) {
+	if cfs.ComputedOnly {
+		return "", nil
+	}
+	switch v := val.(type) {
+	case basetypes.ObjectValue:
+		return serializeObjectValueToHCL(key, v, prefix, indent, cfs.NestedMode == NestedModeAttr, cfs.Children)
+	case basetypes.ListValue:
+		return serializeListValueToHCL(key, v, prefix, indent, cfs.NestedMode == NestedModeAttr, cfs.Children)
+	default:
+		hcl, err := elementToHCL(val)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%s%s = %s\n", prefix, key, hcl), nil
+	}
 }
 
 // elementToHCL converts a single attr.Value to its HCL representation (without key).
