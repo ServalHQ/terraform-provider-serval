@@ -1,0 +1,10 @@
+{
+  "content": "# Welcome\nThis is the onboarding guide.",
+  "description": "New employee onboarding",
+  "has_unpublished_changes": false,
+  "id": "guid-abc-123",
+  "is_published": true,
+  "name": "Onboarding Guide",
+  "should_always_use": false,
+  "team_id": "team-abc-123"
+}

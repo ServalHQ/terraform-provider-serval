@@ -1,0 +1,12 @@
+{
+  "created_at": "2025-01-10T09:00:00Z",
+  "deleted_at": null,
+  "id": "grp-abc-123",
+  "name": "Engineering Admins",
+  "organization_id": "org-abc-123",
+  "user_ids": [
+    "usr-001",
+    "usr-002",
+    "usr-003"
+  ]
+}

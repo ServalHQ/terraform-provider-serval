@@ -1,0 +1,12 @@
+{
+  "data": {
+    "id": "guid-abc-123",
+    "teamId": "team-abc-123",
+    "name": "Onboarding Guide",
+    "content": "# Welcome\nThis is the onboarding guide.",
+    "description": "New employee onboarding",
+    "isPublished": true,
+    "shouldAlwaysUse": false,
+    "hasUnpublishedChanges": false
+  }
+}

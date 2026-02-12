@@ -1,0 +1,8 @@
+resource "serval_access_policy" "standard_jit_access" {
+  team_id = "team-abc-123"
+  name = "Standard JIT Access"
+  description = "Standard just-in-time access policy"
+  max_access_minutes = 60
+  recommended_access_minutes = 30
+  require_business_justification = true
+}

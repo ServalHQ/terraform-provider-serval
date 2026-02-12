@@ -1,0 +1,14 @@
+{
+  "data": {
+    "id": "usr-abc-123",
+    "email": "alice@example.com",
+    "firstName": "Alice",
+    "lastName": "Smith",
+    "role": "admin",
+    "avatarUrl": "https://example.com/avatar.png",
+    "createdAt": "2025-01-15T10:00:00Z",
+    "deactivatedAt": null,
+    "name": "Alice Smith",
+    "timezone": "America/New_York"
+  }
+}

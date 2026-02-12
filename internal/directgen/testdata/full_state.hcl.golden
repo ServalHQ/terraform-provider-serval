@@ -1,0 +1,85 @@
+resource "serval_access_policy" "standard_jit_access" {
+  team_id = "team-abc-123"
+  name = "Standard JIT Access"
+  description = "Standard just-in-time access policy"
+  max_access_minutes = 60
+  recommended_access_minutes = 30
+  require_business_justification = true
+}
+
+resource "serval_app_instance" "okta_production" {
+  team_id = "team-abc-123"
+  service = "okta"
+  external_service_instance_id = "0oa1234567"
+  name = "Okta Production"
+  default_access_policy_id = "ap-abc-123"
+  access_requests_enabled = true
+}
+
+resource "serval_app_resource" "github_organization" {
+  app_instance_id = "ai-abc-123"
+  name = "GitHub Organization"
+  resource_type = "github_org"
+  description = "Main GitHub organization"
+  external_id = "ext-gh-org-1"
+}
+
+resource "serval_app_resource_role" "admin" {
+  resource_id = "ar-abc-123"
+  name = "admin"
+  provisioning_method {
+    custom_workflow {
+      deprovision_workflow_id = "wf-deprov-123"
+      provision_workflow_id = "wf-prov-123"
+    }
+  }
+  access_policy_id = "ap-abc-123"
+  description = "Admin role for GitHub org"
+  requests_enabled = true
+}
+
+resource "serval_custom_service" "internal_api_gateway" {
+  team_id = "team-abc-123"
+  name = "Internal API Gateway"
+  domain = "api.internal.example.com"
+}
+
+resource "serval_group" "engineering_admins" {
+  name = "Engineering Admins"
+  user_ids = ["usr-001", "usr-002", "usr-003"]
+}
+
+resource "serval_guidance" "onboarding_guide" {
+  team_id = "team-abc-123"
+  content = "# Welcome\nThis is the onboarding guide."
+  name = "Onboarding Guide"
+  description = "New employee onboarding"
+  is_published = true
+  should_always_use = false
+}
+
+resource "serval_team" "platform_engineering" {
+  name = "Platform Engineering"
+  description = "The platform engineering team"
+  prefix = "plat-eng"
+}
+
+resource "serval_user" "alice_smith" {
+  email = "alice@example.com"
+  avatar_url = "https://example.com/avatar.png"
+  first_name = "Alice"
+  last_name = "Smith"
+  role = "admin"
+}
+
+resource "serval_workflow" "deploy_to_prod" {
+  team_id = "team-abc-123"
+  content = "import { workflow } from 'serval/core';\nexport const main = workflow({ fn: async () => {} });"
+  name = "deploy-to-prod"
+  type = "action"
+  description = "Deploy to production workflow"
+  execution_scope = "team"
+  is_published = true
+  is_temporary = false
+  require_form_confirmation = false
+}

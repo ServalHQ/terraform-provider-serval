@@ -1,0 +1,8 @@
+{
+  "app_instance_id": "ai-abc-123",
+  "description": "Main GitHub organization",
+  "external_id": "ext-gh-org-1",
+  "id": "ar-abc-123",
+  "name": "GitHub Organization",
+  "resource_type": "github_org"
+}

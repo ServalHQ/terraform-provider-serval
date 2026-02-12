@@ -1,0 +1,11 @@
+{
+  "data": {
+    "id": "ai-abc-123",
+    "teamId": "team-abc-123",
+    "service": "okta",
+    "externalServiceInstanceId": "0oa1234567",
+    "name": "Okta Production",
+    "defaultAccessPolicyId": "ap-abc-123",
+    "accessRequestsEnabled": true
+  }
+}

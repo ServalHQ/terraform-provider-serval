@@ -1,0 +1,4 @@
+resource "serval_group" "engineering_admins" {
+  name = "Engineering Admins"
+  user_ids = ["usr-001", "usr-002", "usr-003"]
+}

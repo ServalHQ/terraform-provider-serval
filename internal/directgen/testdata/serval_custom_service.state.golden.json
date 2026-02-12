@@ -1,0 +1,6 @@
+{
+  "domain": "api.internal.example.com",
+  "id": "cs-abc-123",
+  "name": "Internal API Gateway",
+  "team_id": "team-abc-123"
+}

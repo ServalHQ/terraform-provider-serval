@@ -1,0 +1,8 @@
+resource "serval_guidance" "onboarding_guide" {
+  team_id = "team-abc-123"
+  content = "# Welcome\nThis is the onboarding guide."
+  name = "Onboarding Guide"
+  description = "New employee onboarding"
+  is_published = true
+  should_always_use = false
+}

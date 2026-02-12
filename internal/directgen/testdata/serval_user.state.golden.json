@@ -1,0 +1,12 @@
+{
+  "avatar_url": "https://example.com/avatar.png",
+  "created_at": "2025-01-15T10:00:00Z",
+  "deactivated_at": null,
+  "email": "alice@example.com",
+  "first_name": "Alice",
+  "id": "usr-abc-123",
+  "last_name": "Smith",
+  "name": "Alice Smith",
+  "role": "admin",
+  "timezone": "America/New_York"
+}

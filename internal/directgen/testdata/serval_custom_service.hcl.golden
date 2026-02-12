@@ -1,0 +1,5 @@
+resource "serval_custom_service" "internal_api_gateway" {
+  team_id = "team-abc-123"
+  name = "Internal API Gateway"
+  domain = "api.internal.example.com"
+}
