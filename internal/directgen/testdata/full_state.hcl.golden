@@ -27,8 +27,8 @@ resource "serval_app_resource" "github_organization" {
 resource "serval_app_resource_role" "admin" {
   resource_id = "ar-abc-123"
   name = "admin"
-  provisioning_method {
-    custom_workflow {
+  provisioning_method = {
+    custom_workflow = {
       deprovision_workflow_id = "wf-deprov-123"
       provision_workflow_id = "wf-prov-123"
     }
@@ -69,16 +69,16 @@ resource "serval_user" "alice_smith" {
   avatar_url = "https://example.com/avatar.png"
   first_name = "Alice"
   last_name = "Smith"
-  role = "admin"
+  role = "USER_ROLE_ORG_ADMIN"
 }
 
 resource "serval_workflow" "deploy_to_prod" {
   team_id = "team-abc-123"
   content = "import { workflow } from 'serval/core';\nexport const main = workflow({ fn: async () => {} });"
   name = "deploy-to-prod"
-  type = "action"
+  type = "EXECUTABLE"
   description = "Deploy to production workflow"
-  execution_scope = "team"
+  execution_scope = "TEAM_PRIVATE"
   is_published = true
   is_temporary = false
   require_form_confirmation = false

@@ -19,10 +19,49 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
+// NestedMode specifies how a nested field should be rendered in HCL.
+type NestedMode int
+
+const (
+	// NestedModeBlock renders as: name { ... } (default, backward compatible)
+	NestedModeBlock NestedMode = iota
+	// NestedModeAttr renders as: name = { ... }
+	NestedModeAttr
+)
+
+// SchemaInfo provides schema-level hints for HCL serialization of nested fields.
+// Keys are tfsdk attribute names. Only nested/object fields need entries;
+// scalar fields are serialized identically regardless of schema info.
+// A nil SchemaInfo is safe and causes all nested fields to use block syntax.
+type SchemaInfo map[string]FieldSchema
+
+// FieldSchema describes HCL serialization hints for a single field.
+type FieldSchema struct {
+	NestedMode NestedMode
+	Children   SchemaInfo
+
+	// AllowedValues lists the canonical enum values for a string field, extracted
+	// from schema validators (e.g., OneOfCaseInsensitive). When non-nil, the codec
+	// maps the model's value to the matching canonical value before emitting HCL.
+	AllowedValues []string
+}
+
+// lookup returns the FieldSchema for a given tfsdk attribute name.
+// If the key is absent or the receiver is nil it returns a zero FieldSchema
+// (NestedModeBlock, nil Children), which preserves backward-compatible behavior.
+func (s SchemaInfo) lookup(name string) FieldSchema {
+	if s == nil {
+		return FieldSchema{}
+	}
+	return s[name]
+}
+
 // GenerateResourceBlock converts a provider model struct to a complete HCL resource block.
 // Only required, optional (non-null), and computed_optional (non-null) fields are included.
-func GenerateResourceBlock(resourceType, resourceName string, model any) (string, error) {
-	body, err := generateBody(model, 2)
+// The optional schema parameter provides hints for nested field serialization
+// (attribute syntax vs block syntax). Pass nil for backward-compatible block syntax.
+func GenerateResourceBlock(resourceType, resourceName string, model any, schema SchemaInfo) (string, error) {
+	body, err := generateBody(model, 2, schema)
 	if err != nil {
 		return "", err
 	}
@@ -36,8 +75,8 @@ func GenerateResourceBlock(resourceType, resourceName string, model any) (string
 }
 
 // GenerateAttributes returns only the inner attributes of a resource block (no resource wrapper).
-func GenerateAttributes(model any) (string, error) {
-	return generateBody(model, 2)
+func GenerateAttributes(model any, schema SchemaInfo) (string, error) {
+	return generateBody(model, 2, schema)
 }
 
 // fieldInfo holds parsed tag information for a struct field.
@@ -50,7 +89,7 @@ type fieldInfo struct {
 }
 
 // generateBody produces the indented HCL body for a struct.
-func generateBody(model any, indent int) (string, error) {
+func generateBody(model any, indent int, schema SchemaInfo) (string, error) {
 	v := reflect.ValueOf(model)
 	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
 		if v.IsNil() {
@@ -71,7 +110,7 @@ func generateBody(model any, indent int) (string, error) {
 			continue
 		}
 
-		hcl, err := serializeFieldToHCL(fi, indent)
+		hcl, err := serializeFieldToHCL(fi, indent, schema)
 		if err != nil {
 			return "", fmt.Errorf("hclcodec: field %s: %w", fi.fieldType.Name, err)
 		}
@@ -186,7 +225,7 @@ func isNullOrUnknown(v reflect.Value) bool {
 }
 
 // serializeFieldToHCL serializes a single field to HCL text.
-func serializeFieldToHCL(fi fieldInfo, indent int) (string, error) {
+func serializeFieldToHCL(fi fieldInfo, indent int, schema SchemaInfo) (string, error) {
 	v := fi.fieldValue
 
 	// Handle pointer types
@@ -200,12 +239,15 @@ func serializeFieldToHCL(fi fieldInfo, indent int) (string, error) {
 	iface := v.Interface()
 	prefix := strings.Repeat(" ", indent)
 
+	// Look up schema info for this field.
+	fs := schema.lookup(fi.tfsdkName)
+
 	// Handle attr.Value types
 	if attrVal, ok := iface.(attr.Value); ok {
 		if attrVal.IsNull() || attrVal.IsUnknown() {
 			return "", nil
 		}
-		return serializeAttrValueToHCL(fi.tfsdkName, attrVal, v, prefix, indent)
+		return serializeAttrValueToHCL(fi.tfsdkName, attrVal, v, prefix, indent, fs)
 	}
 
 	// Handle pointer-to-slice types like *[]types.String
@@ -215,17 +257,57 @@ func serializeFieldToHCL(fi fieldInfo, indent int) (string, error) {
 
 	// Handle nested struct (without attr.Value)
 	if v.Kind() == reflect.Struct {
-		return serializeNestedStructToHCL(fi.tfsdkName, v, indent)
+		return serializeNestedStructToHCL(fi.tfsdkName, v, indent, fs.NestedMode == NestedModeAttr, fs.Children)
 	}
 
 	return "", nil
 }
 
+// mapEnumValue maps an API value to a canonical schema value using the allowed
+// values list extracted from schema validators. It tries, in order:
+//  1. Case-insensitive exact match
+//  2. Case-insensitive suffix match after "_" (e.g., "admin" matches "USER_ROLE_ORG_ADMIN")
+//
+// If no match is found, the original value is returned unchanged.
+func mapEnumValue(apiValue string, allowed []string) string {
+	if len(allowed) == 0 {
+		return apiValue
+	}
+
+	upper := strings.ToUpper(apiValue)
+
+	// 1. Case-insensitive exact match.
+	for _, v := range allowed {
+		if strings.EqualFold(v, apiValue) {
+			return v
+		}
+	}
+
+	// 2. Suffix match: "admin" → "USER_ROLE_ORG_ADMIN".
+	suffix := "_" + upper
+	var match string
+	for _, v := range allowed {
+		if strings.HasSuffix(strings.ToUpper(v), suffix) {
+			if match != "" {
+				// Ambiguous — multiple candidates. Return the original.
+				return apiValue
+			}
+			match = v
+		}
+	}
+	if match != "" {
+		return match
+	}
+
+	return apiValue
+}
+
 // serializeAttrValueToHCL converts an attr.Value to HCL syntax.
-func serializeAttrValueToHCL(name string, attrVal attr.Value, v reflect.Value, prefix string, indent int) (string, error) {
+func serializeAttrValueToHCL(name string, attrVal attr.Value, v reflect.Value, prefix string, indent int, fs FieldSchema) (string, error) {
 	switch val := attrVal.(type) {
 	case basetypes.StringValue:
-		return fmt.Sprintf("%s%s = %q\n", prefix, name, val.ValueString()), nil
+		s := mapEnumValue(val.ValueString(), fs.AllowedValues)
+		return fmt.Sprintf("%s%s = %q\n", prefix, name, s), nil
 
 	case types.Int64:
 		return fmt.Sprintf("%s%s = %d\n", prefix, name, val.ValueInt64()), nil
@@ -237,10 +319,10 @@ func serializeAttrValueToHCL(name string, attrVal attr.Value, v reflect.Value, p
 		return fmt.Sprintf("%s%s = %g\n", prefix, name, val.ValueFloat64()), nil
 
 	case basetypes.ListValue:
-		return serializeListValueToHCL(name, val, prefix, indent)
+		return serializeListValueToHCL(name, val, prefix, indent, fs.Children)
 
 	case basetypes.ObjectValue:
-		return serializeObjectValueToHCL(name, val, prefix, indent)
+		return serializeObjectValueToHCL(name, val, prefix, indent, fs.NestedMode == NestedModeAttr, fs.Children)
 	}
 
 	// Custom types wrapping string (timetypes.RFC3339, jsontypes.Normalized)
@@ -253,7 +335,7 @@ func serializeAttrValueToHCL(name string, attrVal attr.Value, v reflect.Value, p
 		if lv.IsNull() || lv.IsUnknown() {
 			return "", nil
 		}
-		return serializeListValueToHCL(name, lv, prefix, indent)
+		return serializeListValueToHCL(name, lv, prefix, indent, fs.Children)
 	}
 
 	return "", fmt.Errorf("unsupported attr.Value type %T for HCL", attrVal)
@@ -265,13 +347,13 @@ type stringValuer interface {
 }
 
 // serializeListValueToHCL serializes a list to HCL.
-func serializeListValueToHCL(name string, lv basetypes.ListValue, prefix string, indent int) (string, error) {
+func serializeListValueToHCL(name string, lv basetypes.ListValue, prefix string, indent int, childSchema SchemaInfo) (string, error) {
 	elements := lv.Elements()
 
 	// Check if elements are objects (nested blocks)
 	if len(elements) > 0 {
 		if _, isObj := elements[0].(basetypes.ObjectValue); isObj {
-			return serializeListOfObjectsToHCL(name, elements, indent)
+			return serializeListOfObjectsToHCL(name, elements, indent, childSchema)
 		}
 	}
 
@@ -295,7 +377,7 @@ func serializeListValueToHCL(name string, lv basetypes.ListValue, prefix string,
 }
 
 // serializeListOfObjectsToHCL serializes a list of objects as repeated HCL blocks.
-func serializeListOfObjectsToHCL(name string, elements []attr.Value, indent int) (string, error) {
+func serializeListOfObjectsToHCL(name string, elements []attr.Value, indent int, childSchema SchemaInfo) (string, error) {
 	var sb strings.Builder
 	prefix := strings.Repeat(" ", indent)
 	innerPrefix := strings.Repeat(" ", indent+2)
@@ -324,11 +406,24 @@ func serializeListOfObjectsToHCL(name string, elements []attr.Value, indent int)
 			if val.IsNull() || val.IsUnknown() {
 				continue
 			}
-			hcl, err := elementToHCL(val)
-			if err != nil {
-				return "", err
+
+			// Check if this child field has nested schema info.
+			cfs := childSchema.lookup(key)
+
+			switch v := val.(type) {
+			case basetypes.ObjectValue:
+				nested, err := serializeObjectValueToHCL(key, v, innerPrefix, indent+2, cfs.NestedMode == NestedModeAttr, cfs.Children)
+				if err != nil {
+					return "", err
+				}
+				sb.WriteString(nested)
+			default:
+				hcl, err := elementToHCL(val)
+				if err != nil {
+					return "", err
+				}
+				fmt.Fprintf(&sb, "%s%s = %s\n", innerPrefix, key, hcl)
 			}
-			fmt.Fprintf(&sb, "%s%s = %s\n", innerPrefix, key, hcl)
 		}
 
 		fmt.Fprintf(&sb, "%s}\n", prefix)
@@ -337,12 +432,18 @@ func serializeListOfObjectsToHCL(name string, elements []attr.Value, indent int)
 	return sb.String(), nil
 }
 
-// serializeObjectValueToHCL serializes an object as an HCL block.
-func serializeObjectValueToHCL(name string, ov basetypes.ObjectValue, prefix string, indent int) (string, error) {
+// serializeObjectValueToHCL serializes an object value to HCL.
+// When asAttr is true it uses attribute syntax: name = { ... }
+// When asAttr is false it uses block syntax: name { ... }
+func serializeObjectValueToHCL(name string, ov basetypes.ObjectValue, prefix string, indent int, asAttr bool, childSchema SchemaInfo) (string, error) {
 	var sb strings.Builder
 	innerPrefix := strings.Repeat(" ", indent+2)
 
-	fmt.Fprintf(&sb, "%s%s {\n", prefix, name)
+	if asAttr {
+		fmt.Fprintf(&sb, "%s%s = {\n", prefix, name)
+	} else {
+		fmt.Fprintf(&sb, "%s%s {\n", prefix, name)
+	}
 	attrs := ov.Attributes()
 
 	keys := make([]string, 0, len(attrs))
@@ -356,11 +457,24 @@ func serializeObjectValueToHCL(name string, ov basetypes.ObjectValue, prefix str
 		if val.IsNull() || val.IsUnknown() {
 			continue
 		}
-		hcl, err := elementToHCL(val)
-		if err != nil {
-			return "", err
+
+		// Check if this child field has nested schema info.
+		cfs := childSchema.lookup(key)
+
+		switch v := val.(type) {
+		case basetypes.ObjectValue:
+			nested, err := serializeObjectValueToHCL(key, v, innerPrefix, indent+2, cfs.NestedMode == NestedModeAttr, cfs.Children)
+			if err != nil {
+				return "", err
+			}
+			sb.WriteString(nested)
+		default:
+			hcl, err := elementToHCL(val)
+			if err != nil {
+				return "", err
+			}
+			fmt.Fprintf(&sb, "%s%s = %s\n", innerPrefix, key, hcl)
 		}
-		fmt.Fprintf(&sb, "%s%s = %s\n", innerPrefix, key, hcl)
 	}
 
 	fmt.Fprintf(&sb, "%s}\n", prefix)
@@ -391,7 +505,7 @@ func serializeSliceToHCL(name string, v reflect.Value, prefix string, indent int
 			sb.WriteString(hcl)
 		} else if elem.Kind() == reflect.Ptr && !elem.IsNil() {
 			// Handle *NestedStruct elements in arrays - these need block syntax
-			hcl, err := serializeNestedStructToHCL(name, elem.Elem(), indent)
+			hcl, err := serializeNestedStructToHCL(name, elem.Elem(), indent, false, nil)
 			if err != nil {
 				return "", err
 			}
@@ -403,8 +517,10 @@ func serializeSliceToHCL(name string, v reflect.Value, prefix string, indent int
 	return sb.String(), nil
 }
 
-// serializeNestedStructToHCL serializes a nested struct as an HCL block.
-func serializeNestedStructToHCL(name string, v reflect.Value, indent int) (string, error) {
+// serializeNestedStructToHCL serializes a nested struct to HCL.
+// When asAttr is true it uses attribute syntax: name = { ... }
+// When asAttr is false it uses block syntax: name { ... }
+func serializeNestedStructToHCL(name string, v reflect.Value, indent int, asAttr bool, childSchema SchemaInfo) (string, error) {
 	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
 		if v.IsNil() {
 			return "", nil
@@ -416,7 +532,7 @@ func serializeNestedStructToHCL(name string, v reflect.Value, indent int) (strin
 		return "", nil
 	}
 
-	body, err := generateBody(v.Interface(), indent+2)
+	body, err := generateBody(v.Interface(), indent+2, childSchema)
 	if err != nil {
 		return "", err
 	}
@@ -427,7 +543,11 @@ func serializeNestedStructToHCL(name string, v reflect.Value, indent int) (strin
 
 	prefix := strings.Repeat(" ", indent)
 	var sb strings.Builder
-	fmt.Fprintf(&sb, "%s%s {\n", prefix, name)
+	if asAttr {
+		fmt.Fprintf(&sb, "%s%s = {\n", prefix, name)
+	} else {
+		fmt.Fprintf(&sb, "%s%s {\n", prefix, name)
+	}
 	sb.WriteString(body)
 	fmt.Fprintf(&sb, "%s}\n", prefix)
 	return sb.String(), nil

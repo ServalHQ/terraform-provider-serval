@@ -117,13 +117,13 @@ func allResourceTests() []resourceTestCase {
 				"id":      "wf-abc-123",
 				"team_id": "team-abc-123",
 				"name":    "deploy-to-prod",
-				"type":    "action",
+				"type":    "EXECUTABLE",
 			},
 			ExpectedHCLContains: []string{
 				`resource "serval_workflow" "deploy_to_prod"`,
 				`team_id = "team-abc-123"`,
 				`name = "deploy-to-prod"`,
-				`type = "action"`,
+				`type = "EXECUTABLE"`,
 				"content =", // content should be included (required field)
 			},
 			ExpectedHCLExcludes: []string{
@@ -238,7 +238,8 @@ func allResourceTests() []resourceTestCase {
 				`resource "serval_app_resource_role" "admin"`,
 				`resource_id = "ar-abc-123"`,
 				`name = "admin"`,
-				"provisioning_method {",
+				"provisioning_method = {",
+				"custom_workflow = {",
 			},
 			ExpectedHCLExcludes: []string{
 				`id = "arr-abc-123"`,

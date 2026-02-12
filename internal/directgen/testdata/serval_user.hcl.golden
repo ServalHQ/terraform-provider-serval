@@ -3,5 +3,5 @@ resource "serval_user" "alice_smith" {
   avatar_url = "https://example.com/avatar.png"
   first_name = "Alice"
   last_name = "Smith"
-  role = "admin"
+  role = "USER_ROLE_ORG_ADMIN"
 }

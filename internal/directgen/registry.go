@@ -3,6 +3,8 @@
 package directgen
 
 import (
+	"context"
+
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_policy"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_policy_approval_procedure"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_instance"
@@ -15,6 +17,7 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/user"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow_approval_procedure"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
 // Resource type constants matching the Serval Terraform provider.
@@ -48,6 +51,7 @@ type ResourceRegistryEntry struct {
 	Constructor   ModelConstructor
 	Extractor     ModelExtractor
 	SchemaVersion uint64
+	SchemaFunc    func(context.Context) schema.Schema
 }
 
 // resourceRegistry maps Terraform resource types to their model constructors and extractors.
@@ -56,36 +60,43 @@ var resourceRegistry = map[string]ResourceRegistryEntry{
 		Constructor:   func() any { return &user.UserDataEnvelope{} },
 		Extractor:     func(e any) any { return e.(*user.UserDataEnvelope).Data },
 		SchemaVersion: defaultSchemaVersion,
+		SchemaFunc:    user.ResourceSchema,
 	},
 	ResourceTypeGroup: {
 		Constructor:   func() any { return &group.GroupDataEnvelope{} },
 		Extractor:     func(e any) any { return e.(*group.GroupDataEnvelope).Data },
 		SchemaVersion: defaultSchemaVersion,
+		SchemaFunc:    group.ResourceSchema,
 	},
 	ResourceTypeTeam: {
 		Constructor:   func() any { return &team.TeamDataEnvelope{} },
 		Extractor:     func(e any) any { return e.(*team.TeamDataEnvelope).Data },
 		SchemaVersion: defaultSchemaVersion,
+		SchemaFunc:    team.ResourceSchema,
 	},
 	ResourceTypeWorkflow: {
 		Constructor:   func() any { return &workflow.WorkflowDataEnvelope{} },
 		Extractor:     func(e any) any { return e.(*workflow.WorkflowDataEnvelope).Data },
 		SchemaVersion: defaultSchemaVersion,
+		SchemaFunc:    workflow.ResourceSchema,
 	},
 	ResourceTypeWorkflowApprovalProcedure: {
 		Constructor:   func() any { return &workflow_approval_procedure.WorkflowApprovalProcedureDataEnvelope{} },
 		Extractor:     func(e any) any { return e.(*workflow_approval_procedure.WorkflowApprovalProcedureDataEnvelope).Data },
 		SchemaVersion: defaultSchemaVersion,
+		SchemaFunc:    workflow_approval_procedure.ResourceSchema,
 	},
 	ResourceTypeGuidance: {
 		Constructor:   func() any { return &guidance.GuidanceDataEnvelope{} },
 		Extractor:     func(e any) any { return e.(*guidance.GuidanceDataEnvelope).Data },
 		SchemaVersion: defaultSchemaVersion,
+		SchemaFunc:    guidance.ResourceSchema,
 	},
 	ResourceTypeAccessPolicy: {
 		Constructor:   func() any { return &access_policy.AccessPolicyDataEnvelope{} },
 		Extractor:     func(e any) any { return e.(*access_policy.AccessPolicyDataEnvelope).Data },
 		SchemaVersion: defaultSchemaVersion,
+		SchemaFunc:    access_policy.ResourceSchema,
 	},
 	ResourceTypeAccessPolicyApprovalProcedure: {
 		Constructor: func() any { return &access_policy_approval_procedure.AccessPolicyApprovalProcedureDataEnvelope{} },
@@ -93,26 +104,31 @@ var resourceRegistry = map[string]ResourceRegistryEntry{
 			return e.(*access_policy_approval_procedure.AccessPolicyApprovalProcedureDataEnvelope).Data
 		},
 		SchemaVersion: defaultSchemaVersion,
+		SchemaFunc:    access_policy_approval_procedure.ResourceSchema,
 	},
 	ResourceTypeAppInstance: {
 		Constructor:   func() any { return &app_instance.AppInstanceDataEnvelope{} },
 		Extractor:     func(e any) any { return e.(*app_instance.AppInstanceDataEnvelope).Data },
 		SchemaVersion: defaultSchemaVersion,
+		SchemaFunc:    app_instance.ResourceSchema,
 	},
 	ResourceTypeAppResource: {
 		Constructor:   func() any { return &app_resource.AppResourceDataEnvelope{} },
 		Extractor:     func(e any) any { return e.(*app_resource.AppResourceDataEnvelope).Data },
 		SchemaVersion: defaultSchemaVersion,
+		SchemaFunc:    app_resource.ResourceSchema,
 	},
 	ResourceTypeAppResourceRole: {
 		Constructor:   func() any { return &app_resource_role.AppResourceRoleDataEnvelope{} },
 		Extractor:     func(e any) any { return e.(*app_resource_role.AppResourceRoleDataEnvelope).Data },
 		SchemaVersion: defaultSchemaVersion,
+		SchemaFunc:    app_resource_role.ResourceSchema,
 	},
 	ResourceTypeCustomService: {
 		Constructor:   func() any { return &custom_service.CustomServiceDataEnvelope{} },
 		Extractor:     func(e any) any { return e.(*custom_service.CustomServiceDataEnvelope).Data },
 		SchemaVersion: defaultSchemaVersion,
+		SchemaFunc:    custom_service.ResourceSchema,
 	},
 }
 

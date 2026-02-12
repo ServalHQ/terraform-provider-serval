@@ -1,6 +1,7 @@
 package directgen
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -118,13 +119,19 @@ func Generate(resources []Resource, opts GenerateOptions) (*GenerateResult, erro
 			return nil, fmt.Errorf("directgen: serialize state %s.%s: %w", res.Type, res.Name, err)
 		}
 
-		// Step 4: Generate HCL resource block
-		hcl, err := hclcodec.GenerateResourceBlock(res.Type, res.Name, model)
+		// Step 4: Extract schema info for correct HCL serialization
+		var schemaInfo hclcodec.SchemaInfo
+		if entry.SchemaFunc != nil {
+			schemaInfo = extractSchemaInfo(entry.SchemaFunc(context.Background()))
+		}
+
+		// Step 5: Generate HCL resource block
+		hcl, err := hclcodec.GenerateResourceBlock(res.Type, res.Name, model, schemaInfo)
 		if err != nil {
 			return nil, fmt.Errorf("directgen: generate HCL %s.%s: %w", res.Type, res.Name, err)
 		}
 
-		// Step 5: Build state resource entry
+		// Step 6: Build state resource entry
 		stateRes := stateResource{
 			Mode:     "managed",
 			Type:     res.Type,
@@ -184,7 +191,12 @@ func GenerateForSingleResource(resourceType, resourceName string, rawJSON json.R
 		return nil, "", fmt.Errorf("directgen: serialize state: %w", err)
 	}
 
-	hcl, err = hclcodec.GenerateResourceBlock(resourceType, resourceName, model)
+	var schemaInfo hclcodec.SchemaInfo
+	if entry.SchemaFunc != nil {
+		schemaInfo = extractSchemaInfo(entry.SchemaFunc(context.Background()))
+	}
+
+	hcl, err = hclcodec.GenerateResourceBlock(resourceType, resourceName, model, schemaInfo)
 	if err != nil {
 		return nil, "", fmt.Errorf("directgen: generate HCL: %w", err)
 	}

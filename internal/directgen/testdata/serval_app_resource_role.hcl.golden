@@ -1,8 +1,8 @@
 resource "serval_app_resource_role" "admin" {
   resource_id = "ar-abc-123"
   name = "admin"
-  provisioning_method {
-    custom_workflow {
+  provisioning_method = {
+    custom_workflow = {
       deprovision_workflow_id = "wf-deprov-123"
       provision_workflow_id = "wf-prov-123"
     }

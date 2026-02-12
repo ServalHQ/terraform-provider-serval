@@ -22,7 +22,7 @@ func TestGenerateResourceBlock(t *testing.T) {
 		Desc:  types.StringNull(),
 	}
 
-	hcl, err := GenerateResourceBlock("serval_user", "alice", model)
+	hcl, err := GenerateResourceBlock("serval_user", "alice", model, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -64,7 +64,7 @@ func TestIncludesOptionalWhenSet(t *testing.T) {
 		Desc: types.StringValue("A description"),
 	}
 
-	hcl, err := GenerateResourceBlock("serval_user", "test", model)
+	hcl, err := GenerateResourceBlock("serval_user", "test", model, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -87,7 +87,7 @@ func TestIncludesComputedOptionalWhenSet(t *testing.T) {
 		Required: types.BoolValue(true),
 	}
 
-	hcl, err := GenerateResourceBlock("serval_policy", "test", model)
+	hcl, err := GenerateResourceBlock("serval_policy", "test", model, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -110,7 +110,7 @@ func TestExcludesNullComputedOptional(t *testing.T) {
 		Required: types.BoolNull(),
 	}
 
-	hcl, err := GenerateResourceBlock("serval_policy", "test", model)
+	hcl, err := GenerateResourceBlock("serval_policy", "test", model, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -131,7 +131,7 @@ func TestIntField(t *testing.T) {
 		MaxMins: types.Int64Value(60),
 	}
 
-	hcl, err := GenerateResourceBlock("serval_policy", "test", model)
+	hcl, err := GenerateResourceBlock("serval_policy", "test", model, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -157,7 +157,7 @@ func TestPointerSliceOfStrings(t *testing.T) {
 		UserIDs: &userIDs,
 	}
 
-	hcl, err := GenerateResourceBlock("serval_group", "test", model)
+	hcl, err := GenerateResourceBlock("serval_group", "test", model, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -178,7 +178,7 @@ func TestNilPointerSlice(t *testing.T) {
 		UserIDs: nil,
 	}
 
-	hcl, err := GenerateResourceBlock("serval_group", "test", model)
+	hcl, err := GenerateResourceBlock("serval_group", "test", model, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -204,7 +204,7 @@ func TestNestedStruct(t *testing.T) {
 		},
 	}
 
-	hcl, err := GenerateResourceBlock("serval_role", "test", model)
+	hcl, err := GenerateResourceBlock("serval_role", "test", model, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -231,7 +231,7 @@ func TestNilNestedStruct(t *testing.T) {
 		Inner: nil,
 	}
 
-	hcl, err := GenerateResourceBlock("serval_role", "test", model)
+	hcl, err := GenerateResourceBlock("serval_role", "test", model, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -253,13 +253,153 @@ func TestPathTagRequired(t *testing.T) {
 		WorkflowID: types.StringValue("wf-1"),
 	}
 
-	hcl, err := GenerateResourceBlock("serval_approval", "test", model)
+	hcl, err := GenerateResourceBlock("serval_approval", "test", model, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	if !strings.Contains(hcl, `workflow_id = "wf-1"`) {
 		t.Errorf("should include path-tagged required field in:\n%s", hcl)
+	}
+}
+
+func TestNestedStructAttributeMode(t *testing.T) {
+	type Inner struct {
+		WorkflowID types.String `tfsdk:"workflow_id" json:"workflowId,optional"`
+	}
+	type Outer struct {
+		InnerA *Inner `tfsdk:"inner_a" json:"innerA,optional"`
+		InnerB *Inner `tfsdk:"inner_b" json:"innerB,optional"`
+	}
+	type TestModel struct {
+		ID    types.String `tfsdk:"id" json:"id,computed"`
+		Outer *Outer       `tfsdk:"method" json:"method,required"`
+	}
+
+	model := TestModel{
+		ID: types.StringValue("abc"),
+		Outer: &Outer{
+			InnerA: &Inner{WorkflowID: types.StringValue("wf-1")},
+			InnerB: nil,
+		},
+	}
+
+	// With schema info marking method and its children as attribute mode
+	schema := SchemaInfo{
+		"method": FieldSchema{
+			NestedMode: NestedModeAttr,
+			Children: SchemaInfo{
+				"inner_a": {NestedMode: NestedModeAttr},
+				"inner_b": {NestedMode: NestedModeAttr},
+			},
+		},
+	}
+
+	hcl, err := GenerateResourceBlock("serval_role", "test", model, schema)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Top-level nested attribute should use "= {"
+	if !strings.Contains(hcl, "method = {") {
+		t.Errorf("should use attribute syntax for method in:\n%s", hcl)
+	}
+
+	// Child nested attribute should also use "= {"
+	if !strings.Contains(hcl, "inner_a = {") {
+		t.Errorf("should use attribute syntax for inner_a in:\n%s", hcl)
+	}
+
+	// inner_b is nil, should not appear
+	if strings.Contains(hcl, "inner_b") {
+		t.Errorf("should not include nil nested struct inner_b in:\n%s", hcl)
+	}
+
+	// The inner field should still be present
+	if !strings.Contains(hcl, `workflow_id = "wf-1"`) {
+		t.Errorf("should include nested field in:\n%s", hcl)
+	}
+}
+
+func TestNestedStructBlockModeDefault(t *testing.T) {
+	type Inner struct {
+		WorkflowID types.String `tfsdk:"workflow_id" json:"workflowId,optional"`
+	}
+	type TestModel struct {
+		ID    types.String `tfsdk:"id" json:"id,computed"`
+		Inner *Inner       `tfsdk:"custom_workflow" json:"customWorkflow,optional"`
+	}
+
+	model := TestModel{
+		ID: types.StringValue("abc"),
+		Inner: &Inner{
+			WorkflowID: types.StringValue("wf-1"),
+		},
+	}
+
+	// Without schema info → default block mode
+	hcl, err := GenerateResourceBlock("serval_role", "test", model, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Should use block syntax (no "=")
+	if !strings.Contains(hcl, "custom_workflow {") {
+		t.Errorf("should use block syntax for custom_workflow in:\n%s", hcl)
+	}
+	if strings.Contains(hcl, "custom_workflow = {") {
+		t.Errorf("should NOT use attribute syntax without schema info in:\n%s", hcl)
+	}
+}
+
+func TestMapEnumValue(t *testing.T) {
+	allowed := []string{
+		"USER_ROLE_UNSPECIFIED",
+		"USER_ROLE_ORG_MEMBER",
+		"USER_ROLE_ORG_ADMIN",
+		"USER_ROLE_ORG_GUEST",
+	}
+
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// Exact match (case-insensitive)
+		{"USER_ROLE_ORG_ADMIN", "USER_ROLE_ORG_ADMIN"},
+		{"user_role_org_admin", "USER_ROLE_ORG_ADMIN"},
+
+		// Suffix match
+		{"admin", "USER_ROLE_ORG_ADMIN"},
+		{"ADMIN", "USER_ROLE_ORG_ADMIN"},
+		{"member", "USER_ROLE_ORG_MEMBER"},
+		{"guest", "USER_ROLE_ORG_GUEST"},
+
+		// No match — pass through unchanged
+		{"superadmin", "superadmin"},
+		{"unknown", "unknown"},
+	}
+
+	for _, tt := range tests {
+		got := mapEnumValue(tt.input, allowed)
+		if got != tt.expected {
+			t.Errorf("mapEnumValue(%q) = %q, want %q", tt.input, got, tt.expected)
+		}
+	}
+}
+
+func TestMapEnumValueAmbiguous(t *testing.T) {
+	// "PRIVATE" is a suffix of both values — ambiguous, should pass through
+	allowed := []string{"TEAM_PRIVATE", "SCOPE_PRIVATE"}
+	got := mapEnumValue("private", allowed)
+	if got != "private" {
+		t.Errorf("ambiguous suffix should pass through, got %q", got)
+	}
+}
+
+func TestMapEnumValueNilAllowed(t *testing.T) {
+	got := mapEnumValue("anything", nil)
+	if got != "anything" {
+		t.Errorf("nil allowed should pass through, got %q", got)
 	}
 }
 
@@ -274,7 +414,7 @@ func TestGenerateAttributes(t *testing.T) {
 		Name: types.StringValue("Test"),
 	}
 
-	attrs, err := GenerateAttributes(model)
+	attrs, err := GenerateAttributes(model, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
