@@ -5,8 +5,10 @@ package app_resource
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
 var _ datasource.DataSourceWithConfigValidators = (*AppResourceDataSource)(nil)
@@ -16,7 +18,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The ID of the resource.",
-				Required:    true,
+				Computed:    true,
+				Optional:    true,
 			},
 			"app_instance_id": schema.StringAttribute{
 				Description: "The ID of the app instance that the resource belongs to.",
@@ -38,6 +41,19 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "The type of the resource.",
 				Computed:    true,
 			},
+			"find_one_by": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"app_instance_id": schema.StringAttribute{
+						Description: "Filter by app instance ID. At least one of team_id or app_instance_id must be provided.",
+						Optional:    true,
+					},
+					"team_id": schema.StringAttribute{
+						Description: "Filter by team ID. At least one of team_id or app_instance_id must be provided.",
+						Optional:    true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -47,5 +63,7 @@ func (d *AppResourceDataSource) Schema(ctx context.Context, req datasource.Schem
 }
 
 func (d *AppResourceDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
-	return []datasource.ConfigValidator{}
+	return []datasource.ConfigValidator{
+		datasourcevalidator.ExactlyOneOf(path.MatchRoot("id"), path.MatchRoot("find_one_by")),
+	}
 }

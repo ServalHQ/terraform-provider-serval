@@ -7,9 +7,11 @@ import (
 
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -21,7 +23,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The ID of the role.",
-				Required:    true,
+				Computed:    true,
+				Optional:    true,
 			},
 			"access_policy_id": schema.StringAttribute{
 				Description: "The default access policy for the role.",
@@ -122,6 +125,23 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 			},
+			"find_one_by": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"app_instance_id": schema.StringAttribute{
+						Description: "Filter by app instance ID. At least one of team_id, app_instance_id, or resource_id must be provided.",
+						Optional:    true,
+					},
+					"resource_id": schema.StringAttribute{
+						Description: "Filter by resource ID. At least one of team_id, app_instance_id, or resource_id must be provided.",
+						Optional:    true,
+					},
+					"team_id": schema.StringAttribute{
+						Description: "Filter by team ID. At least one of team_id, app_instance_id, or resource_id must be provided.",
+						Optional:    true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -131,5 +151,7 @@ func (d *AppResourceRoleDataSource) Schema(ctx context.Context, req datasource.S
 }
 
 func (d *AppResourceRoleDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
-	return []datasource.ConfigValidator{}
+	return []datasource.ConfigValidator{
+		datasourcevalidator.ExactlyOneOf(path.MatchRoot("id"), path.MatchRoot("find_one_by")),
+	}
 }

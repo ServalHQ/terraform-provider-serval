@@ -65,6 +65,15 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Description: `IANA timezone, e.g., "America/New_York"`,
 				Computed:    true,
 			},
+			"find_one_by": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"include_deactivated": schema.BoolAttribute{
+						Description: "Whether to include deactivated users in the response.",
+						Optional:    true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -79,5 +88,6 @@ func (d *UserDataSource) ConfigValidators(_ context.Context) []datasource.Config
 			path.MatchRoot("id"),
 			path.MatchRoot("email"),
 		),
+		datasourcevalidator.ExactlyOneOf(path.MatchRoot("id"), path.MatchRoot("find_one_by")),
 	}
 }
