@@ -192,11 +192,15 @@ provider "serval" {}
 
 	// Also write the raw API JSON for debugging
 	rawDir := filepath.Join(outDir, "raw-api")
-	os.MkdirAll(rawDir, 0755)
+	if err := os.MkdirAll(rawDir, 0755); err != nil {
+		log.Fatalf("mkdir raw-api: %v", err)
+	}
 	for _, r := range resources {
 		name := r.Type + "." + r.Name + ".json"
 		pretty, _ := json.MarshalIndent(json.RawMessage(r.Envelope), "", "  ")
-		os.WriteFile(filepath.Join(rawDir, name), pretty, 0644)
+		if err := os.WriteFile(filepath.Join(rawDir, name), pretty, 0644); err != nil {
+			log.Fatalf("write raw JSON %s: %v", name, err)
+		}
 	}
 	fmt.Printf("Wrote raw API responses to %s/\n", rawDir)
 
@@ -224,7 +228,7 @@ func exchangeClientCredentials(clientID, clientSecret string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // best-effort cleanup
 
 	body, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode != 200 {
@@ -266,7 +270,9 @@ func fetchFirst(path, resourceType, nameKey string) (apiResource, error) {
 
 	// Extract id and name for the resource
 	var fields map[string]json.RawMessage
-	json.Unmarshal(item, &fields)
+	if err := json.Unmarshal(item, &fields); err != nil {
+		return apiResource{}, fmt.Errorf("parse item fields: %w", err)
+	}
 
 	id := unquote(fields["id"])
 	name := unquote(fields[nameKey])
@@ -297,7 +303,7 @@ func httpGet(path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // best-effort cleanup
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -314,7 +320,7 @@ func httpGet(path string) ([]byte, error) {
 // unquote strips JSON quotes from a raw value.
 func unquote(raw json.RawMessage) string {
 	var s string
-	json.Unmarshal(raw, &s)
+	_ = json.Unmarshal(raw, &s) // best-effort; returns "" on failure
 	return s
 }
 

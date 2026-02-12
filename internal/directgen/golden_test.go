@@ -337,8 +337,12 @@ func TestGoldenAllResourceTypes(t *testing.T) {
 
 			if goldenData, err := os.ReadFile(goldenState); err == nil {
 				var expectedAttrs, actualAttrs interface{}
-				json.Unmarshal(goldenData, &expectedAttrs)
-				json.Unmarshal(stateAttrs, &actualAttrs)
+				if err := json.Unmarshal(goldenData, &expectedAttrs); err != nil {
+					t.Fatalf("unmarshal golden state: %v", err)
+				}
+				if err := json.Unmarshal(stateAttrs, &actualAttrs); err != nil {
+					t.Fatalf("unmarshal actual state: %v", err)
+				}
 
 				expectedJSON, _ := json.MarshalIndent(expectedAttrs, "", "  ")
 				actualJSON, _ := json.MarshalIndent(actualAttrs, "", "  ")
@@ -474,7 +478,9 @@ func TestGoldenNullOptionalFields(t *testing.T) {
 
 	// State should have null optional fields
 	var attrs map[string]interface{}
-	json.Unmarshal(stateAttrs, &attrs)
+	if err := json.Unmarshal(stateAttrs, &attrs); err != nil {
+		t.Fatalf("unmarshal state attrs: %v", err)
+	}
 
 	if attrs["first_name"] != nil {
 		t.Errorf("expected first_name=null, got %v", attrs["first_name"])
