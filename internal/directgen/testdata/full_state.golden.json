@@ -1,0 +1,238 @@
+{
+  "version": 4,
+  "terraform_version": "1.9.0",
+  "serial": 1,
+  "lineage": "golden-test",
+  "outputs": {},
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "serval_access_policy",
+      "name": "standard_jit_access",
+      "provider": "provider[\"registry.opentofu.org/servalhq/serval\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "description": "Standard just-in-time access policy",
+            "id": "ap-abc-123",
+            "max_access_minutes": 60,
+            "name": "Standard JIT Access",
+            "recommended_access_minutes": 30,
+            "require_business_justification": true,
+            "team_id": "team-abc-123"
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "serval_app_instance",
+      "name": "okta_production",
+      "provider": "provider[\"registry.opentofu.org/servalhq/serval\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "access_requests_enabled": true,
+            "custom_service_id": null,
+            "default_access_policy_id": "ap-abc-123",
+            "external_service_instance_id": "0oa1234567",
+            "id": "ai-abc-123",
+            "name": "Okta Production",
+            "service": "okta",
+            "team_id": "team-abc-123"
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "serval_app_resource",
+      "name": "github_organization",
+      "provider": "provider[\"registry.opentofu.org/servalhq/serval\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "app_instance_id": "ai-abc-123",
+            "description": "Main GitHub organization",
+            "external_id": "ext-gh-org-1",
+            "id": "ar-abc-123",
+            "name": "GitHub Organization",
+            "resource_type": "github_org"
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "serval_app_resource_role",
+      "name": "admin",
+      "provider": "provider[\"registry.opentofu.org/servalhq/serval\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "access_policy_id": "ap-abc-123",
+            "description": "Admin role for GitHub org",
+            "external_data": null,
+            "external_id": null,
+            "id": "arr-abc-123",
+            "name": "admin",
+            "provisioning_method": {
+              "builtin_workflow": null,
+              "custom_workflow": {
+                "deprovision_workflow_id": "wf-deprov-123",
+                "provision_workflow_id": "wf-prov-123"
+              },
+              "linked_roles": null,
+              "manual": null
+            },
+            "requests_enabled": true,
+            "resource_id": "ar-abc-123"
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "serval_custom_service",
+      "name": "internal_api_gateway",
+      "provider": "provider[\"registry.opentofu.org/servalhq/serval\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "domain": "api.internal.example.com",
+            "id": "cs-abc-123",
+            "name": "Internal API Gateway",
+            "team_id": "team-abc-123"
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "serval_group",
+      "name": "engineering_admins",
+      "provider": "provider[\"registry.opentofu.org/servalhq/serval\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "created_at": "2025-01-10T09:00:00Z",
+            "deleted_at": null,
+            "id": "grp-abc-123",
+            "name": "Engineering Admins",
+            "organization_id": "org-abc-123",
+            "user_ids": [
+              "usr-001",
+              "usr-002",
+              "usr-003"
+            ]
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "serval_guidance",
+      "name": "onboarding_guide",
+      "provider": "provider[\"registry.opentofu.org/servalhq/serval\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "content": "# Welcome\nThis is the onboarding guide.",
+            "description": "New employee onboarding",
+            "has_unpublished_changes": false,
+            "id": "guid-abc-123",
+            "is_published": true,
+            "name": "Onboarding Guide",
+            "should_always_use": false,
+            "team_id": "team-abc-123"
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "serval_team",
+      "name": "platform_engineering",
+      "provider": "provider[\"registry.opentofu.org/servalhq/serval\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "created_at": "2025-01-01T00:00:00Z",
+            "description": "The platform engineering team",
+            "id": "team-abc-123",
+            "name": "Platform Engineering",
+            "organization_id": "org-abc-123",
+            "prefix": "plat-eng"
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "serval_user",
+      "name": "alice_smith",
+      "provider": "provider[\"registry.opentofu.org/servalhq/serval\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "avatar_url": "https://example.com/avatar.png",
+            "created_at": "2025-01-15T10:00:00Z",
+            "deactivated_at": null,
+            "email": "alice@example.com",
+            "first_name": "Alice",
+            "id": "usr-abc-123",
+            "last_name": "Smith",
+            "name": "Alice Smith",
+            "role": "admin",
+            "timezone": "America/New_York"
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "serval_workflow",
+      "name": "deploy_to_prod",
+      "provider": "provider[\"registry.opentofu.org/servalhq/serval\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "content": "import { workflow } from 'serval/core';\nexport const main = workflow({ fn: async () =\u003e {} });",
+            "description": "Deploy to production workflow",
+            "execution_scope": "TEAM_PRIVATE",
+            "has_unpublished_changes": false,
+            "id": "wf-abc-123",
+            "is_published": true,
+            "is_temporary": false,
+            "name": "deploy-to-prod",
+            "parameters": null,
+            "require_form_confirmation": false,
+            "tag_ids": [],
+            "team_id": "team-abc-123",
+            "type": "EXECUTABLE"
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    }
+  ]
+}

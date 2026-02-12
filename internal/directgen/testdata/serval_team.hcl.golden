@@ -1,0 +1,5 @@
+resource "serval_team" "platform_engineering" {
+  name = "Platform Engineering"
+  description = "The platform engineering team"
+  prefix = "plat-eng"
+}

@@ -1,0 +1,16 @@
+{
+  "data": {
+    "id": "wf-abc-123",
+    "teamId": "team-abc-123",
+    "name": "deploy-to-prod",
+    "type": "EXECUTABLE",
+    "content": "import { workflow } from 'serval/core';\nexport const main = workflow({ fn: async () => {} });",
+    "description": "Deploy to production workflow",
+    "executionScope": "TEAM_PRIVATE",
+    "isPublished": true,
+    "isTemporary": false,
+    "requireFormConfirmation": false,
+    "hasUnpublishedChanges": false,
+    "tagIds": []
+  }
+}

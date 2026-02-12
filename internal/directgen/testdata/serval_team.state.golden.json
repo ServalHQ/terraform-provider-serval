@@ -1,0 +1,8 @@
+{
+  "created_at": "2025-01-01T00:00:00Z",
+  "description": "The platform engineering team",
+  "id": "team-abc-123",
+  "name": "Platform Engineering",
+  "organization_id": "org-abc-123",
+  "prefix": "plat-eng"
+}

@@ -1,0 +1,10 @@
+{
+  "data": {
+    "id": "team-abc-123",
+    "name": "Platform Engineering",
+    "description": "The platform engineering team",
+    "prefix": "plat-eng",
+    "createdAt": "2025-01-01T00:00:00Z",
+    "organizationId": "org-abc-123"
+  }
+}

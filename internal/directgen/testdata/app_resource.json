@@ -1,0 +1,10 @@
+{
+  "data": {
+    "id": "ar-abc-123",
+    "appInstanceId": "ai-abc-123",
+    "name": "GitHub Organization",
+    "resourceType": "github_org",
+    "description": "Main GitHub organization",
+    "externalId": "ext-gh-org-1"
+  }
+}

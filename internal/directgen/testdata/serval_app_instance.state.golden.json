@@ -1,0 +1,10 @@
+{
+  "access_requests_enabled": true,
+  "custom_service_id": null,
+  "default_access_policy_id": "ap-abc-123",
+  "external_service_instance_id": "0oa1234567",
+  "id": "ai-abc-123",
+  "name": "Okta Production",
+  "service": "okta",
+  "team_id": "team-abc-123"
+}

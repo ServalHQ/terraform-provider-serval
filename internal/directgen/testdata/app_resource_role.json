@@ -1,0 +1,16 @@
+{
+  "data": {
+    "id": "arr-abc-123",
+    "resourceId": "ar-abc-123",
+    "name": "admin",
+    "provisioningMethod": {
+      "customWorkflow": {
+        "provisionWorkflowId": "wf-prov-123",
+        "deprovisionWorkflowId": "wf-deprov-123"
+      }
+    },
+    "accessPolicyId": "ap-abc-123",
+    "description": "Admin role for GitHub org",
+    "requestsEnabled": true
+  }
+}

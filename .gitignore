@@ -2,3 +2,5 @@
 dist/
 terraform-provider-serval
 test-workspace/
+e2e-workspace/
+/e2etest

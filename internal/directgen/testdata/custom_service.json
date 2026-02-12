@@ -1,0 +1,8 @@
+{
+  "data": {
+    "id": "cs-abc-123",
+    "teamId": "team-abc-123",
+    "name": "Internal API Gateway",
+    "domain": "api.internal.example.com"
+  }
+}

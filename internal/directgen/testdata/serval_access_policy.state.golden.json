@@ -1,0 +1,9 @@
+{
+  "description": "Standard just-in-time access policy",
+  "id": "ap-abc-123",
+  "max_access_minutes": 60,
+  "name": "Standard JIT Access",
+  "recommended_access_minutes": 30,
+  "require_business_justification": true,
+  "team_id": "team-abc-123"
+}

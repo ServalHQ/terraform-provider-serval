@@ -1,0 +1,19 @@
+{
+  "access_policy_id": "ap-abc-123",
+  "description": "Admin role for GitHub org",
+  "external_data": null,
+  "external_id": null,
+  "id": "arr-abc-123",
+  "name": "admin",
+  "provisioning_method": {
+    "builtin_workflow": null,
+    "custom_workflow": {
+      "deprovision_workflow_id": "wf-deprov-123",
+      "provision_workflow_id": "wf-prov-123"
+    },
+    "linked_roles": null,
+    "manual": null
+  },
+  "requests_enabled": true,
+  "resource_id": "ar-abc-123"
+}
