@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.21.0 (2026-02-12)
+
+Full Changelog: [v0.20.0...v0.21.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.20.0...v0.21.0)
+
+### Features
+
+* **api:** manual updates ([e42c1a4](https://github.com/ServalHQ/terraform-provider-serval/commit/e42c1a47f9ed6eca043741445021aa40b85d48d5))
+* direct state and HCL generation bypassing OpenTofu import ([#65](https://github.com/ServalHQ/terraform-provider-serval/issues/65)) ([f6b98d4](https://github.com/ServalHQ/terraform-provider-serval/commit/f6b98d41523fda63b45a6603d3c3aadcbe0f61c4))
+
 ## 0.20.0 (2026-02-08)
 
 Full Changelog: [v0.19.2...v0.20.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.19.2...v0.20.0)
