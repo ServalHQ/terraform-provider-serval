@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.21.1 (2026-02-26)
+
+Full Changelog: [v0.21.0...v0.21.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.21.0...v0.21.1)
+
+### Bug Fixes
+
+* use HCL library's own string escaping to prevent parse failures ([#68](https://github.com/ServalHQ/terraform-provider-serval/issues/68)) ([4a563b5](https://github.com/ServalHQ/terraform-provider-serval/commit/4a563b5d07a05850316420d2bdb5913d855b6f18))
+
 ## 0.21.0 (2026-02-12)
 
 Full Changelog: [v0.20.0...v0.21.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.20.0...v0.21.0)
