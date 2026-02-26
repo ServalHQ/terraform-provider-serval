@@ -403,6 +403,62 @@ func TestMapEnumValueNilAllowed(t *testing.T) {
 	}
 }
 
+func TestHclQuote(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// Plain string — no escaping needed
+		{"hello", `"hello"`},
+		// Dollar-brace interpolation
+		{"Hello ${name}", `"Hello $${name}"`},
+		// Percent-brace template directive
+		{"Hello %{if true}yes%{endif}", `"Hello %%{if true}yes%%{endif}"`},
+		// Both sequences
+		{"${a} and %{b}", `"$${a} and %%{b}"`},
+		// Already-escaped Go characters should be preserved
+		{"line1\nline2", `"line1\nline2"`},
+		// No braces after $ — should not be escaped
+		{"price is $5", `"price is $5"`},
+	}
+
+	for _, tt := range tests {
+		got := hclQuote(tt.input)
+		if got != tt.expected {
+			t.Errorf("hclQuote(%q) = %s, want %s", tt.input, got, tt.expected)
+		}
+	}
+}
+
+func TestStringWithInterpolation(t *testing.T) {
+	type TestModel struct {
+		ID   types.String `tfsdk:"id" json:"id,computed"`
+		Body types.String `tfsdk:"body" json:"body,required"`
+	}
+
+	model := TestModel{
+		ID:   types.StringValue("abc"),
+		Body: types.StringValue("Hello ${userEmail}, welcome to ${teamName}"),
+	}
+
+	hcl, err := GenerateResourceBlock("serval_workflow", "test", model, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// The output should contain escaped interpolation sequences
+	if !strings.Contains(hcl, `$${userEmail}`) {
+		t.Errorf("should escape ${ as $${ in:\n%s", hcl)
+	}
+	if !strings.Contains(hcl, `$${teamName}`) {
+		t.Errorf("should escape ${ as $${ in:\n%s", hcl)
+	}
+	// Should NOT contain unescaped ${
+	if strings.Contains(hcl, `${userEmail}`) && !strings.Contains(hcl, `$${userEmail}`) {
+		t.Errorf("should not contain unescaped interpolation in:\n%s", hcl)
+	}
+}
+
 func TestGenerateAttributes(t *testing.T) {
 	type TestModel struct {
 		ID   types.String `tfsdk:"id" json:"id,computed"`
