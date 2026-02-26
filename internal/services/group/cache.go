@@ -48,6 +48,7 @@ func Prefetch(ctx context.Context, client *serval.Client) (int, error) {
 		}
 		for i := range page.Data {
 			item := page.Data[i]
+			item.normalizeState()
 			Cache.Put(item.ID.ValueString(), &item)
 		}
 		if page.NextPageToken == nil || *page.NextPageToken == "" {
