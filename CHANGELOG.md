@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.21.2 (2026-02-26)
+
+Full Changelog: [v0.21.1...v0.21.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.21.1...v0.21.2)
+
+### Bug Fixes
+
+* eliminate spurious diffs on serval_group resources ([#70](https://github.com/ServalHQ/terraform-provider-serval/issues/70)) ([9dfbb40](https://github.com/ServalHQ/terraform-provider-serval/commit/9dfbb4080cd56946f60c2e14b2d387a1ebf20343))
+
 ## 0.21.1 (2026-02-26)
 
 Full Changelog: [v0.21.0...v0.21.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.21.0...v0.21.1)
