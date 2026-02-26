@@ -28,3 +28,14 @@ func (m GroupModel) MarshalJSON() (data []byte, err error) {
 func (m GroupModel) MarshalJSONForUpdate(state GroupModel) (data []byte, err error) {
 	return apijson.MarshalForUpdate(m, state)
 }
+
+// normalizeState prevents spurious diffs by aligning what the API returns
+// with what Terraform expects when a field is unset in the HCL config.
+// Empty user_ids lists are normalized to null because the API returns []
+// for groups with no members, but Terraform stores null when user_ids is
+// omitted from config.
+func (m *GroupModel) normalizeState() {
+	if m.UserIDs != nil && len(*m.UserIDs) == 0 {
+		m.UserIDs = nil
+	}
+}

@@ -39,7 +39,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Description:   `A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").`,
 				Computed:      true,
 				CustomType:    timetypes.RFC3339Type{},
-				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+				PlanModifiers: []planmodifier.String{useNullableStateForUnknown()},
 			},
 			"organization_id": schema.StringAttribute{
 				Computed:      true,
@@ -47,6 +47,41 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			},
 		},
 	}
+}
+
+// useNullableStateForUnknownModifier copies the prior state value to the plan
+// even when the state value is null. This differs from
+// stringplanmodifier.UseStateForUnknown() which skips null state values.
+//
+// This is needed for computed-only fields like deleted_at where null is a
+// valid server-computed value ("not deleted") that should be preserved across
+// plans. Without this, UseStateForUnknown leaves the plan as unknown when
+// state is null, producing a spurious diff on every update.
+type useNullableStateForUnknownModifier struct{}
+
+func useNullableStateForUnknown() planmodifier.String {
+	return useNullableStateForUnknownModifier{}
+}
+
+func (m useNullableStateForUnknownModifier) Description(_ context.Context) string {
+	return "Copies the prior state value (including null) to the plan when the plan value is unknown."
+}
+
+func (m useNullableStateForUnknownModifier) MarkdownDescription(_ context.Context) string {
+	return "Copies the prior state value (including null) to the plan when the plan value is unknown."
+}
+
+func (m useNullableStateForUnknownModifier) PlanModifyString(_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if !req.PlanValue.IsUnknown() {
+		return
+	}
+	if req.ConfigValue.IsUnknown() {
+		return
+	}
+	if req.StateValue.IsUnknown() {
+		return
+	}
+	resp.PlanValue = req.StateValue
 }
 
 func (r *GroupResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {

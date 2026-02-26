@@ -176,6 +176,7 @@ func (r *GroupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 	data = &env.Data
+	data.normalizeState()
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -241,6 +242,7 @@ func (r *GroupResource) ImportState(ctx context.Context, req resource.ImportStat
 		return
 	}
 	data = &env.Data
+	data.normalizeState()
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
