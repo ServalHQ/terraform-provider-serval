@@ -14,9 +14,11 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/zclconf/go-cty/cty"
 )
 
 // NestedMode specifies how a nested field should be rendered in HCL.
@@ -306,12 +308,20 @@ func mapEnumValue(apiValue string, allowed []string) string {
 	return apiValue
 }
 
+// hclQuote produces an HCL-safe double-quoted string literal by delegating to
+// hclwrite.TokensForValue, which uses the HCL library's own escapeQuotedStringLit.
+// This correctly handles all HCL special sequences (${, %{), control characters,
+// non-printable Unicode, and any future syntax additions.
+func hclQuote(s string) string {
+	return string(hclwrite.TokensForValue(cty.StringVal(s)).Bytes())
+}
+
 // serializeAttrValueToHCL converts an attr.Value to HCL syntax.
 func serializeAttrValueToHCL(name string, attrVal attr.Value, v reflect.Value, prefix string, indent int, fs FieldSchema) (string, error) {
 	switch val := attrVal.(type) {
 	case basetypes.StringValue:
 		s := mapEnumValue(val.ValueString(), fs.AllowedValues)
-		return fmt.Sprintf("%s%s = %q\n", prefix, name, s), nil
+		return fmt.Sprintf("%s%s = %s\n", prefix, name, hclQuote(s)), nil
 
 	case types.Int64:
 		return fmt.Sprintf("%s%s = %d\n", prefix, name, val.ValueInt64()), nil
@@ -331,7 +341,7 @@ func serializeAttrValueToHCL(name string, attrVal attr.Value, v reflect.Value, p
 
 	// Custom types wrapping string (timetypes.RFC3339, jsontypes.Normalized)
 	if sv, ok := attrVal.(stringValuer); ok {
-		return fmt.Sprintf("%s%s = %q\n", prefix, name, sv.ValueString()), nil
+		return fmt.Sprintf("%s%s = %s\n", prefix, name, hclQuote(sv.ValueString())), nil
 	}
 
 	// Custom list types (customfield.List, customfield.NestedObjectList)
@@ -627,7 +637,7 @@ func elementToHCL(val attr.Value) (string, error) {
 
 	switch v := val.(type) {
 	case basetypes.StringValue:
-		return fmt.Sprintf("%q", v.ValueString()), nil
+		return hclQuote(v.ValueString()), nil
 	case basetypes.Int64Value:
 		return fmt.Sprintf("%d", v.ValueInt64()), nil
 	case basetypes.BoolValue:
@@ -637,7 +647,7 @@ func elementToHCL(val attr.Value) (string, error) {
 	}
 
 	if sv, ok := val.(stringValuer); ok {
-		return fmt.Sprintf("%q", sv.ValueString()), nil
+		return hclQuote(sv.ValueString()), nil
 	}
 
 	return "", fmt.Errorf("unsupported element type %T for HCL", val)
