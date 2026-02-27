@@ -6,9 +6,9 @@ import (
 	"context"
 
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var _ datasource.DataSourceWithConfigValidators = (*WorkflowApprovalProcedureDataSource)(nil)
@@ -35,24 +35,64 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:    true,
 						},
 						"allow_self_approval": schema.BoolAttribute{
-							Description: "Whether the step can be approved by the requester themselves.",
+							Description: "Whether the step can be approved by the requester themselves.\n optional so server can distinguish \"not set\" from \"explicitly false\"\n (DB defaults to TRUE; proto3 defaults bool to false)",
 							Computed:    true,
 						},
-						"custom_workflow_id": schema.StringAttribute{
-							Description: "A workflow ID to execute to determine the approvers for this step (or to auto-approve the step).",
+						"approvers": schema.ListNestedAttribute{
+							Description: "Exactly one of approvers or custom_workflow must be set.\n Mutual exclusivity validated server-side.",
 							Computed:    true,
+							CustomType:  customfield.NewNestedObjectListType[WorkflowApprovalProcedureStepsApproversDataSourceModel](ctx),
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"app_owner": schema.StringAttribute{
+										Description: "App owners as approvers. Only valid for access policy approval procedures.",
+										Computed:    true,
+										CustomType:  jsontypes.NormalizedType{},
+									},
+									"notify": schema.BoolAttribute{
+										Description: "Whether to notify this approver when the step is pending.",
+										Computed:    true,
+									},
+									"group": schema.SingleNestedAttribute{
+										Description: "A Serval group as approvers.",
+										Computed:    true,
+										CustomType:  customfield.NewNestedObjectType[WorkflowApprovalProcedureStepsApproversGroupDataSourceModel](ctx),
+										Attributes: map[string]schema.Attribute{
+											"group_id": schema.StringAttribute{
+												Description: "The ID of the Serval group.",
+												Computed:    true,
+											},
+										},
+									},
+									"manager": schema.StringAttribute{
+										Description: "The requester's manager as an approver.",
+										Computed:    true,
+										CustomType:  jsontypes.NormalizedType{},
+									},
+									"user": schema.SingleNestedAttribute{
+										Description: "A specific user as an approver.",
+										Computed:    true,
+										CustomType:  customfield.NewNestedObjectType[WorkflowApprovalProcedureStepsApproversUserDataSourceModel](ctx),
+										Attributes: map[string]schema.Attribute{
+											"user_id": schema.StringAttribute{
+												Description: "The ID of the user.",
+												Computed:    true,
+											},
+										},
+									},
+								},
+							},
 						},
-						"serval_group_ids": schema.ListAttribute{
-							Description: "The IDs of the Serval groups that can approve the step.",
+						"custom_workflow": schema.SingleNestedAttribute{
+							Description: "Configuration for a custom workflow that determines approvers or auto-approves.",
 							Computed:    true,
-							CustomType:  customfield.NewListType[types.String](ctx),
-							ElementType: types.StringType,
-						},
-						"specific_user_ids": schema.ListAttribute{
-							Description: "The IDs of the specific users that can approve the step.",
-							Computed:    true,
-							CustomType:  customfield.NewListType[types.String](ctx),
-							ElementType: types.StringType,
+							CustomType:  customfield.NewNestedObjectType[WorkflowApprovalProcedureStepsCustomWorkflowDataSourceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"workflow_id": schema.StringAttribute{
+									Description: "The ID of the workflow to execute.",
+									Computed:    true,
+								},
+							},
 						},
 					},
 				},

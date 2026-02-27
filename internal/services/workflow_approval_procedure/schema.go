@@ -6,11 +6,11 @@ import (
 	"context"
 
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var _ resource.ResourceWithConfigValidators = (*WorkflowApprovalProcedureResource)(nil)
@@ -40,23 +40,62 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							Computed:    true,
 						},
 						"allow_self_approval": schema.BoolAttribute{
-							Description: "Whether the step can be approved by the requester themselves.",
+							Description: "Whether the step can be approved by the requester themselves.\n optional so server can distinguish \"not set\" from \"explicitly false\"\n (DB defaults to TRUE; proto3 defaults bool to false)",
 							Computed:    true,
 							Optional:    true,
 						},
-						"custom_workflow_id": schema.StringAttribute{
-							Description: "A workflow ID to execute to determine the approvers for this step (or to auto-approve the step).",
+						"approvers": schema.ListNestedAttribute{
+							Description: "Exactly one of approvers or custom_workflow must be set.\n Mutual exclusivity validated server-side.",
 							Optional:    true,
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"app_owner": schema.StringAttribute{
+										Description: "App owners as approvers. Only valid for access policy approval procedures.",
+										Optional:    true,
+										CustomType:  jsontypes.NormalizedType{},
+									},
+									"notify": schema.BoolAttribute{
+										Description: "Whether to notify this approver when the step is pending.",
+										Computed:    true,
+										Optional:    true,
+									},
+									"group": schema.SingleNestedAttribute{
+										Description: "A Serval group as approvers.",
+										Optional:    true,
+										Attributes: map[string]schema.Attribute{
+											"group_id": schema.StringAttribute{
+												Description: "The ID of the Serval group.",
+												Optional:    true,
+											},
+										},
+									},
+									"manager": schema.StringAttribute{
+										Description: "The requester's manager as an approver.",
+										Optional:    true,
+										CustomType:  jsontypes.NormalizedType{},
+									},
+									"user": schema.SingleNestedAttribute{
+										Description: "A specific user as an approver.",
+										Optional:    true,
+										Attributes: map[string]schema.Attribute{
+											"user_id": schema.StringAttribute{
+												Description: "The ID of the user.",
+												Optional:    true,
+											},
+										},
+									},
+								},
+							},
 						},
-						"serval_group_ids": schema.ListAttribute{
-							Description: "The IDs of the Serval groups that can approve the step.",
+						"custom_workflow": schema.SingleNestedAttribute{
+							Description: "Configuration for a custom workflow that determines approvers or auto-approves.",
 							Optional:    true,
-							ElementType: types.StringType,
-						},
-						"specific_user_ids": schema.ListAttribute{
-							Description: "The IDs of the specific users that can approve the step.",
-							Optional:    true,
-							ElementType: types.StringType,
+							Attributes: map[string]schema.Attribute{
+								"workflow_id": schema.StringAttribute{
+									Description: "The ID of the workflow to execute.",
+									Optional:    true,
+								},
+							},
 						},
 					},
 				},
