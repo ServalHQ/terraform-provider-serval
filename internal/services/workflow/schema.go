@@ -39,17 +39,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Description: "The name of the workflow.",
 				Required:    true,
 			},
-			"type": schema.StringAttribute{
-				Description: "The type of the workflow.\nAvailable values: \"WORKFLOW_TYPE_UNSPECIFIED\", \"EXECUTABLE\", \"GUIDANCE\".",
-				Required:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOfCaseInsensitive(
-						"WORKFLOW_TYPE_UNSPECIFIED",
-						"EXECUTABLE",
-						"GUIDANCE",
-					),
-				},
-			},
 			"description": schema.StringAttribute{
 				Description: "A description of the workflow.",
 				Optional:    true,
@@ -65,17 +54,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 					),
 				},
 			},
-			"parameters": schema.StringAttribute{
-				Description: "The parameters schema of the workflow (JSON, optional).",
-				Optional:    true,
-			},
 			"is_published": schema.BoolAttribute{
 				Description: "Whether to publish the workflow after creation (optional).",
-				Computed:    true,
-				Optional:    true,
-			},
-			"is_temporary": schema.BoolAttribute{
-				Description: "Whether the workflow is temporary (optional).",
 				Computed:    true,
 				Optional:    true,
 			},

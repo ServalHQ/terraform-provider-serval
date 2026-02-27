@@ -23,12 +23,9 @@ type WorkflowDataSourceModel struct {
 	ExecutionScope          types.String                      `tfsdk:"execution_scope" json:"executionScope,computed"`
 	HasUnpublishedChanges   types.Bool                        `tfsdk:"has_unpublished_changes" json:"hasUnpublishedChanges,computed"`
 	IsPublished             types.Bool                        `tfsdk:"is_published" json:"isPublished,computed"`
-	IsTemporary             types.Bool                        `tfsdk:"is_temporary" json:"isTemporary,computed"`
 	Name                    types.String                      `tfsdk:"name" json:"name,computed"`
-	Parameters              types.String                      `tfsdk:"parameters" json:"parameters,computed"`
 	RequireFormConfirmation types.Bool                        `tfsdk:"require_form_confirmation" json:"requireFormConfirmation,computed"`
 	TeamID                  types.String                      `tfsdk:"team_id" json:"teamId,computed"`
-	Type                    types.String                      `tfsdk:"type" json:"type,computed"`
 	TagIDs                  customfield.List[types.String]    `tfsdk:"tag_ids" json:"tagIds,computed"`
 	FindOneBy               *WorkflowFindOneByDataSourceModel `tfsdk:"find_one_by"`
 }
@@ -36,9 +33,6 @@ type WorkflowDataSourceModel struct {
 func (m *WorkflowDataSourceModel) toListParams(_ context.Context) (params serval.WorkflowListParams, diags diag.Diagnostics) {
 	params = serval.WorkflowListParams{}
 
-	if !m.FindOneBy.IncludeTemporary.IsNull() {
-		params.IncludeTemporary = param.NewOpt(m.FindOneBy.IncludeTemporary.ValueBool())
-	}
 	if !m.FindOneBy.TeamID.IsNull() {
 		params.TeamID = param.NewOpt(m.FindOneBy.TeamID.ValueString())
 	}
@@ -47,6 +41,5 @@ func (m *WorkflowDataSourceModel) toListParams(_ context.Context) (params serval
 }
 
 type WorkflowFindOneByDataSourceModel struct {
-	IncludeTemporary types.Bool   `tfsdk:"include_temporary" query:"includeTemporary,optional"`
-	TeamID           types.String `tfsdk:"team_id" query:"teamId,optional"`
+	TeamID types.String `tfsdk:"team_id" query:"teamId,optional"`
 }

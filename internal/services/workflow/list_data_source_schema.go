@@ -19,10 +19,6 @@ var _ datasource.DataSourceWithConfigValidators = (*WorkflowsDataSource)(nil)
 func ListDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"include_temporary": schema.BoolAttribute{
-				Description: "Whether to include temporary workflows (optional, defaults to false).",
-				Optional:    true,
-			},
 			"team_id": schema.StringAttribute{
 				Description: "The ID of the team.",
 				Optional:    true,
@@ -71,16 +67,8 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 							Description: "Whether the workflow is published. Set to true to publish the workflow.",
 							Computed:    true,
 						},
-						"is_temporary": schema.BoolAttribute{
-							Description: "Whether the workflow is temporary.",
-							Computed:    true,
-						},
 						"name": schema.StringAttribute{
 							Description: "The name of the workflow.",
-							Computed:    true,
-						},
-						"parameters": schema.StringAttribute{
-							Description: "The parameters schema of the workflow (JSON).",
 							Computed:    true,
 						},
 						"require_form_confirmation": schema.BoolAttribute{
@@ -96,17 +84,6 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 						"team_id": schema.StringAttribute{
 							Description: "The ID of the team that the workflow belongs to.",
 							Computed:    true,
-						},
-						"type": schema.StringAttribute{
-							Description: "The type of the workflow.\nAvailable values: \"WORKFLOW_TYPE_UNSPECIFIED\", \"EXECUTABLE\", \"GUIDANCE\".",
-							Computed:    true,
-							Validators: []validator.String{
-								stringvalidator.OneOfCaseInsensitive(
-									"WORKFLOW_TYPE_UNSPECIFIED",
-									"EXECUTABLE",
-									"GUIDANCE",
-								),
-							},
 						},
 					},
 				},

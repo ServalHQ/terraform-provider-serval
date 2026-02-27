@@ -2,8 +2,14 @@ resource "serval_workflow_approval_procedure" "example_workflow_approval_procedu
   workflow_id = "workflow_id"
   steps = [{
     allow_self_approval = true
-    custom_workflow_id = "customWorkflowId"
-    serval_group_ids = ["string"]
-    specific_user_ids = ["string"]
+    approvers = [{
+      app_owner = {
+
+      }
+      notify = true
+    }]
+    custom_workflow = {
+      workflow_id = "workflowId"
+    }
   }]
 }

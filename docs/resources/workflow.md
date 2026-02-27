@@ -17,12 +17,9 @@ resource "serval_workflow" "example_workflow" {
   content = "content"
   name = "name"
   team_id = "teamId"
-  type = "WORKFLOW_TYPE_UNSPECIFIED"
   description = "description"
   execution_scope = "WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED"
   is_published = true
-  is_temporary = true
-  parameters = "parameters"
   require_form_confirmation = true
 }
 ```
@@ -35,8 +32,6 @@ resource "serval_workflow" "example_workflow" {
 - `content` (String) The content/code of the workflow.
 - `name` (String) The name of the workflow.
 - `team_id` (String) The ID of the team.
-- `type` (String) The type of the workflow.
-Available values: "WORKFLOW_TYPE_UNSPECIFIED", "EXECUTABLE", "GUIDANCE".
 
 ### Optional
 
@@ -44,8 +39,6 @@ Available values: "WORKFLOW_TYPE_UNSPECIFIED", "EXECUTABLE", "GUIDANCE".
 - `execution_scope` (String) The execution scope of the workflow.
 Available values: "WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED", "TEAM_PRIVATE", "TEAM_PUBLIC".
 - `is_published` (Boolean) Whether to publish the workflow after creation (optional).
-- `is_temporary` (Boolean) Whether the workflow is temporary (optional).
-- `parameters` (String) The parameters schema of the workflow (JSON, optional).
 - `require_form_confirmation` (Boolean) Whether the workflow requires form confirmation (optional).
 
 ### Read-Only

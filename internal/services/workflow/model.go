@@ -17,12 +17,9 @@ type WorkflowModel struct {
 	TeamID                  types.String                   `tfsdk:"team_id" json:"teamId,required"`
 	Content                 types.String                   `tfsdk:"content" json:"content,required"`
 	Name                    types.String                   `tfsdk:"name" json:"name,required"`
-	Type                    types.String                   `tfsdk:"type" json:"type,required"`
 	Description             types.String                   `tfsdk:"description" json:"description,optional"`
 	ExecutionScope          types.String                   `tfsdk:"execution_scope" json:"executionScope,optional"`
-	Parameters              types.String                   `tfsdk:"parameters" json:"parameters,optional"`
 	IsPublished             types.Bool                     `tfsdk:"is_published" json:"isPublished,computed_optional"`
-	IsTemporary             types.Bool                     `tfsdk:"is_temporary" json:"isTemporary,computed_optional"`
 	RequireFormConfirmation types.Bool                     `tfsdk:"require_form_confirmation" json:"requireFormConfirmation,computed_optional"`
 	HasUnpublishedChanges   types.Bool                     `tfsdk:"has_unpublished_changes" json:"hasUnpublishedChanges,computed"`
 	TagIDs                  customfield.List[types.String] `tfsdk:"tag_ids" json:"tagIds,computed"`
