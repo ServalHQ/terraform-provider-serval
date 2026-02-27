@@ -42,13 +42,13 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							Computed:      true,
 							PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 						},
-						"allow_self_approval": schema.BoolAttribute{
-							Description: "Whether the step can be approved by the requester themselves.\n optional so server can distinguish \"not set\" from \"explicitly false\"\n (DB defaults to TRUE; proto3 defaults bool to false)",
+					"allow_self_approval": schema.BoolAttribute{
+						Description: "Whether the step can be approved by the requester themselves. Defaults to true if not set.",
 							Computed:    true,
 							Optional:    true,
 						},
-						"approvers": schema.ListNestedAttribute{
-							Description: "Exactly one of approvers or custom_workflow must be set.\n Mutual exclusivity validated server-side.",
+					"approvers": schema.ListNestedAttribute{
+						Description: "The list of approvers for this step. Exactly one of `approvers` or `custom_workflow` must be set.",
 							Optional:    true,
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{

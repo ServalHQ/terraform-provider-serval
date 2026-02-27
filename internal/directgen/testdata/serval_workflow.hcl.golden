@@ -2,10 +2,8 @@ resource "serval_workflow" "deploy_to_prod" {
   team_id = "team-abc-123"
   content = "import { workflow } from 'serval/core';\nexport const main = workflow({ fn: async () => {} });"
   name = "deploy-to-prod"
-  type = "EXECUTABLE"
   description = "Deploy to production workflow"
   execution_scope = "TEAM_PRIVATE"
   is_published = true
-  is_temporary = false
   require_form_confirmation = false
 }

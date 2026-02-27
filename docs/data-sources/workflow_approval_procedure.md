@@ -36,11 +36,8 @@ data "serval_workflow_approval_procedure" "example_workflow_approval_procedure" 
 
 Read-Only:
 
-- `allow_self_approval` (Boolean) Whether the step can be approved by the requester themselves.
- optional so server can distinguish "not set" from "explicitly false"
- (DB defaults to TRUE; proto3 defaults bool to false)
-- `approvers` (Attributes List) Exactly one of approvers or custom_workflow must be set.
- Mutual exclusivity validated server-side. (see [below for nested schema](#nestedatt--steps--approvers))
+- `allow_self_approval` (Boolean) Whether the step can be approved by the requester themselves. Defaults to true if not set.
+- `approvers` (Attributes List) The list of approvers for this step. Exactly one of `approvers` or `custom_workflow` must be set. (see [below for nested schema](#nestedatt--steps--approvers))
 - `custom_workflow` (Attributes) Configuration for a custom workflow that determines approvers or auto-approves. (see [below for nested schema](#nestedatt--steps--custom_workflow))
 - `id` (String) The ID of the approval step.
 
