@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.22.1 (2026-02-27)
+
+Full Changelog: [v0.22.0...v0.22.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.22.0...v0.22.1)
+
+### Bug Fixes
+
+* spurious update plans for float attributes after import ([c4b2ba2](https://github.com/ServalHQ/terraform-provider-serval/commit/c4b2ba2361d5ab74ef6043af587c5a43668126a9))
+
+
+### Chores
+
+* **internal:** codegen related update ([7489154](https://github.com/ServalHQ/terraform-provider-serval/commit/7489154f9f0ad22bbe67802ac3d0da12ca621caf))
+* **internal:** remove mock server code ([bc2ee5a](https://github.com/ServalHQ/terraform-provider-serval/commit/bc2ee5a9ea61a3036b400a9f7a645cd84f7ec2cf))
+* **internal:** version bump ([f6b6567](https://github.com/ServalHQ/terraform-provider-serval/commit/f6b656783cc4fbe88786adf791a963055a787378))
+
 ## 0.22.0 (2026-02-27)
 
 Full Changelog: [v0.21.3...v0.22.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.21.3...v0.22.0)
