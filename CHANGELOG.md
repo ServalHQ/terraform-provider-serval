@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.21.3 (2026-02-27)
+
+Full Changelog: [v0.21.2...v0.21.3](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.21.2...v0.21.3)
+
+### Bug Fixes
+
+* use write count instead of loop index for list-of-objects comma separator ([#72](https://github.com/ServalHQ/terraform-provider-serval/issues/72)) ([00dadfc](https://github.com/ServalHQ/terraform-provider-serval/commit/00dadfcde9ae5db6617d9f7f64a74f067dd76d30))
+
 ## 0.21.2 (2026-02-26)
 
 Full Changelog: [v0.21.1...v0.21.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.21.1...v0.21.2)
