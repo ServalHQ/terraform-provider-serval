@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.23.0 (2026-02-27)
+
+Full Changelog: [v0.22.1...v0.23.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.22.1...v0.23.0)
+
+### Features
+
+* **api:** manual updates ([7ac3aad](https://github.com/ServalHQ/terraform-provider-serval/commit/7ac3aade7c2c8904fbbdc95ad1a6e78a358e9e4c))
+
+
+### Chores
+
+* **internal:** bump mock server version ([ba550ad](https://github.com/ServalHQ/terraform-provider-serval/commit/ba550ad903aef4a4a99092617cc0b17e929eeee8))
+* **internal:** version bump ([f506c4f](https://github.com/ServalHQ/terraform-provider-serval/commit/f506c4f8645634444b0fef2ddea744bdd1fc92f1))
+
 ## 0.22.1 (2026-02-27)
 
 Full Changelog: [v0.22.0...v0.22.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.22.0...v0.22.1)

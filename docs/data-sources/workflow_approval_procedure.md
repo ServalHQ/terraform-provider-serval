@@ -36,8 +36,42 @@ data "serval_workflow_approval_procedure" "example_workflow_approval_procedure" 
 
 Read-Only:
 
-- `allow_self_approval` (Boolean) Whether the step can be approved by the requester themselves.
-- `custom_workflow_id` (String) A workflow ID to execute to determine the approvers for this step (or to auto-approve the step).
+- `allow_self_approval` (Boolean) Whether the step can be approved by the requester themselves. Defaults to true if not set.
+- `approvers` (Attributes List) The list of approvers for this step. Exactly one of `approvers` or `custom_workflow` must be set. (see [below for nested schema](#nestedatt--steps--approvers))
+- `custom_workflow` (Attributes) Configuration for a custom workflow that determines approvers or auto-approves. (see [below for nested schema](#nestedatt--steps--custom_workflow))
 - `id` (String) The ID of the approval step.
-- `serval_group_ids` (List of String) The IDs of the Serval groups that can approve the step.
-- `specific_user_ids` (List of String) The IDs of the specific users that can approve the step.
+
+<a id="nestedatt--steps--approvers"></a>
+### Nested Schema for `steps.approvers`
+
+Read-Only:
+
+- `app_owner` (String) App owners as approvers. Only valid for access policy approval procedures.
+- `group` (Attributes) A Serval group as approvers. (see [below for nested schema](#nestedatt--steps--approvers--group))
+- `manager` (String) The requester's manager as an approver.
+- `notify` (Boolean) Whether to notify this approver when the step is pending.
+- `user` (Attributes) A specific user as an approver. (see [below for nested schema](#nestedatt--steps--approvers--user))
+
+<a id="nestedatt--steps--approvers--group"></a>
+### Nested Schema for `steps.approvers.group`
+
+Read-Only:
+
+- `group_id` (String) The ID of the Serval group.
+
+
+<a id="nestedatt--steps--approvers--user"></a>
+### Nested Schema for `steps.approvers.user`
+
+Read-Only:
+
+- `user_id` (String) The ID of the user.
+
+
+
+<a id="nestedatt--steps--custom_workflow"></a>
+### Nested Schema for `steps.custom_workflow`
+
+Read-Only:
+
+- `workflow_id` (String) The ID of the workflow to execute.

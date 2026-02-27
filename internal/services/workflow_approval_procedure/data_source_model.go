@@ -7,6 +7,7 @@ import (
 
 	"github.com/ServalHQ/serval-go"
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -30,9 +31,28 @@ func (m *WorkflowApprovalProcedureDataSourceModel) toReadParams(_ context.Contex
 }
 
 type WorkflowApprovalProcedureStepsDataSourceModel struct {
-	ID                types.String                   `tfsdk:"id" json:"id,computed"`
-	AllowSelfApproval types.Bool                     `tfsdk:"allow_self_approval" json:"allowSelfApproval,computed"`
-	CustomWorkflowID  types.String                   `tfsdk:"custom_workflow_id" json:"customWorkflowId,computed"`
-	ServalGroupIDs    customfield.List[types.String] `tfsdk:"serval_group_ids" json:"servalGroupIds,computed"`
-	SpecificUserIDs   customfield.List[types.String] `tfsdk:"specific_user_ids" json:"specificUserIds,computed"`
+	ID                types.String                                                                          `tfsdk:"id" json:"id,computed"`
+	AllowSelfApproval types.Bool                                                                            `tfsdk:"allow_self_approval" json:"allowSelfApproval,computed"`
+	Approvers         customfield.NestedObjectList[WorkflowApprovalProcedureStepsApproversDataSourceModel]  `tfsdk:"approvers" json:"approvers,computed"`
+	CustomWorkflow    customfield.NestedObject[WorkflowApprovalProcedureStepsCustomWorkflowDataSourceModel] `tfsdk:"custom_workflow" json:"customWorkflow,computed"`
+}
+
+type WorkflowApprovalProcedureStepsApproversDataSourceModel struct {
+	AppOwner jsontypes.Normalized                                                                  `tfsdk:"app_owner" json:"appOwner,computed"`
+	Notify   types.Bool                                                                            `tfsdk:"notify" json:"notify,computed"`
+	Group    customfield.NestedObject[WorkflowApprovalProcedureStepsApproversGroupDataSourceModel] `tfsdk:"group" json:"group,computed"`
+	Manager  jsontypes.Normalized                                                                  `tfsdk:"manager" json:"manager,computed"`
+	User     customfield.NestedObject[WorkflowApprovalProcedureStepsApproversUserDataSourceModel]  `tfsdk:"user" json:"user,computed"`
+}
+
+type WorkflowApprovalProcedureStepsApproversGroupDataSourceModel struct {
+	GroupID types.String `tfsdk:"group_id" json:"groupId,computed"`
+}
+
+type WorkflowApprovalProcedureStepsApproversUserDataSourceModel struct {
+	UserID types.String `tfsdk:"user_id" json:"userId,computed"`
+}
+
+type WorkflowApprovalProcedureStepsCustomWorkflowDataSourceModel struct {
+	WorkflowID types.String `tfsdk:"workflow_id" json:"workflowId,computed"`
 }

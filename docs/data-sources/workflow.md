@@ -34,19 +34,14 @@ data "serval_workflow" "example_workflow" {
 Available values: "WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED", "TEAM_PRIVATE", "TEAM_PUBLIC".
 - `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the workflow (computed by server).
 - `is_published` (Boolean) Whether the workflow is published. Set to true to publish the workflow.
-- `is_temporary` (Boolean) Whether the workflow is temporary.
 - `name` (String) The name of the workflow.
-- `parameters` (String) The parameters schema of the workflow (JSON).
 - `require_form_confirmation` (Boolean) Whether the workflow requires form confirmation.
 - `tag_ids` (List of String) IDs of tags associated with this workflow.
 - `team_id` (String) The ID of the team that the workflow belongs to.
-- `type` (String) The type of the workflow.
-Available values: "WORKFLOW_TYPE_UNSPECIFIED", "EXECUTABLE", "GUIDANCE".
 
 <a id="nestedatt--find_one_by"></a>
 ### Nested Schema for `find_one_by`
 
 Optional:
 
-- `include_temporary` (Boolean) Whether to include temporary workflows (optional, defaults to false).
 - `team_id` (String) The ID of the team.

@@ -17,18 +17,14 @@ type WorkflowsDataListDataSourceEnvelope struct {
 }
 
 type WorkflowsDataSourceModel struct {
-	IncludeTemporary types.Bool                                                  `tfsdk:"include_temporary" query:"includeTemporary,optional"`
-	TeamID           types.String                                                `tfsdk:"team_id" query:"teamId,optional"`
-	MaxItems         types.Int64                                                 `tfsdk:"max_items"`
-	Items            customfield.NestedObjectList[WorkflowsItemsDataSourceModel] `tfsdk:"items"`
+	TeamID   types.String                                                `tfsdk:"team_id" query:"teamId,optional"`
+	MaxItems types.Int64                                                 `tfsdk:"max_items"`
+	Items    customfield.NestedObjectList[WorkflowsItemsDataSourceModel] `tfsdk:"items"`
 }
 
 func (m *WorkflowsDataSourceModel) toListParams(_ context.Context) (params serval.WorkflowListParams, diags diag.Diagnostics) {
 	params = serval.WorkflowListParams{}
 
-	if !m.IncludeTemporary.IsNull() {
-		params.IncludeTemporary = param.NewOpt(m.IncludeTemporary.ValueBool())
-	}
 	if !m.TeamID.IsNull() {
 		params.TeamID = param.NewOpt(m.TeamID.ValueString())
 	}
@@ -43,11 +39,8 @@ type WorkflowsItemsDataSourceModel struct {
 	ExecutionScope          types.String                   `tfsdk:"execution_scope" json:"executionScope,computed"`
 	HasUnpublishedChanges   types.Bool                     `tfsdk:"has_unpublished_changes" json:"hasUnpublishedChanges,computed"`
 	IsPublished             types.Bool                     `tfsdk:"is_published" json:"isPublished,computed"`
-	IsTemporary             types.Bool                     `tfsdk:"is_temporary" json:"isTemporary,computed"`
 	Name                    types.String                   `tfsdk:"name" json:"name,computed"`
-	Parameters              types.String                   `tfsdk:"parameters" json:"parameters,computed"`
 	RequireFormConfirmation types.Bool                     `tfsdk:"require_form_confirmation" json:"requireFormConfirmation,computed"`
 	TagIDs                  customfield.List[types.String] `tfsdk:"tag_ids" json:"tagIds,computed"`
 	TeamID                  types.String                   `tfsdk:"team_id" json:"teamId,computed"`
-	Type                    types.String                   `tfsdk:"type" json:"type,computed"`
 }

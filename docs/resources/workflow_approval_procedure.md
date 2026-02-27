@@ -15,12 +15,34 @@ description: |-
 ```terraform
 resource "serval_workflow_approval_procedure" "example_workflow_approval_procedure" {
   workflow_id = "workflow_id"
-  steps = [{
-    allow_self_approval = true
-    custom_workflow_id = "customWorkflowId"
-    serval_group_ids = ["string"]
-    specific_user_ids = ["string"]
-  }]
+  steps = [
+    {
+      allow_self_approval = false
+      approvers = [
+        {
+          group = {
+            group_id = "d4f5a926-1a4b-4c3d-9e8f-7b6a5c4d3e2f"
+          }
+          notify = true
+        },
+        {
+          user = {
+            user_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          }
+          notify = true
+        },
+        {
+          manager = "{}"
+          notify = true
+        },
+      ]
+    },
+    {
+      custom_workflow = {
+        workflow_id = "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+      }
+    },
+  ]
 }
 ```
 
@@ -44,14 +66,48 @@ resource "serval_workflow_approval_procedure" "example_workflow_approval_procedu
 
 Optional:
 
-- `allow_self_approval` (Boolean) Whether the step can be approved by the requester themselves.
-- `custom_workflow_id` (String) A workflow ID to execute to determine the approvers for this step (or to auto-approve the step).
-- `serval_group_ids` (List of String) The IDs of the Serval groups that can approve the step.
-- `specific_user_ids` (List of String) The IDs of the specific users that can approve the step.
+- `allow_self_approval` (Boolean) Whether the step can be approved by the requester themselves. Defaults to true if not set.
+- `approvers` (Attributes List) The list of approvers for this step. Exactly one of `approvers` or `custom_workflow` must be set. (see [below for nested schema](#nestedatt--steps--approvers))
+- `custom_workflow` (Attributes) Configuration for a custom workflow that determines approvers or auto-approves. (see [below for nested schema](#nestedatt--steps--custom_workflow))
 
 Read-Only:
 
 - `id` (String) The ID of the approval step.
+
+<a id="nestedatt--steps--approvers"></a>
+### Nested Schema for `steps.approvers`
+
+Optional:
+
+- `app_owner` (String) App owners as approvers. Only valid for access policy approval procedures.
+- `group` (Attributes) A Serval group as approvers. (see [below for nested schema](#nestedatt--steps--approvers--group))
+- `manager` (String) The requester's manager as an approver.
+- `notify` (Boolean) Whether to notify this approver when the step is pending.
+- `user` (Attributes) A specific user as an approver. (see [below for nested schema](#nestedatt--steps--approvers--user))
+
+<a id="nestedatt--steps--approvers--group"></a>
+### Nested Schema for `steps.approvers.group`
+
+Optional:
+
+- `group_id` (String) The ID of the Serval group.
+
+
+<a id="nestedatt--steps--approvers--user"></a>
+### Nested Schema for `steps.approvers.user`
+
+Optional:
+
+- `user_id` (String) The ID of the user.
+
+
+
+<a id="nestedatt--steps--custom_workflow"></a>
+### Nested Schema for `steps.custom_workflow`
+
+Optional:
+
+- `workflow_id` (String) The ID of the workflow to execute.
 
 ## Import
 
