@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -456,6 +457,74 @@ func TestStringWithInterpolation(t *testing.T) {
 	// Should NOT contain unescaped ${
 	if strings.Contains(hcl, `${userEmail}`) && !strings.Contains(hcl, `$${userEmail}`) {
 		t.Errorf("should not contain unescaped interpolation in:\n%s", hcl)
+	}
+}
+
+func TestListOfObjectsAttrSkipsNullElements(t *testing.T) {
+	// Regression test: when null ObjectValue elements precede valid ones in a
+	// list, the comma separator must only be written between actually-emitted
+	// objects. Previously the code used the loop index (i > 0) which produced
+	// a leading comma like [, {...}] when the first element was null.
+	nullObj := types.ObjectNull(map[string]attr.Type{
+		"name": types.StringType,
+	})
+	validObj := types.ObjectValueMust(map[string]attr.Type{
+		"name": types.StringType,
+	}, map[string]attr.Value{
+		"name": types.StringValue("hello"),
+	})
+
+	elements := []attr.Value{nullObj, validObj}
+	hcl, err := serializeListOfObjectsAsAttrToHCL(
+		"items", elements, "  ", 2, nil,
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Should NOT start with a comma after the opening bracket
+	if strings.Contains(hcl, "[,") || strings.Contains(hcl, "[ ,") {
+		t.Errorf("should not have leading comma in list:\n%s", hcl)
+	}
+
+	// Should contain the valid object
+	if !strings.Contains(hcl, `name = "hello"`) {
+		t.Errorf("should include valid object attributes in:\n%s", hcl)
+	}
+
+	// Verify the output parses as valid HCL by checking basic structure
+	if !strings.Contains(hcl, "items = [{") {
+		t.Errorf("should have proper list-of-objects syntax in:\n%s", hcl)
+	}
+}
+
+func TestListOfObjectsAttrMultipleWithSkips(t *testing.T) {
+	// Verify commas are correct when null elements appear between valid ones.
+	objType := map[string]attr.Type{"id": types.StringType}
+	null := types.ObjectNull(objType)
+	obj1 := types.ObjectValueMust(objType, map[string]attr.Value{
+		"id": types.StringValue("a"),
+	})
+	obj2 := types.ObjectValueMust(objType, map[string]attr.Value{
+		"id": types.StringValue("b"),
+	})
+
+	elements := []attr.Value{null, obj1, null, obj2}
+	hcl, err := serializeListOfObjectsAsAttrToHCL(
+		"items", elements, "  ", 2, nil,
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Should have exactly one comma (between the two valid objects)
+	commaCount := strings.Count(hcl, ", {")
+	if commaCount != 1 {
+		t.Errorf("expected 1 comma between objects, got %d in:\n%s", commaCount, hcl)
+	}
+
+	if !strings.Contains(hcl, `id = "a"`) || !strings.Contains(hcl, `id = "b"`) {
+		t.Errorf("should include both valid objects in:\n%s", hcl)
 	}
 }
 

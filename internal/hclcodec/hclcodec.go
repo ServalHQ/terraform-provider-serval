@@ -408,7 +408,8 @@ func serializeListOfObjectsAsAttrToHCL(name string, elements []attr.Value, prefi
 
 	fmt.Fprintf(&sb, "%s%s = [", prefix, name)
 
-	for i, elem := range elements {
+	written := 0
+	for _, elem := range elements {
 		ov, ok := elem.(basetypes.ObjectValue)
 		if !ok {
 			continue
@@ -417,9 +418,10 @@ func serializeListOfObjectsAsAttrToHCL(name string, elements []attr.Value, prefi
 			continue
 		}
 
-		if i > 0 {
+		if written > 0 {
 			sb.WriteString(", ")
 		}
+		written++
 		sb.WriteString("{\n")
 		attrs := ov.Attributes()
 
