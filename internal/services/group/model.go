@@ -34,6 +34,10 @@ func (m GroupModel) MarshalJSONForUpdate(state GroupModel) (data []byte, err err
 // Empty user_ids lists are normalized to null because the API returns []
 // for groups with no members, but Terraform stores null when user_ids is
 // omitted from config.
+func (m *GroupModel) NormalizeState() {
+	m.normalizeState()
+}
+
 func (m *GroupModel) normalizeState() {
 	if m.UserIDs != nil && len(*m.UserIDs) == 0 {
 		m.UserIDs = nil

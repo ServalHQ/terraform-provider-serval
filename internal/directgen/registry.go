@@ -63,8 +63,12 @@ var resourceRegistry = map[string]ResourceRegistryEntry{
 		SchemaFunc:    user.ResourceSchema,
 	},
 	ResourceTypeGroup: {
-		Constructor:   func() any { return &group.GroupDataEnvelope{} },
-		Extractor:     func(e any) any { return e.(*group.GroupDataEnvelope).Data },
+		Constructor: func() any { return &group.GroupDataEnvelope{} },
+		Extractor: func(e any) any {
+			data := e.(*group.GroupDataEnvelope).Data
+			data.NormalizeState()
+			return data
+		},
 		SchemaVersion: defaultSchemaVersion,
 		SchemaFunc:    group.ResourceSchema,
 	},

@@ -4,6 +4,7 @@ package app_resource_role
 
 import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -49,7 +50,7 @@ type AppResourceRoleProvisioningMethodLinkedRolesModel struct {
 }
 
 type AppResourceRoleProvisioningMethodManualModel struct {
-	Assignees *[]*AppResourceRoleProvisioningMethodManualAssigneesModel `tfsdk:"assignees" json:"assignees,optional"`
+	Assignees customfield.NestedObjectList[AppResourceRoleProvisioningMethodManualAssigneesModel] `tfsdk:"assignees" json:"assignees,optional"`
 }
 
 type AppResourceRoleProvisioningMethodManualAssigneesModel struct {

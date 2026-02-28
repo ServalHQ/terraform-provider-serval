@@ -561,12 +561,15 @@ func serializeSliceToHCL(name string, v reflect.Value, prefix string, indent int
 			}
 			sb.WriteString(hcl)
 		} else if elem.Kind() == reflect.Ptr && !elem.IsNil() {
-			// Handle *NestedStruct elements in arrays - these need block syntax
-			hcl, err := serializeNestedStructToHCL(name, elem.Elem(), indent, false, nil)
+			// Handle *NestedStruct elements in arrays - emit as anonymous objects
+			// inside the list (e.g., [{ key = val }]), not as named blocks.
+			body, err := generateBody(elem.Elem().Interface(), indent+2, nil)
 			if err != nil {
 				return "", err
 			}
-			sb.WriteString(hcl)
+			sb.WriteString("{\n")
+			sb.WriteString(body)
+			fmt.Fprintf(&sb, "%s}", prefix)
 		}
 	}
 

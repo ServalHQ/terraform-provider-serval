@@ -5,6 +5,7 @@ package app_resource_role
 import (
 	"context"
 
+	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -75,6 +76,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							"assignees": schema.ListNestedAttribute{
 								Description: "Users and groups that should be assigned/notified for manual provisioning.",
 								Optional:    true,
+								CustomType:  customfield.NewNestedObjectListType[AppResourceRoleProvisioningMethodManualAssigneesModel](ctx),
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"assignee_id": schema.StringAttribute{
