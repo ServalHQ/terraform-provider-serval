@@ -22,4 +22,9 @@ type UserDataSourceModel struct {
 	Name          types.String      `tfsdk:"name" json:"name,computed"`
 	Role          types.String      `tfsdk:"role" json:"role,computed"`
 	Timezone      types.String      `tfsdk:"timezone" json:"timezone,computed"`
+	FindOneBy     *UserFindOneByDataSourceModel `tfsdk:"find_one_by"`
+}
+
+type UserFindOneByDataSourceModel struct {
+	IncludeDeactivated types.Bool `tfsdk:"include_deactivated" query:"includeDeactivated,optional"`
 }

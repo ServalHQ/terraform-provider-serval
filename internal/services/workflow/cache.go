@@ -23,9 +23,8 @@ func Prefetch(ctx context.Context, client *serval.Client, teamIDs []string) (int
 		var pageToken *string
 		for {
 			params := serval.WorkflowListParams{
-				PageSize:         serval.Int(1000),
-				IncludeTemporary: serval.Bool(true),
-				TeamID:           serval.String(teamID),
+				PageSize: serval.Int(1000),
+				TeamID:   serval.String(teamID),
 			}
 			if pageToken != nil {
 				params.PageToken = serval.String(*pageToken)

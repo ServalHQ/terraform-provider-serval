@@ -1,5 +1,56 @@
 # Changelog
 
+## 0.23.0 (2026-02-27)
+
+Full Changelog: [v0.22.1...v0.23.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.22.1...v0.23.0)
+
+### Features
+
+* **api:** manual updates ([7ac3aad](https://github.com/ServalHQ/terraform-provider-serval/commit/7ac3aade7c2c8904fbbdc95ad1a6e78a358e9e4c))
+
+
+### Chores
+
+* **internal:** bump mock server version ([ba550ad](https://github.com/ServalHQ/terraform-provider-serval/commit/ba550ad903aef4a4a99092617cc0b17e929eeee8))
+* **internal:** version bump ([f506c4f](https://github.com/ServalHQ/terraform-provider-serval/commit/f506c4f8645634444b0fef2ddea744bdd1fc92f1))
+
+## 0.22.1 (2026-02-27)
+
+Full Changelog: [v0.22.0...v0.22.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.22.0...v0.22.1)
+
+### Bug Fixes
+
+* spurious update plans for float attributes after import ([c4b2ba2](https://github.com/ServalHQ/terraform-provider-serval/commit/c4b2ba2361d5ab74ef6043af587c5a43668126a9))
+
+
+### Chores
+
+* **internal:** codegen related update ([7489154](https://github.com/ServalHQ/terraform-provider-serval/commit/7489154f9f0ad22bbe67802ac3d0da12ca621caf))
+* **internal:** remove mock server code ([bc2ee5a](https://github.com/ServalHQ/terraform-provider-serval/commit/bc2ee5a9ea61a3036b400a9f7a645cd84f7ec2cf))
+* **internal:** version bump ([f6b6567](https://github.com/ServalHQ/terraform-provider-serval/commit/f6b656783cc4fbe88786adf791a963055a787378))
+
+## 0.22.0 (2026-02-27)
+
+Full Changelog: [v0.21.3...v0.22.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.21.3...v0.22.0)
+
+### Features
+
+* **api:** manual updates ([005660a](https://github.com/ServalHQ/terraform-provider-serval/commit/005660a003c8919be13049aa1b7a9f64175e33cc))
+
+
+### Chores
+
+* **internal:** codegen related update ([9b02dc9](https://github.com/ServalHQ/terraform-provider-serval/commit/9b02dc954f94f61f1beb7c6cf7cc946f72c0f14f))
+* **internal:** codegen related update ([e18a2e3](https://github.com/ServalHQ/terraform-provider-serval/commit/e18a2e3fb5b637d9fcb06f23af7b2c0569ea82b7))
+
+## 0.21.3 (2026-02-27)
+
+Full Changelog: [v0.21.2...v0.21.3](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.21.2...v0.21.3)
+
+### Bug Fixes
+
+* use write count instead of loop index for list-of-objects comma separator ([#72](https://github.com/ServalHQ/terraform-provider-serval/issues/72)) ([00dadfc](https://github.com/ServalHQ/terraform-provider-serval/commit/00dadfcde9ae5db6617d9f7f64a74f067dd76d30))
+
 ## 0.21.2 (2026-02-26)
 
 Full Changelog: [v0.21.1...v0.21.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.21.1...v0.21.2)

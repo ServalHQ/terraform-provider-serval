@@ -3,7 +3,7 @@ module github.com/ServalHQ/terraform-provider-serval
 go 1.24.0
 
 require (
-	github.com/ServalHQ/serval-go v0.18.0
+	github.com/ServalHQ/serval-go v0.20.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/hashicorp/terraform-plugin-docs v0.16.0

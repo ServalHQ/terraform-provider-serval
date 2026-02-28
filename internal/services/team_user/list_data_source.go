@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/packages/param"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -89,15 +88,7 @@ func (d *TeamUsersDataSource) Read(ctx context.Context, req datasource.ReadReque
 		if len(acc) >= maxItems {
 			break
 		}
-		if page.NextPageToken == "" {
-			break
-		}
-		params.PageToken = param.NewOpt(page.NextPageToken)
-		page, err = d.client.Teams.Users.List(
-			ctx,
-			data.TeamID.ValueString(),
-			params,
-		)
+		page, err = page.GetNextPage()
 		if err != nil {
 			resp.Diagnostics.AddError("failed to fetch next page", err.Error())
 			return

@@ -117,14 +117,12 @@ func allResourceTests() []resourceTestCase {
 				"id":      "wf-abc-123",
 				"team_id": "team-abc-123",
 				"name":    "deploy-to-prod",
-				"type":    "EXECUTABLE",
 			},
 			ExpectedHCLContains: []string{
 				`resource "serval_workflow" "deploy_to_prod"`,
 				`team_id = "team-abc-123"`,
 				`name = "deploy-to-prod"`,
-				`type = "EXECUTABLE"`,
-				"content =", // content should be included (required field)
+				"content =",
 			},
 			ExpectedHCLExcludes: []string{
 				`id = "wf-abc-123"`,

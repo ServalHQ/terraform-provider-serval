@@ -87,9 +87,13 @@ func (d *UserDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	if !data.Email.IsNull() && !data.Email.IsUnknown() {
 		targetEmail := data.Email.ValueString()
 
+		includeDeactivated := true
+		if data.FindOneBy != nil && !data.FindOneBy.IncludeDeactivated.IsNull() {
+			includeDeactivated = data.FindOneBy.IncludeDeactivated.ValueBool()
+		}
 		params := serval.UserListParams{
 			PageSize:           serval.Int(1000),
-			IncludeDeactivated: serval.Bool(true), // Include deactivated users in search
+			IncludeDeactivated: serval.Bool(includeDeactivated),
 		}
 
 		res := new(http.Response)
