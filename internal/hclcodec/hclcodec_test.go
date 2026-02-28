@@ -528,6 +528,69 @@ func TestListOfObjectsAttrMultipleWithSkips(t *testing.T) {
 	}
 }
 
+func TestSliceOfNestedStructsEmitsObjectSyntax(t *testing.T) {
+	// Regression test: a *[]*Struct field (e.g., manual provisioning assignees)
+	// was emitting hybrid syntax like `assignees = [      assignees { ... }]`
+	// because serializeSliceToHCL delegated to serializeNestedStructToHCL which
+	// produces named block syntax. The fix emits anonymous object syntax inside
+	// the list: `assignees = [{\n  ...\n}]`.
+	type Assignee struct {
+		AssigneeID   types.String `tfsdk:"assignee_id" json:"assigneeId,optional"`
+		AssigneeType types.String `tfsdk:"assignee_type" json:"assigneeType,optional"`
+	}
+	type Manual struct {
+		Assignees *[]*Assignee `tfsdk:"assignees" json:"assignees,optional"`
+	}
+	type TestModel struct {
+		ID     types.String `tfsdk:"id" json:"id,computed"`
+		Manual *Manual      `tfsdk:"manual" json:"manual,optional"`
+	}
+
+	assignees := []*Assignee{
+		{
+			AssigneeID:   types.StringValue("user-1"),
+			AssigneeType: types.StringValue("USER"),
+		},
+		{
+			AssigneeID:   types.StringValue("user-2"),
+			AssigneeType: types.StringValue("GROUP"),
+		},
+	}
+	model := TestModel{
+		ID:     types.StringValue("abc"),
+		Manual: &Manual{Assignees: &assignees},
+	}
+
+	hcl, err := GenerateResourceBlock("serval_role", "test", model, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Must NOT contain named block syntax inside the list
+	if strings.Contains(hcl, "assignees = [") && strings.Contains(hcl, "assignees {") {
+		t.Errorf("should not mix list and block syntax in:\n%s", hcl)
+	}
+
+	// Must contain anonymous object syntax inside the list
+	if !strings.Contains(hcl, "assignees = [{") {
+		t.Errorf("should use list-of-objects syntax assignees = [{ in:\n%s", hcl)
+	}
+
+	// Must contain both assignees' fields
+	if !strings.Contains(hcl, `assignee_id = "user-1"`) {
+		t.Errorf("should include first assignee in:\n%s", hcl)
+	}
+	if !strings.Contains(hcl, `assignee_id = "user-2"`) {
+		t.Errorf("should include second assignee in:\n%s", hcl)
+	}
+	if !strings.Contains(hcl, `assignee_type = "USER"`) {
+		t.Errorf("should include assignee_type USER in:\n%s", hcl)
+	}
+	if !strings.Contains(hcl, `assignee_type = "GROUP"`) {
+		t.Errorf("should include assignee_type GROUP in:\n%s", hcl)
+	}
+}
+
 func TestGenerateAttributes(t *testing.T) {
 	type TestModel struct {
 		ID   types.String `tfsdk:"id" json:"id,computed"`
