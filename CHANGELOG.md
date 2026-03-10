@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.23.2 (2026-03-10)
+
+Full Changelog: [v0.23.1...v0.23.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.23.1...v0.23.2)
+
+### Chores
+
+* **docs:** update terraform-plugin-docs to v0.24.0 ([d8cb311](https://github.com/ServalHQ/terraform-provider-serval/commit/d8cb311ac4cfc2d939e9449a53284c73abaae6a2))
+
 ## 0.23.1 (2026-02-28)
 
 Full Changelog: [v0.23.0...v0.23.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.23.0...v0.23.1)
