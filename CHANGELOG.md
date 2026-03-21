@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.23.2 (2026-03-21)
+
+Full Changelog: [v0.23.1...v0.23.2](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.23.1...v0.23.2)
+
+### Bug Fixes
+
+* improve linking behavior when developing on a branch not in the Go SDK ([7bf9549](https://github.com/ServalHQ/terraform-provider-serval/commit/7bf9549f572fb1279f9b89713940223a9e99c7af))
+* improved workflow for developing on branches ([d996341](https://github.com/ServalHQ/terraform-provider-serval/commit/d99634186a3e75b066f20b3fbe5ae03b0bfebb28))
+* no longer require an API key when building on production repos ([06ebeb9](https://github.com/ServalHQ/terraform-provider-serval/commit/06ebeb9b6f08967d74b3df2e7ca63b6bb9103c70))
+
+
+### Chores
+
+* **docs:** update terraform-plugin-docs to v0.24.0 ([d8cb311](https://github.com/ServalHQ/terraform-provider-serval/commit/d8cb311ac4cfc2d939e9449a53284c73abaae6a2))
+* **internal:** tweak CI branches ([fcc7669](https://github.com/ServalHQ/terraform-provider-serval/commit/fcc76691e01619a421963a2034eba5493db4b338))
+
 ## 0.23.1 (2026-02-28)
 
 Full Changelog: [v0.23.0...v0.23.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.23.0...v0.23.1)
