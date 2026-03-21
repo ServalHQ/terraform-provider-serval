@@ -41,7 +41,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"created_at": schema.StringAttribute{
-							Description: `A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").`,
+							Description: `A timestamp in RFC 3339 format (e.g., "2025-01-15T01:30:15Z").`,
 							Computed:    true,
 							CustomType:  timetypes.RFC3339Type{},
 						},

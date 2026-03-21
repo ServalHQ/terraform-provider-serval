@@ -15,6 +15,7 @@ type UserDataEnvelope struct {
 type UserModel struct {
 	ID            types.String      `tfsdk:"id" json:"id,computed"`
 	Email         types.String      `tfsdk:"email" json:"email,required"`
+	AuthMethod    types.String      `tfsdk:"auth_method" json:"authMethod,optional"`
 	AvatarURL     types.String      `tfsdk:"avatar_url" json:"avatarUrl,optional"`
 	FirstName     types.String      `tfsdk:"first_name" json:"firstName,optional"`
 	LastName      types.String      `tfsdk:"last_name" json:"lastName,optional"`
