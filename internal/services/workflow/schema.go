@@ -5,7 +5,6 @@ package workflow
 import (
 	"context"
 
-	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -53,6 +52,11 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 					),
 				},
 			},
+			"tag_ids": schema.ListAttribute{
+				Description: "The IDs of the tags to associate with the workflow.",
+				Optional:    true,
+				ElementType: types.StringType,
+			},
 			"is_published": schema.BoolAttribute{
 				Description: "Whether to publish the workflow after creation (optional).",
 				Computed:    true,
@@ -66,12 +70,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			"has_unpublished_changes": schema.BoolAttribute{
 				Description: "Whether there are unpublished changes to the workflow (computed by server).",
 				Computed:    true,
-			},
-			"tag_ids": schema.ListAttribute{
-				Description: "IDs of tags associated with this workflow.",
-				Computed:    true,
-				CustomType:  customfield.NewListType[types.String](ctx),
-				ElementType: types.StringType,
 			},
 		},
 	}

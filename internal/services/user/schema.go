@@ -26,6 +26,13 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			"email": schema.StringAttribute{
 				Required: true,
 			},
+			"auth_method": schema.StringAttribute{
+				Description: "Specifies the authentication method for a user. If unset, the org default applies.\n Set to MAGIC_LINK to allow the user to bypass SSO (e.g. guest or break-glass accounts).\nAvailable values: \"USER_AUTH_METHOD_UNSPECIFIED\", \"USER_AUTH_METHOD_MAGIC_LINK\".",
+				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive("USER_AUTH_METHOD_UNSPECIFIED", "USER_AUTH_METHOD_MAGIC_LINK"),
+				},
+			},
 			"avatar_url": schema.StringAttribute{
 				Optional: true,
 			},
@@ -48,12 +55,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"created_at": schema.StringAttribute{
-				Description: `A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").`,
+				Description: `A timestamp in RFC 3339 format (e.g., "2025-01-15T01:30:15Z").`,
 				Computed:    true,
 				CustomType:  timetypes.RFC3339Type{},
 			},
 			"deactivated_at": schema.StringAttribute{
-				Description: `A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").`,
+				Description: `A timestamp in RFC 3339 format (e.g., "2025-01-15T01:30:15Z").`,
 				Computed:    true,
 				CustomType:  timetypes.RFC3339Type{},
 			},

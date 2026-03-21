@@ -18,6 +18,7 @@ type UserDataDataSourceEnvelope struct {
 
 type UserDataSourceModel struct {
 	ID            types.String                  `tfsdk:"id" path:"id,computed_optional"`
+	AuthMethod    types.String                  `tfsdk:"auth_method" json:"authMethod,computed"`
 	AvatarURL     types.String                  `tfsdk:"avatar_url" json:"avatarUrl,computed"`
 	CreatedAt     timetypes.RFC3339             `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
 	DeactivatedAt timetypes.RFC3339             `tfsdk:"deactivated_at" json:"deactivatedAt,computed" format:"date-time"`

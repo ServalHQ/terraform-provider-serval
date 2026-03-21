@@ -14,6 +14,7 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_instance"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_resource"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_resource_role"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/approval_delegation"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/custom_service"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/group"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/guidance"
@@ -135,6 +136,7 @@ func (p *ServalProvider) Resources(ctx context.Context) []func() resource.Resour
 		group.NewResource,
 		team.NewResource,
 		team_user.NewResource,
+		approval_delegation.NewResource,
 		custom_service.NewResource,
 	}
 }
@@ -167,6 +169,8 @@ func (p *ServalProvider) DataSources(ctx context.Context) []func() datasource.Da
 		team.NewTeamsDataSource,
 		team_user.NewTeamUserDataSource,
 		team_user.NewTeamUsersDataSource,
+		approval_delegation.NewApprovalDelegationDataSource,
+		approval_delegation.NewApprovalDelegationsDataSource,
 		custom_service.NewCustomServiceDataSource,
 		custom_service.NewCustomServicesDataSource,
 	}
