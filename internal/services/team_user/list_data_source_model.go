@@ -35,6 +35,7 @@ func (m *TeamUsersDataSourceModel) toListParams(_ context.Context) (params serva
 }
 
 type TeamUsersItemsDataSourceModel struct {
+	ID        types.String      `tfsdk:"id" json:"id,computed"`
 	CreatedAt timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
 	Role      types.String      `tfsdk:"role" json:"role,computed"`
 	TeamID    types.String      `tfsdk:"team_id" json:"teamId,computed"`

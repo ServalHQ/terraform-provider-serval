@@ -57,6 +57,40 @@ func (d *TeamUserDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
+	if data.FindOneBy != nil {
+		params, diags := data.toListParams(ctx)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		env := TeamUsersDataListDataSourceEnvelope{}
+		page, err := d.client.Teams.Users.List(
+			ctx,
+			data.TeamID.ValueString(),
+			params,
+		)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to make http request", err.Error())
+			return
+		}
+
+		bytes := []byte(page.RawJSON())
+		err = apijson.UnmarshalComputed(bytes, &env)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to unmarshal http request", err.Error())
+			return
+		}
+
+		if count := len(env.Data.Elements()); count != 1 {
+			resp.Diagnostics.AddError("failed to find exactly one result", fmt.Sprint(count)+" found")
+			return
+		}
+		ts, diags := env.Data.AsStructSliceT(ctx)
+		resp.Diagnostics.Append(diags...)
+		data.UserID = ts[0].ID
+	}
+
 	params, diags := data.toReadParams(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

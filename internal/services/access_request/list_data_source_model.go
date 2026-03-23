@@ -33,15 +33,25 @@ func (m *AccessRequestsDataSourceModel) toListParams(_ context.Context) (params 
 }
 
 type AccessRequestsItemsDataSourceModel struct {
+	ID              types.String                                                               `tfsdk:"id" json:"id,computed"`
+	CreatedAt       types.String                                                               `tfsdk:"created_at" json:"createdAt,computed"`
+	ExpiresAt       types.String                                                               `tfsdk:"expires_at" json:"expiresAt,computed"`
+	LinkedTicketID  types.String                                                               `tfsdk:"linked_ticket_id" json:"linkedTicketId,computed"`
+	RequestedRoleID types.String                                                               `tfsdk:"requested_role_id" json:"requestedRoleId,computed"`
+	Status          types.String                                                               `tfsdk:"status" json:"status,computed"`
+	TargetUserID    types.String                                                               `tfsdk:"target_user_id" json:"targetUserId,computed"`
+	TeamID          types.String                                                               `tfsdk:"team_id" json:"teamId,computed"`
+	TimeAllocations customfield.NestedObjectList[AccessRequestsTimeAllocationsDataSourceModel] `tfsdk:"time_allocations" json:"timeAllocations,computed"`
+}
+
+type AccessRequestsTimeAllocationsDataSourceModel struct {
 	ID                    types.String `tfsdk:"id" json:"id,computed"`
-	AccessMinutes         types.Int64  `tfsdk:"access_minutes" json:"accessMinutes,computed"`
+	ApprovedMinutes       types.Int64  `tfsdk:"approved_minutes" json:"approvedMinutes,computed"`
 	BusinessJustification types.String `tfsdk:"business_justification" json:"businessJustification,computed"`
 	CreatedAt             types.String `tfsdk:"created_at" json:"createdAt,computed"`
-	ExpiresAt             types.String `tfsdk:"expires_at" json:"expiresAt,computed"`
+	InvalidationReason    types.String `tfsdk:"invalidation_reason" json:"invalidationReason,computed"`
 	LinkedTicketID        types.String `tfsdk:"linked_ticket_id" json:"linkedTicketId,computed"`
 	RequestedByUserID     types.String `tfsdk:"requested_by_user_id" json:"requestedByUserId,computed"`
-	RequestedRoleID       types.String `tfsdk:"requested_role_id" json:"requestedRoleId,computed"`
+	RequestedMinutes      types.Int64  `tfsdk:"requested_minutes" json:"requestedMinutes,computed"`
 	Status                types.String `tfsdk:"status" json:"status,computed"`
-	TargetUserID          types.String `tfsdk:"target_user_id" json:"targetUserId,computed"`
-	TeamID                types.String `tfsdk:"team_id" json:"teamId,computed"`
 }
