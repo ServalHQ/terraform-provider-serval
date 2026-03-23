@@ -14,9 +14,9 @@ type TeamUserDataEnvelope struct {
 
 type TeamUserModel struct {
 	ID        types.String      `tfsdk:"id" json:"id,computed"`
-	TeamID    types.String      `tfsdk:"team_id" path:"team_id,required"`
-	UserID    types.String      `tfsdk:"user_id" json:"userId,required"`
 	Role      types.String      `tfsdk:"role" json:"role,required"`
+	TeamID    types.String      `tfsdk:"team_id" json:"teamId,required"`
+	UserID    types.String      `tfsdk:"user_id" json:"userId,required"`
 	CreatedAt timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
 }
 

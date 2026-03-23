@@ -18,7 +18,7 @@ type TeamUsersDataListDataSourceEnvelope struct {
 }
 
 type TeamUsersDataSourceModel struct {
-	TeamID   types.String                                                `tfsdk:"team_id" path:"team_id,required"`
+	TeamID   types.String                                                `tfsdk:"team_id" query:"teamId,optional"`
 	UserID   types.String                                                `tfsdk:"user_id" query:"userId,optional"`
 	MaxItems types.Int64                                                 `tfsdk:"max_items"`
 	Items    customfield.NestedObjectList[TeamUsersItemsDataSourceModel] `tfsdk:"items"`
@@ -27,6 +27,9 @@ type TeamUsersDataSourceModel struct {
 func (m *TeamUsersDataSourceModel) toListParams(_ context.Context) (params serval.TeamUserListParams, diags diag.Diagnostics) {
 	params = serval.TeamUserListParams{}
 
+	if !m.TeamID.IsNull() {
+		params.TeamID = param.NewOpt(m.TeamID.ValueString())
+	}
 	if !m.UserID.IsNull() {
 		params.UserID = param.NewOpt(m.UserID.ValueString())
 	}

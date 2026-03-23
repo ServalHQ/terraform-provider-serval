@@ -17,38 +17,22 @@ type TeamUserDataDataSourceEnvelope struct {
 }
 
 type TeamUserDataSourceModel struct {
-	UserID    types.String                      `tfsdk:"user_id" path:"user_id,computed_optional"`
-	TeamID    types.String                      `tfsdk:"team_id" path:"team_id,required"`
-	ID        types.String                      `tfsdk:"id" query:"id,computed_optional"`
-	CreatedAt timetypes.RFC3339                 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
-	Role      types.String                      `tfsdk:"role" json:"role,computed"`
-	FindOneBy *TeamUserFindOneByDataSourceModel `tfsdk:"find_one_by"`
+	ID        types.String      `tfsdk:"id" path:"id,required"`
+	TeamID    types.String      `tfsdk:"team_id" query:"teamId,computed_optional"`
+	UserID    types.String      `tfsdk:"user_id" query:"userId,computed_optional"`
+	CreatedAt timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
+	Role      types.String      `tfsdk:"role" json:"role,computed"`
 }
 
 func (m *TeamUserDataSourceModel) toReadParams(_ context.Context) (params serval.TeamUserGetParams, diags diag.Diagnostics) {
-	params = serval.TeamUserGetParams{
-		TeamID: m.TeamID.ValueString(),
+	params = serval.TeamUserGetParams{}
+
+	if !m.TeamID.IsNull() {
+		params.TeamID = param.NewOpt(m.TeamID.ValueString())
 	}
-
-	if !m.ID.IsNull() {
-		params.ID = param.NewOpt(m.ID.ValueString())
-	}
-
-	return
-}
-
-func (m *TeamUserDataSourceModel) toListParams(_ context.Context) (params serval.TeamUserListParams, diags diag.Diagnostics) {
-	params = serval.TeamUserListParams{
-		TeamID: m.TeamID.ValueString(),
-	}
-
-	if !m.FindOneBy.UserID.IsNull() {
-		params.UserID = param.NewOpt(m.FindOneBy.UserID.ValueString())
+	if !m.UserID.IsNull() {
+		params.UserID = param.NewOpt(m.UserID.ValueString())
 	}
 
 	return
-}
-
-type TeamUserFindOneByDataSourceModel struct {
-	UserID types.String `tfsdk:"user_id" query:"userId,optional"`
 }

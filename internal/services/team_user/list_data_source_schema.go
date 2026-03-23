@@ -21,7 +21,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"team_id": schema.StringAttribute{
 				Description: "Filter by team ID. Required when using /v2/teams/{team_id}/users path.",
-				Required:    true,
+				Optional:    true,
 			},
 			"user_id": schema.StringAttribute{
 				Description: "Filter by user ID. If not provided, returns all users in the team.",

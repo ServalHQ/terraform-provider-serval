@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package team_user
+package tag
 
 import (
 	"context"
@@ -13,21 +13,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
-type TeamUsersDataSource struct {
+type TagsDataSource struct {
 	client *serval.Client
 }
 
-var _ datasource.DataSourceWithConfigure = (*TeamUsersDataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*TagsDataSource)(nil)
 
-func NewTeamUsersDataSource() datasource.DataSource {
-	return &TeamUsersDataSource{}
+func NewTagsDataSource() datasource.DataSource {
+	return &TagsDataSource{}
 }
 
-func (d *TeamUsersDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_team_users"
+func (d *TagsDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_tags"
 }
 
-func (d *TeamUsersDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *TagsDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -46,8 +46,8 @@ func (d *TeamUsersDataSource) Configure(ctx context.Context, req datasource.Conf
 	d.client = client
 }
 
-func (d *TeamUsersDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data *TeamUsersDataSourceModel
+func (d *TagsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data *TagsDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -61,13 +61,13 @@ func (d *TeamUsersDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 
-	env := TeamUsersDataListDataSourceEnvelope{}
+	env := TagsDataListDataSourceEnvelope{}
 	maxItems := int(data.MaxItems.ValueInt64())
 	acc := []attr.Value{}
 	if maxItems <= 0 {
 		maxItems = 1000
 	}
-	page, err := d.client.TeamUsers.List(ctx, params)
+	page, err := d.client.Tags.List(ctx, params)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -92,7 +92,7 @@ func (d *TeamUsersDataSource) Read(ctx context.Context, req datasource.ReadReque
 	}
 
 	acc = acc[:min(len(acc), maxItems)]
-	result, diags := customfield.NewObjectListFromAttributes[TeamUsersItemsDataSourceModel](ctx, acc)
+	result, diags := customfield.NewObjectListFromAttributes[TagsItemsDataSourceModel](ctx, acc)
 	resp.Diagnostics.Append(diags...)
 	data.Items = result
 
