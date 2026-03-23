@@ -11,13 +11,16 @@ import (
 	"github.com/ServalHQ/serval-go"
 	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
+	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.ResourceWithConfigure = (*TeamUserResource)(nil)
 var _ resource.ResourceWithModifyPlan = (*TeamUserResource)(nil)
+var _ resource.ResourceWithImportState = (*TeamUserResource)(nil)
 
 func NewResource() resource.Resource {
 	return &TeamUserResource{}
@@ -200,6 +203,51 @@ func (r *TeamUserResource) Delete(ctx context.Context, req resource.DeleteReques
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
 	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *TeamUserResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data = new(TeamUserModel)
+
+	path_team_id := ""
+	path_user_id := ""
+	diags := importpath.ParseImportID(
+		req.ID,
+		"<team_id>/<user_id>",
+		&path_team_id,
+		&path_user_id,
+	)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	data.TeamID = types.StringValue(path_team_id)
+	data.ID = types.StringValue(path_user_id)
+
+	res := new(http.Response)
+	env := TeamUserDataEnvelope{*data}
+	_, err := r.client.Teams.Users.Get(
+		ctx,
+		path_user_id,
+		serval.TeamUserGetParams{
+			TeamID: path_team_id,
+		},
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Data
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
