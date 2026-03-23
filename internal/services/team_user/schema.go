@@ -24,14 +24,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
-			"team_id": schema.StringAttribute{
-				Required:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-			},
-			"user_id": schema.StringAttribute{
-				Required:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-			},
 			"role": schema.StringAttribute{
 				Description: `Available values: "TEAM_USER_ROLE_UNSPECIFIED", "TEAM_USER_ROLE_AGENT", "TEAM_USER_ROLE_MANAGER", "TEAM_USER_ROLE_BUILDER", "TEAM_USER_ROLE_VIEWER", "TEAM_USER_ROLE_CONTRIBUTOR".`,
 				Required:    true,
@@ -45,6 +37,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						"TEAM_USER_ROLE_CONTRIBUTOR",
 					),
 				},
+			},
+			"team_id": schema.StringAttribute{
+				Required: true,
+			},
+			"user_id": schema.StringAttribute{
+				Required: true,
 			},
 			"created_at": schema.StringAttribute{
 				Description: `A timestamp in RFC 3339 format (e.g., "2025-01-15T01:30:15Z").`,

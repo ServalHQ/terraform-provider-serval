@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package team_user
+package tag
 
 import (
 	"context"
@@ -18,24 +18,24 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.ResourceWithConfigure = (*TeamUserResource)(nil)
-var _ resource.ResourceWithModifyPlan = (*TeamUserResource)(nil)
-var _ resource.ResourceWithImportState = (*TeamUserResource)(nil)
+var _ resource.ResourceWithConfigure = (*TagResource)(nil)
+var _ resource.ResourceWithModifyPlan = (*TagResource)(nil)
+var _ resource.ResourceWithImportState = (*TagResource)(nil)
 
 func NewResource() resource.Resource {
-	return &TeamUserResource{}
+	return &TagResource{}
 }
 
-// TeamUserResource defines the resource implementation.
-type TeamUserResource struct {
+// TagResource defines the resource implementation.
+type TagResource struct {
 	client *serval.Client
 }
 
-func (r *TeamUserResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_team_user"
+func (r *TagResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_tag"
 }
 
-func (r *TeamUserResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *TagResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -54,8 +54,8 @@ func (r *TeamUserResource) Configure(ctx context.Context, req resource.Configure
 	r.client = client
 }
 
-func (r *TeamUserResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data *TeamUserModel
+func (r *TagResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *TagModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -69,10 +69,10 @@ func (r *TeamUserResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 	res := new(http.Response)
-	env := TeamUserDataEnvelope{*data}
-	_, err = r.client.TeamUsers.New(
+	env := TagDataEnvelope{*data}
+	_, err = r.client.Tags.New(
 		ctx,
-		serval.TeamUserNewParams{},
+		serval.TagNewParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -92,8 +92,8 @@ func (r *TeamUserResource) Create(ctx context.Context, req resource.CreateReques
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *TeamUserResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data *TeamUserModel
+func (r *TagResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *TagModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -101,7 +101,7 @@ func (r *TeamUserResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	var state *TeamUserModel
+	var state *TagModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
@@ -115,11 +115,11 @@ func (r *TeamUserResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 	res := new(http.Response)
-	env := TeamUserDataEnvelope{*data}
-	_, err = r.client.TeamUsers.Update(
+	env := TagDataEnvelope{*data}
+	_, err = r.client.Tags.Update(
 		ctx,
 		data.ID.ValueString(),
-		serval.TeamUserUpdateParams{},
+		serval.TagUpdateParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -139,8 +139,8 @@ func (r *TeamUserResource) Update(ctx context.Context, req resource.UpdateReques
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *TeamUserResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data *TeamUserModel
+func (r *TagResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *TagModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -149,11 +149,10 @@ func (r *TeamUserResource) Read(ctx context.Context, req resource.ReadRequest, r
 	}
 
 	res := new(http.Response)
-	env := TeamUserDataEnvelope{*data}
-	_, err := r.client.TeamUsers.Get(
+	env := TagDataEnvelope{*data}
+	_, err := r.client.Tags.Get(
 		ctx,
 		data.ID.ValueString(),
-		serval.TeamUserGetParams{},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -177,8 +176,8 @@ func (r *TeamUserResource) Read(ctx context.Context, req resource.ReadRequest, r
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *TeamUserResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data *TeamUserModel
+func (r *TagResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data *TagModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -186,10 +185,9 @@ func (r *TeamUserResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	_, err := r.client.TeamUsers.Delete(
+	_, err := r.client.Tags.Delete(
 		ctx,
 		data.ID.ValueString(),
-		serval.TeamUserDeleteParams{},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
 	if err != nil {
@@ -200,8 +198,8 @@ func (r *TeamUserResource) Delete(ctx context.Context, req resource.DeleteReques
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *TeamUserResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	var data = new(TeamUserModel)
+func (r *TagResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data = new(TagModel)
 
 	path := ""
 	diags := importpath.ParseImportID(
@@ -217,11 +215,10 @@ func (r *TeamUserResource) ImportState(ctx context.Context, req resource.ImportS
 	data.ID = types.StringValue(path)
 
 	res := new(http.Response)
-	env := TeamUserDataEnvelope{*data}
-	_, err := r.client.TeamUsers.Get(
+	env := TagDataEnvelope{*data}
+	_, err := r.client.Tags.Get(
 		ctx,
 		path,
-		serval.TeamUserGetParams{},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -240,6 +237,6 @@ func (r *TeamUserResource) ImportState(ctx context.Context, req resource.ImportS
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *TeamUserResource) ModifyPlan(_ context.Context, _ resource.ModifyPlanRequest, _ *resource.ModifyPlanResponse) {
+func (r *TagResource) ModifyPlan(_ context.Context, _ resource.ModifyPlanRequest, _ *resource.ModifyPlanResponse) {
 
 }
