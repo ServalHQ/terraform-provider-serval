@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.24.0 (2026-03-24)
+
+Full Changelog: [v0.23.1...v0.24.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.23.1...v0.24.0)
+
+### Features
+
+* **api:** manual updates ([3d5613e](https://github.com/ServalHQ/terraform-provider-serval/commit/3d5613ef37e65f138abb0e74f249ff23199bee60))
+* **api:** manual updates ([90c611e](https://github.com/ServalHQ/terraform-provider-serval/commit/90c611ee65f92968fd95cb83f0edb21f98b82391))
+* **api:** manual updates ([0dd6847](https://github.com/ServalHQ/terraform-provider-serval/commit/0dd684795522ec4649a313be3b0277e25e4b97d3))
+
+
+### Bug Fixes
+
+* improve linking behavior when developing on a branch not in the Go SDK ([7bf9549](https://github.com/ServalHQ/terraform-provider-serval/commit/7bf9549f572fb1279f9b89713940223a9e99c7af))
+* improved workflow for developing on branches ([d996341](https://github.com/ServalHQ/terraform-provider-serval/commit/d99634186a3e75b066f20b3fbe5ae03b0bfebb28))
+* no longer require an API key when building on production repos ([06ebeb9](https://github.com/ServalHQ/terraform-provider-serval/commit/06ebeb9b6f08967d74b3df2e7ca63b6bb9103c70))
+* patch style requests should never send empty json body for objects ([da21524](https://github.com/ServalHQ/terraform-provider-serval/commit/da21524e2ecbbd5ae9f66a5186495a9652995ee9))
+
+
+### Chores
+
+* **docs:** update terraform-plugin-docs to v0.24.0 ([d8cb311](https://github.com/ServalHQ/terraform-provider-serval/commit/d8cb311ac4cfc2d939e9449a53284c73abaae6a2))
+* **internal:** tweak CI branches ([fcc7669](https://github.com/ServalHQ/terraform-provider-serval/commit/fcc76691e01619a421963a2034eba5493db4b338))
+* **internal:** update gitignore ([62b857e](https://github.com/ServalHQ/terraform-provider-serval/commit/62b857ec31885fe88937ca134e6fe285bd088f92))
+
 ## 0.23.1 (2026-02-28)
 
 Full Changelog: [v0.23.0...v0.23.1](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.23.0...v0.23.1)
