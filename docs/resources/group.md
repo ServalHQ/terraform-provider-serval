@@ -32,8 +32,8 @@ resource "serval_group" "example_group" {
 
 ### Read-Only
 
-- `created_at` (String) A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").
-- `deleted_at` (String) A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").
+- `created_at` (String) A timestamp in RFC 3339 format (e.g., "2025-01-15T01:30:15Z").
+- `deleted_at` (String) A timestamp in RFC 3339 format (e.g., "2025-01-15T01:30:15Z").
 - `id` (String) The ID of this resource.
 - `organization_id` (String)
 

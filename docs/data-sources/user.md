@@ -34,9 +34,12 @@ data "serval_user" "example_user_by_email" {
 
 ### Read-Only
 
+- `auth_method` (String) Specifies the authentication method for a user. If unset, the org default applies.
+ Set to MAGIC_LINK to allow the user to bypass SSO (e.g. guest or break-glass accounts).
+Available values: "USER_AUTH_METHOD_UNSPECIFIED", "USER_AUTH_METHOD_MAGIC_LINK".
 - `avatar_url` (String)
-- `created_at` (String) A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").
-- `deactivated_at` (String) A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").
+- `created_at` (String) A timestamp in RFC 3339 format (e.g., "2025-01-15T01:30:15Z").
+- `deactivated_at` (String) A timestamp in RFC 3339 format (e.g., "2025-01-15T01:30:15Z").
 - `first_name` (String)
 - `id` (String) The ID of this resource.
 - `last_name` (String)
