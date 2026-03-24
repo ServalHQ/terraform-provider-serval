@@ -19,13 +19,10 @@ var _ resource.ResourceWithConfigValidators = (*TeamUserResource)(nil)
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"team_id": schema.StringAttribute{
-				Required:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-			},
-			"user_id": schema.StringAttribute{
-				Required:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			"id": schema.StringAttribute{
+				Description:   "Composite identifier in the format {team_id}:{user_id}.",
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"role": schema.StringAttribute{
 				Description: `Available values: "TEAM_USER_ROLE_UNSPECIFIED", "TEAM_USER_ROLE_AGENT", "TEAM_USER_ROLE_MANAGER", "TEAM_USER_ROLE_BUILDER", "TEAM_USER_ROLE_VIEWER", "TEAM_USER_ROLE_CONTRIBUTOR".`,
@@ -41,8 +38,14 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 					),
 				},
 			},
+			"team_id": schema.StringAttribute{
+				Required: true,
+			},
+			"user_id": schema.StringAttribute{
+				Required: true,
+			},
 			"created_at": schema.StringAttribute{
-				Description: `A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").`,
+				Description: `A timestamp in RFC 3339 format (e.g., "2025-01-15T01:30:15Z").`,
 				Computed:    true,
 				CustomType:  timetypes.RFC3339Type{},
 			},

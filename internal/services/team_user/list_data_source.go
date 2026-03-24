@@ -67,11 +67,7 @@ func (d *TeamUsersDataSource) Read(ctx context.Context, req datasource.ReadReque
 	if maxItems <= 0 {
 		maxItems = 1000
 	}
-	page, err := d.client.Teams.Users.List(
-		ctx,
-		data.TeamID.ValueString(),
-		params,
-	)
+	page, err := d.client.TeamUsers.List(ctx, params)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

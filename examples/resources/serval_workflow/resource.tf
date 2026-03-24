@@ -6,4 +6,5 @@ resource "serval_workflow" "example_workflow" {
   execution_scope = "WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED"
   is_published = true
   require_form_confirmation = true
+  tag_ids = ["string"]
 }

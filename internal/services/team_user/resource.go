@@ -11,13 +11,16 @@ import (
 	"github.com/ServalHQ/serval-go"
 	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
+	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.ResourceWithConfigure = (*TeamUserResource)(nil)
 var _ resource.ResourceWithModifyPlan = (*TeamUserResource)(nil)
+var _ resource.ResourceWithImportState = (*TeamUserResource)(nil)
 
 func NewResource() resource.Resource {
 	return &TeamUserResource{}
@@ -67,9 +70,8 @@ func (r *TeamUserResource) Create(ctx context.Context, req resource.CreateReques
 	}
 	res := new(http.Response)
 	env := TeamUserDataEnvelope{*data}
-	_, err = r.client.Teams.Users.New(
+	_, err = r.client.TeamUsers.New(
 		ctx,
-		data.TeamID.ValueString(),
 		serval.TeamUserNewParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -114,12 +116,10 @@ func (r *TeamUserResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 	res := new(http.Response)
 	env := TeamUserDataEnvelope{*data}
-	_, err = r.client.Teams.Users.Update(
+	_, err = r.client.TeamUsers.Update(
 		ctx,
-		data.UserID.ValueString(),
-		serval.TeamUserUpdateParams{
-			TeamID: data.TeamID.ValueString(),
-		},
+		data.ID.ValueString(),
+		serval.TeamUserUpdateParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -150,12 +150,10 @@ func (r *TeamUserResource) Read(ctx context.Context, req resource.ReadRequest, r
 
 	res := new(http.Response)
 	env := TeamUserDataEnvelope{*data}
-	_, err := r.client.Teams.Users.Get(
+	_, err := r.client.TeamUsers.Get(
 		ctx,
-		data.UserID.ValueString(),
-		serval.TeamUserGetParams{
-			TeamID: data.TeamID.ValueString(),
-		},
+		data.ID.ValueString(),
+		serval.TeamUserGetParams{},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -188,18 +186,56 @@ func (r *TeamUserResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	_, err := r.client.Teams.Users.Delete(
+	_, err := r.client.TeamUsers.Delete(
 		ctx,
-		data.UserID.ValueString(),
-		serval.TeamUserDeleteParams{
-			TeamID: data.TeamID.ValueString(),
-		},
+		data.ID.ValueString(),
+		serval.TeamUserDeleteParams{},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
 	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *TeamUserResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data = new(TeamUserModel)
+
+	path := ""
+	diags := importpath.ParseImportID(
+		req.ID,
+		"<id>",
+		&path,
+	)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	data.ID = types.StringValue(path)
+
+	res := new(http.Response)
+	env := TeamUserDataEnvelope{*data}
+	_, err := r.client.TeamUsers.Get(
+		ctx,
+		path,
+		serval.TeamUserGetParams{},
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Data
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

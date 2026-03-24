@@ -20,8 +20,8 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"team_id": schema.StringAttribute{
-				Description: "The team ID to list users for.",
-				Required:    true,
+				Description: "Filter by team ID. Required when using /v2/teams/{team_id}/users path.",
+				Optional:    true,
 			},
 			"user_id": schema.StringAttribute{
 				Description: "Filter by user ID. If not provided, returns all users in the team.",
@@ -40,8 +40,12 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  customfield.NewNestedObjectListType[TeamUsersItemsDataSourceModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Description: "Composite identifier in the format {team_id}:{user_id}.",
+							Computed:    true,
+						},
 						"created_at": schema.StringAttribute{
-							Description: `A timestamp in RFC 3339 format (e.g., "2017-01-15T01:30:15.01Z").`,
+							Description: `A timestamp in RFC 3339 format (e.g., "2025-01-15T01:30:15Z").`,
 							Computed:    true,
 							CustomType:  timetypes.RFC3339Type{},
 						},

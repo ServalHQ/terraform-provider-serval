@@ -65,9 +65,9 @@ func (d *TeamUserDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 	res := new(http.Response)
 	env := TeamUserDataDataSourceEnvelope{*data}
-	_, err := d.client.Teams.Users.Get(
+	_, err := d.client.TeamUsers.Get(
 		ctx,
-		data.UserID.ValueString(),
+		data.ID.ValueString(),
 		params,
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

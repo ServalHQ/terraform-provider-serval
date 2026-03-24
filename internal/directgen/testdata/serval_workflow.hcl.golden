@@ -4,6 +4,7 @@ resource "serval_workflow" "deploy_to_prod" {
   name = "deploy-to-prod"
   description = "Deploy to production workflow"
   execution_scope = "TEAM_PRIVATE"
+  tag_ids = []
   is_published = true
   require_form_confirmation = false
 }
