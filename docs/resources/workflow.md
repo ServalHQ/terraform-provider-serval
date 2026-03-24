@@ -21,6 +21,7 @@ resource "serval_workflow" "example_workflow" {
   execution_scope = "WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED"
   is_published = true
   require_form_confirmation = true
+  tag_ids = ["string"]
 }
 ```
 
@@ -40,12 +41,12 @@ resource "serval_workflow" "example_workflow" {
 Available values: "WORKFLOW_EXECUTION_SCOPE_UNSPECIFIED", "TEAM_PRIVATE", "TEAM_PUBLIC".
 - `is_published` (Boolean) Whether to publish the workflow after creation (optional).
 - `require_form_confirmation` (Boolean) Whether the workflow requires form confirmation (optional).
+- `tag_ids` (List of String) The IDs of the tags to associate with the workflow.
 
 ### Read-Only
 
 - `has_unpublished_changes` (Boolean) Whether there are unpublished changes to the workflow (computed by server).
 - `id` (String) The ID of the workflow.
-- `tag_ids` (List of String) IDs of tags associated with this workflow.
 
 ## Import
 
