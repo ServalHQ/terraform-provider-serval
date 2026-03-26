@@ -46,6 +46,7 @@ type AccessRequestsItemsDataSourceModel struct {
 
 type AccessRequestsTimeAllocationsDataSourceModel struct {
 	ID                    types.String `tfsdk:"id" json:"id,computed"`
+	ApprovalRequestID     types.String `tfsdk:"approval_request_id" json:"approvalRequestId,computed"`
 	ApprovedMinutes       types.Int64  `tfsdk:"approved_minutes" json:"approvedMinutes,computed"`
 	BusinessJustification types.String `tfsdk:"business_justification" json:"businessJustification,computed"`
 	CreatedAt             types.String `tfsdk:"created_at" json:"createdAt,computed"`

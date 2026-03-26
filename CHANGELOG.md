@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.26.0 (2026-03-26)
+
+Full Changelog: [v0.25.0...v0.26.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.25.0...v0.26.0)
+
+### Features
+
+* **api:** manual updates ([f249b54](https://github.com/ServalHQ/terraform-provider-serval/commit/f249b5406676458f3dcd95c65d708936a454b481))
+
+
+### Chores
+
+* **internal:** codegen related update ([30888e8](https://github.com/ServalHQ/terraform-provider-serval/commit/30888e8e87b4389be46c77e459d3a70548142f55))
+
 ## 0.25.0 (2026-03-26)
 
 Full Changelog: [v0.24.1...v0.25.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.24.1...v0.25.0)

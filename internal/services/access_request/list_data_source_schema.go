@@ -89,6 +89,10 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 										Description: "The unique ID of the time allocation.",
 										Computed:    true,
 									},
+									"approval_request_id": schema.StringAttribute{
+										Description: "The ID of the approval request for this time allocation, if any.\n Each time allocation may have its own approval round (e.g., initial request\n vs. extension each go through separate approval).",
+										Computed:    true,
+									},
 									"approved_minutes": schema.Int64Attribute{
 										Description: "The number of minutes actually approved. Null while the time allocation is pending.",
 										Computed:    true,

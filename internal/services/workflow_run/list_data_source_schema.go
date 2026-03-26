@@ -39,6 +39,10 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 							Description: "The unique ID of the workflow run.",
 							Computed:    true,
 						},
+						"approval_request_id": schema.StringAttribute{
+							Description: "The ID of the approval request associated with this workflow run, if any.",
+							Computed:    true,
+						},
 						"completed_at": schema.StringAttribute{
 							Description: "The timestamp when the workflow run completed (if applicable).",
 							Computed:    true,
