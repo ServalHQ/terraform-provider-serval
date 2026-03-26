@@ -65,6 +65,9 @@ Available values: "ACCESS_REQUEST_STATUS_UNSPECIFIED", "ACCESS_REQUEST_STATUS_PE
 
 Read-Only:
 
+- `approval_request_id` (String) The ID of the approval request for this time allocation, if any.
+ Each time allocation may have its own approval round (e.g., initial request
+ vs. extension each go through separate approval).
 - `approved_minutes` (Number) The number of minutes actually approved. Null while the time allocation is pending.
 - `business_justification` (String) The business justification provided for this time allocation.
 - `created_at` (String) The timestamp when the time allocation was created.

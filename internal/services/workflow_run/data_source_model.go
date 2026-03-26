@@ -12,6 +12,7 @@ type WorkflowRunDataDataSourceEnvelope struct {
 
 type WorkflowRunDataSourceModel struct {
 	ID                types.String `tfsdk:"id" path:"id,required"`
+	ApprovalRequestID types.String `tfsdk:"approval_request_id" json:"approvalRequestId,computed"`
 	CompletedAt       types.String `tfsdk:"completed_at" json:"completedAt,computed"`
 	CreatedAt         types.String `tfsdk:"created_at" json:"createdAt,computed"`
 	InitiatedByUserID types.String `tfsdk:"initiated_by_user_id" json:"initiatedByUserId,computed"`
