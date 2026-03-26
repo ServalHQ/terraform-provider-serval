@@ -20,6 +20,10 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "The ID of the workflow run.",
 				Required:    true,
 			},
+			"approval_request_id": schema.StringAttribute{
+				Description: "The ID of the approval request associated with this workflow run, if any.",
+				Computed:    true,
+			},
 			"completed_at": schema.StringAttribute{
 				Description: "The timestamp when the workflow run completed (if applicable).",
 				Computed:    true,

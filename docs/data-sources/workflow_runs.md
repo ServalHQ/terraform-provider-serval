@@ -35,6 +35,7 @@ data "serval_workflow_runs" "example_workflow_runs" {
 
 Read-Only:
 
+- `approval_request_id` (String) The ID of the approval request associated with this workflow run, if any.
 - `completed_at` (String) The timestamp when the workflow run completed (if applicable).
 - `created_at` (String) The timestamp when the workflow run was created.
 - `id` (String) The unique ID of the workflow run.
