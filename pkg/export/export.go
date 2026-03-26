@@ -50,5 +50,6 @@ const (
 	ResourceTypeAppInstance                   = directgen.ResourceTypeAppInstance
 	ResourceTypeAppResource                   = directgen.ResourceTypeAppResource
 	ResourceTypeAppResourceRole               = directgen.ResourceTypeAppResourceRole
+	ResourceTypeTag                           = directgen.ResourceTypeTag
 	ResourceTypeCustomService                 = directgen.ResourceTypeCustomService
 )

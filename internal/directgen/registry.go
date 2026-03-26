@@ -13,6 +13,7 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/custom_service"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/group"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/guidance"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/tag"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/team"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/user"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow"
@@ -33,6 +34,7 @@ const (
 	ResourceTypeAppInstance                   = "serval_app_instance"
 	ResourceTypeAppResource                   = "serval_app_resource"
 	ResourceTypeAppResourceRole               = "serval_app_resource_role"
+	ResourceTypeTag                           = "serval_tag"
 	ResourceTypeCustomService                 = "serval_custom_service"
 )
 
@@ -127,6 +129,12 @@ var resourceRegistry = map[string]ResourceRegistryEntry{
 		Extractor:     func(e any) any { return e.(*app_resource_role.AppResourceRoleDataEnvelope).Data },
 		SchemaVersion: defaultSchemaVersion,
 		SchemaFunc:    app_resource_role.ResourceSchema,
+	},
+	ResourceTypeTag: {
+		Constructor:   func() any { return &tag.TagDataEnvelope{} },
+		Extractor:     func(e any) any { return e.(*tag.TagDataEnvelope).Data },
+		SchemaVersion: defaultSchemaVersion,
+		SchemaFunc:    tag.ResourceSchema,
 	},
 	ResourceTypeCustomService: {
 		Constructor:   func() any { return &custom_service.CustomServiceDataEnvelope{} },
