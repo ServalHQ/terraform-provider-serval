@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.27.0 (2026-04-23)
+
+Full Changelog: [v0.26.0...v0.27.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.26.0...v0.27.0)
+
+### Features
+
+* add per-resource api permissions to schema description ([24cb0cd](https://github.com/ServalHQ/terraform-provider-serval/commit/24cb0cd2f5ab382d830d777504a4a9f26d8e639a))
+
+
+### Bug Fixes
+
+* **ci:** in custom setup-go, pass through go-version and cache-dependency-path ([38ae9cb](https://github.com/ServalHQ/terraform-provider-serval/commit/38ae9cb468b0c23c7ed112c55f75d9c5fed64869))
+* fall back to main branch if linking fails in CI ([7e08592](https://github.com/ServalHQ/terraform-provider-serval/commit/7e0859296a1925dba16d4bcb4958968c49678b54))
+* fix for failing to drop invalid module replace in link script ([5cc7988](https://github.com/ServalHQ/terraform-provider-serval/commit/5cc7988112ff4d73de9f9be35cbfff4ff641949f))
+* fix quoting typo ([a42c991](https://github.com/ServalHQ/terraform-provider-serval/commit/a42c991c96486fedd7033238aa8a4488e7bb0a8e))
+
+
+### Chores
+
+* **internal:** more robust bootstrap script ([b5573ea](https://github.com/ServalHQ/terraform-provider-serval/commit/b5573ea11b71d37655ae6cd428d48f16d20d47f3))
+* pin go releaser version ([f705019](https://github.com/ServalHQ/terraform-provider-serval/commit/f705019327a3e592c96df652455d02368d3ebcb3))
+
 ## 0.26.0 (2026-03-26)
 
 Full Changelog: [v0.25.0...v0.26.0](https://github.com/ServalHQ/terraform-provider-serval/compare/v0.25.0...v0.26.0)
