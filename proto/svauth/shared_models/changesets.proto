@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package svauth.models;
+
+enum TeamRole {
+    TEAM_ROLE_UNSPECIFIED = 0;
+    TEAM_ROLE_MANAGER = 1;
+    TEAM_ROLE_AGENT = 2;
+    TEAM_ROLE_BUILDER = 3;
+    TEAM_ROLE_VIEWER = 4;
+    TEAM_ROLE_CONTRIBUTOR = 5;
+    TEAM_ROLE_DRAFTER = 6;
+    TEAM_ROLE_READONLY_AGENT = 7;
+    TEAM_ROLE_APP_BUILDER = 8;
+    // Minimal base: confers nothing beyond the org-member floor on the team.
+    // Exists so a custom role can start from a blank slate instead of
+    // inheriting Read-Only Agent's ticket and journey visibility.
+    TEAM_ROLE_APP_VIEWER = 9;
+    TEAM_ROLE_PERSONAL_TEAM_OWNER = 10;
+}

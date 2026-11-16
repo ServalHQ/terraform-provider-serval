@@ -1,0 +1,492 @@
+syntax = "proto3";
+
+package svflow.publicapi;
+
+import "google/api/field_behavior.proto";
+import "serval/resources/v1/workflow.proto";
+import "svflow/pubapimodels/changesets.proto";
+
+message CreateApprovalProcedureRequest {
+    // The ID of the workspace the procedure belongs to.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The name of the procedure.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // A description of the procedure.
+    optional string description = 3;
+    // How long each step waits for a human decision before timing out
+    // (in seconds). Omitted or zero uses the default.
+    optional int32 timeout_seconds = 4;
+    // Stable, workspace-scoped identity (aproc_ + 22 chars). Minted when not
+    // supplied.
+    optional string scoped_id = 5;
+    // The steps of the procedure, in order. At least one is required.
+    repeated pubapimodels.ApprovalProcedureStep steps = 6;
+}
+
+// Replaces the procedure wholesale. Any change to name, description, timeout
+// or steps creates a new version; an identical request is a no-op.
+message UpdateApprovalProcedureRequest {
+    // The ID of the approval procedure.
+    string id = 1;
+    // The name of the procedure.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // A description of the procedure. The stored description is replaced
+    // wholesale; omitted or empty clears it.
+    optional string description = 3;
+    // How long each step waits for a human decision before timing out
+    // (in seconds). Omitted or zero keeps the current timeout.
+    optional int32 timeout_seconds = 4;
+    // The steps of the procedure, in order, replaced wholesale. At least one
+    // is required.
+    repeated pubapimodels.ApprovalProcedureStep steps = 5;
+}
+
+message FormBlockVersionState {
+    string name = 1;
+    string description = 2;
+    string module_source = 3 [(google.api.field_behavior) = REQUIRED];
+    string author_sdk_version = 4 [(google.api.field_behavior) = REQUIRED];
+    string version_digest = 5;
+    repeated string referenced_workflow_scoped_ids = 6;
+}
+
+message CreateFormBlockRequest {
+    // The owning workspace. Resource Manager derives this from session context and
+    // rejects agent-supplied identity fields.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Mutable display name.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // Human-readable description.
+    string description = 3;
+    // Whole-file TSX source, default-exporting defineBlock(...).
+    string module_source = 4 [(google.api.field_behavior) = REQUIRED];
+    // Supported serval/forms author SDK version.
+    string author_sdk_version = 5 [(google.api.field_behavior) = REQUIRED];
+    // Canonical import identity. Leave unset for ordinary creation; config push
+    // supplies the source row's exact fblk_ scoped ID.
+    optional string scoped_id = 6;
+    // Server-computed canonical source and SDK digest. Ordinary creates omit it;
+    // portable creates carry it for exact target-side validation and apply.
+    optional string version_digest = 7;
+    // Server-derived query-workflow identities. Ordinary creates omit them;
+    // portable creates carry them for dependency ordering.
+    repeated string referenced_workflow_scoped_ids = 8;
+    // User attributed to this private stage/apply mutation.
+    string acting_user_id = 9 [(google.api.field_behavior) = REQUIRED];
+    // Resource Manager full-state marker. Ordinary creates leave this false;
+    // archive stages it true and performs the durable archive only at apply.
+    optional bool archived = 10;
+    // Older immutable published versions required by exact Form locks. Portable
+    // creates carry them oldest first and reconcile them atomically.
+    repeated FormBlockVersionState required_versions = 11;
+}
+
+message UpdateFormBlockRequest {
+    // Internal ID, or exact fblk_ scoped ID on portable apply.
+    string id = 1;
+    optional string name = 2;
+    optional string description = 3;
+    // Source replacement is whole-file; presence distinguishes omission from
+    // intentionally empty text, which validation rejects.
+    optional string module_source = 4;
+    optional string author_sdk_version = 5;
+    // Owning workspace used for tenant-scoped private and apply calls.
+    string team_id = 6 [(google.api.field_behavior) = REQUIRED];
+    // User attributed to this private stage/apply mutation.
+    string acting_user_id = 7 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateCustomServiceRequest {
+    // The ID of the workspace.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The name of the custom service (e.g., "Internal HR System").
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // The domain for branding/logo lookup (e.g., "hr.company.com").
+    string domain = 3;
+    // Copy-invariant identity to create the service under ("csvc_" + 22
+    // alphanumerics). Leave unset and the server mints one. Set it to the
+    // source service's scoped_id when pushing configuration between workspaces or
+    // environments: the copy then answers to the same scoped id as its
+    // source, so the next push resolves it and updates in place instead of
+    // creating a duplicate. Must not already be in use on the workspace.
+    optional string scoped_id = 4;
+}
+
+message UpdateCustomServiceRequest {
+    // The ID of the custom service.
+    string id = 1;
+    // The name of the custom service.
+    string name = 2;
+    // The domain for branding/logo lookup.
+    string domain = 3;
+    // Rekeys the service's copy-invariant identity ("csvc_" + 22
+    // alphanumerics). Omit to leave unchanged. Must be unique within the
+    // workspace.
+    optional string scoped_id = 4;
+}
+
+// An image Serval hosts for a workspace's form card options. The create body doubles
+// as the serialization document a config push carries between workspaces, which is
+// why it holds the bytes: a push crosses a tenant boundary, so the target can
+// never read the source's object storage and the picture has to travel inside
+// the document.
+message CreateFormImageRequest {
+    // The ID of the workspace.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The uploader's file name, shown wherever the image is listed.
+    string file_name = 2 [(google.api.field_behavior) = REQUIRED];
+    // The image bytes. Normalized on ingest — decoded, downscaled, re-encoded,
+    // metadata stripped — so what is stored is never byte-identical to what was
+    // sent. PNG, JPEG, GIF and WebP are accepted; anything a raster decoder
+    // rejects, including SVG, is refused.
+    bytes data = 3 [(google.api.field_behavior) = REQUIRED];
+    // Stable, workspace-scoped identity for the image (fimg_ + 22 base62 chars).
+    // Omit to have one minted; set to preserve identity across workspaces, which is
+    // how a config push keeps a card option's reference resolving on the
+    // target.
+    optional string scoped_id = 4;
+}
+
+message CreatePackageRequest {
+    // The ID of the workspace that owns the package.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The package name. Unique within the workspace, ignoring case. "Default" is
+    // reserved for the workspace's default package.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // Copy-invariant identity to create the package under ("pkg_" + 22
+    // alphanumerics). Leave unset and the server mints one. Set it to the
+    // source package's scoped_id when pushing configuration between workspaces or
+    // environments: the copy then answers to the same scoped id as its
+    // source, so the next push resolves it and updates in place instead of
+    // creating a second package. Must not already be in use on the workspace.
+    optional string scoped_id = 3;
+    // The app instances whose credentials workflows in this package run with.
+    // Each must belong to the workspace or be shared with it. Linking a restricted
+    // app instance requires permission to use it.
+    repeated string app_instance_ids = 4;
+}
+
+message UpdatePackageRequest {
+    // The ID of the package.
+    string id = 1;
+    // The new name. Omit to leave unchanged. The default package keeps its
+    // name.
+    optional string name = 2;
+    // Rekeys the package's copy-invariant identity ("pkg_" + 22
+    // alphanumerics). Omit, or send the current value, to leave it unchanged.
+    // Must be unique within the workspace. The default package cannot be rekeyed.
+    optional string scoped_id = 3;
+    message AppInstanceIds {
+        // App instance IDs.
+        repeated string app_instance_ids = 1;
+    }
+    // Omit to leave the linked app instances unchanged. Present replaces them
+    // wholesale, including with an empty list.
+    optional AppInstanceIds app_instance_ids = 4;
+}
+
+// ---------------------------------------------------------------------------
+// App Builder apps: the Resource Manager `builder_app` State/Patch and the
+// config-push document, which a public create endpoint will reuse. It is what
+// a version pinned (text tree and asset bytes), never the compiled bundle.
+// ---------------------------------------------------------------------------
+
+// One text file. A file that is not valid UTF-8 cannot be serialized and
+// blocks the push.
+message BuilderAppSourceFile {
+    // Relative, slash-separated: manifest.json, or a file under src/.
+    string path = 1;
+    string content = 2;
+}
+
+// One binary file, bytes inline.
+message BuilderAppAsset {
+    string path = 1;
+    string content_type = 2;
+    bytes content = 3;
+}
+
+message CreateBuilderAppRequest {
+    // The owning workspace. Resource Manager derives it from session context and
+    // the apply stamps the target workspace; a staged value is never trusted.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // If an app on the workspace already has this name (ignoring case), the app
+    // is created as "<name> 2", "<name> 3", … and the output's app.name is
+    // the name that was used; a duplicate name never fails the create.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // Copy-invariant identity ("svapp_" + 22 alphanumerics). Leave unset and
+    // the server mints one; set it to the source app's scoped_id when
+    // pushing between workspaces so the next push updates in place.
+    optional string scoped_id = 4;
+    // The whole text tree, manifest.json included.
+    repeated BuilderAppSourceFile files = 5;
+    repeated BuilderAppAsset assets = 6;
+}
+
+// Wholesale replacement of the text tree, including with an empty list.
+message BuilderAppSourceFilesUpdate {
+    repeated BuilderAppSourceFile files = 1;
+}
+
+message UpdateBuilderAppRequest {
+    string id = 1;
+    optional string name = 2;
+    // Rekeys the app's copy-invariant identity. Omit to leave unchanged.
+    optional string scoped_id = 4;
+    // Absent = leave unchanged; present = replace wholesale.
+    optional BuilderAppSourceFilesUpdate files = 5;
+}
+
+message CreateFolderRequest {
+  // The ID of the workspace.
+  string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // The name of the folder.
+  string name = 2 [(google.api.field_behavior) = REQUIRED];
+  // The non-folder item type this folder can contain.
+  // Required — folders are scoped per type, and FOLDER_ITEM_TYPE_UNSPECIFIED
+  // and FOLDER_ITEM_TYPE_FOLDER are rejected.
+  pubapimodels.FolderItemType item_type = 3 [(google.api.field_behavior) = REQUIRED];
+  // Optional parent folder. Unset creates the folder at the root. The parent
+  // must be of the same item_type.
+  optional string parent_folder_id = 4;
+  // Portable identity: folder_ followed by 22 alphanumeric characters.
+  // Omit or leave empty to generate an ID; unique among live folders in the workspace.
+  optional string scoped_id = 5;
+}
+
+// A presence-tracked parent-folder update. The message wrapper lets the JSON
+// surface distinguish "omitted" (leave the folder where it is) from a move:
+// send the wrapper with parent_folder_id set to move the folder under that
+// parent, or with parent_folder_id unset to move it to the root.
+message ParentFolderIdUpdate {
+  // The destination parent folder. Unset moves the folder to the root.
+  optional string parent_folder_id = 1;
+}
+
+message UpdateFolderRequest {
+  // The ID of the folder. The owning workspace is resolved from the folder.
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+  // New name. Omit to leave the name unchanged.
+  optional string name = 2;
+  // New parent. Omit to leave the folder where it is; include it to move the
+  // folder (set parent_folder_id to move under that folder, or leave it unset
+  // to move the folder to the root).
+  ParentFolderIdUpdate parent = 3;
+  // Portable identity: folder_ followed by 22 alphanumeric characters.
+  // Omit or leave empty to keep the current ID; unique among live folders in the workspace.
+  optional string scoped_id = 4;
+}
+
+// Role sync for one resource type of an app: a role holders workflow, and
+// optionally a roles workflow, that Serval runs for each resource of the type
+// on a schedule to record who holds which role.
+message CreateRoleSyncRequest {
+    // The workspace that owns the app instance.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The app instance whose roles are synced.
+    string app_instance_id = 2 [(google.api.field_behavior) = REQUIRED];
+    // The resource type the workflows report on, e.g. "repository". "access"
+    // is the app itself, for roles that apply across the app.
+    string resource_type_slug = 3 [(google.api.field_behavior) = REQUIRED];
+    // The workspace workflow that reports who holds each role of a resource.
+    string role_holders_workflow_id = 4 [(google.api.field_behavior) = REQUIRED];
+    // The workspace workflow that reports a resource's roles. Omit it when the
+    // roles already exist.
+    optional string roles_workflow_id = 5;
+    // Whether a role holder no user matches gets a new user. Omitted means
+    // false.
+    optional bool create_missing_users = 6;
+    // How often each resource syncs, in seconds. Omitted or zero uses the
+    // app's interval.
+    optional int32 sync_interval_seconds = 7;
+    // The columns access reviews show for each role holder, in order.
+    repeated pubapimodels.AccountFieldMapping review_fields = 8;
+}
+
+// Changes a role sync. Omitted fields are unchanged.
+message UpdateRoleSyncRequest {
+    // The ID of the role sync.
+    string id = 1;
+    // The workspace workflow that reports who holds each role of a resource.
+    optional string role_holders_workflow_id = 2;
+    // The workspace workflow that reports a resource's roles. Empty detaches it.
+    optional string roles_workflow_id = 3;
+    // Whether a role holder no user matches gets a new user.
+    optional bool create_missing_users = 4;
+    // How often each resource syncs, in seconds. Zero returns to the app's
+    // interval.
+    optional int32 sync_interval_seconds = 5;
+    // Replaces the review columns when set; an empty list clears them.
+    optional RoleSyncReviewFieldsUpdate review_fields = 6;
+}
+
+message RoleSyncReviewFieldsUpdate {
+    repeated pubapimodels.AccountFieldMapping fields = 1;
+}
+
+// Replaces an app's account fields: the keys of its account records that
+// access reviews show as columns, in order.
+message UpdateAppAccountFieldsRequest {
+    // The app instance.
+    string app_instance_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // At most 20. An empty list clears them.
+    repeated pubapimodels.AccountFieldMapping account_fields = 2;
+}
+
+message CreateAccessProfileRequest {
+    // The ID of the workspace to create the access profile for.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The name of the access profile.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // A description of the access profile.
+    optional string description = 3;
+    // The rules that determine which users this profile applies to.
+    pubapimodels.AccessProfileMatchingCriteria matching_criteria = 4;
+    // Deprecated: create the profile first, then attach grants through the
+    // access-profile-grant endpoints (/v2/access-profile-grants). Still
+    // honored for compatibility until writes are rejected. Roles listed here
+    // control request eligibility; birthright has a separate role list.
+    pubapimodels.AccessProfileGrants grants = 5 [deprecated = true];
+    // Stable, workspace-scoped identity for the profile (apr_ + 22 base62
+    // chars). Omit to have one minted. Must be unique within the workspace;
+    // reserved sentinel values (built-in profiles) are rejected.
+    optional string scoped_id = 6;
+    reserved 7, 8;
+    // Independent automatic access. Requires access-profiles:assign. Request
+    // eligibility and automatic grants have separate audiences and role lists.
+    pubapimodels.AccessProfileBirthrightPolicy birthright = 10;
+}
+
+message UpdateAccessProfileRequest {
+    // The ID of the access profile to update.
+    string id = 1;
+    // Updated name. Omit or set to "" to leave unchanged.
+    string name = 2;
+    // Updated description. Omit to leave unchanged; set to "" to clear.
+    optional string description = 3;
+    // Which users this profile applies to. Each child present replaces that
+    // criterion wholesale; a child omitted is left unchanged. Sending the
+    // message without any children, or an update that would leave the profile
+    // with no criterion at all (which would match every user), is rejected.
+    pubapimodels.AccessProfileMatchingCriteria matching_criteria = 4;
+    // Deprecated: manage grants through the access-profile-grant endpoints
+    // (/v2/access-profile-grants), which edit one edge at a time instead of
+    // replacing the full set. Still honored (replace-all semantics) for
+    // compatibility until writes are rejected.
+    pubapimodels.AccessProfileGrants grants = 5 [deprecated = true];
+    // Rekeys the profile's stable identity (apr_ + 22 base62 chars).
+    // Omit to leave unchanged. Must be unique within the workspace. Built-in
+    // profiles cannot be rekeyed, and reserved sentinel values are rejected.
+    optional string scoped_id = 6;
+    reserved 7, 8;
+    // Omit to preserve the automatic-access policy. When present, replaces it
+    // in full and requires access-profiles:assign. Request eligibility is
+    // unaffected. Disabling applies the removal policy to its managed grants.
+    pubapimodels.AccessProfileBirthrightPolicy birthright = 10;
+    // Replace every matching criterion, including children omitted from
+    // matching_criteria. Requires matching_criteria. Grants are unaffected.
+    bool replace_matching_criteria = 9;
+}
+
+message CreateWorkflowRequest {
+    // The ID of the workspace.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The name of the workflow.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // A description of the workflow.
+    string description = 3;
+    reserved 4; // was: type
+    reserved 5; // was: execution_scope
+    // Whether the workflow requires form confirmation (optional).
+    optional bool require_form_confirmation = 6;
+    reserved 7; // was: is_temporary
+    // The content/code of the workflow.
+    string content = 8 [(google.api.field_behavior) = REQUIRED];
+    reserved 9; // was: parameters
+    // Whether to publish the workflow after creation (optional).
+    optional bool is_published = 10;
+    // The IDs of the tags to associate with the workflow.
+    repeated string tag_ids = 11;
+    // Whether to list this workflow in the Service Catalog (optional). When
+    // omitted, the workflow is not listed.
+    optional bool show_in_service_catalog = 12;
+    // Optional description shown at the top of the Service Catalog run form.
+    optional string service_catalog_description = 13;
+    // The access package, by name, whose connections this workflow's runs may
+    // use. Omit it, or send an empty string, to place the workflow in the
+    // workspace's default package. Names match case-insensitively; an unknown name
+    // is rejected. Ignored for workspaces without access packages.
+    optional string package = 14;
+    // Destination folder ID. Omit to preserve placement; empty selects root.
+    optional string folder_id = 15;
+    // @exclude-from-openapi Stable, workspace-scoped identity (wf_ + 22
+    // chars). Omit to mint; set to preserve identity across workspaces.
+    optional string scoped_id = 16;
+    // @exclude-from-openapi An inline approval procedure gating runs.
+    // Mutually exclusive with approval_procedure_id.
+    serval.resources.v1.ApprovalProcedure approval_procedure = 17;
+    // @exclude-from-openapi The ID of a shared approval procedure gating
+    // runs. Mutually exclusive with approval_procedure.
+    optional string approval_procedure_id = 18;
+    // @exclude-from-openapi The access profiles a caller must hold to run
+    // the workflow.
+    serval.resources.v1.AccessProfileGating access_profile_gating = 19;
+    // @exclude-from-openapi Whether the workflow is disabled. Omit to use
+    // the default (enabled).
+    optional bool disabled = 20;
+    // @exclude-from-openapi The agent integration this workflow was
+    // imported from, when it is an MCP or A2A agent workflow.
+    serval.resources.v1.AgentWorkflowOrigin agent_workflow_origin = 21;
+}
+
+// A presence-tracked replacement set of tag ids. The message wrapper lets the
+// JSON surface distinguish "omitted" (leave the tag set unchanged) from
+// "empty" (clear every tag) — on a bare proto3 repeated field the two are
+// indistinguishable.
+message TagIdsUpdate {
+    // The replacement set of tag ids. An empty (or omitted) list removes
+    // every tag from the subject.
+    repeated string ids = 1;
+}
+
+message UpdateWorkflowRequest {
+    // The ID of the workflow.
+    string id = 1;
+    // The name of the workflow.
+    string name = 2;
+    // A description of the workflow.
+    string description = 3;
+    reserved 4; // was: type
+    reserved 5; // was: execution_scope
+    // Whether the workflow requires form confirmation. Omit to leave unchanged.
+    optional bool require_form_confirmation = 6;
+    reserved 7; // was: is_temporary
+    // The content/code of the workflow.
+    string content = 8;
+    reserved 9; // was: parameters
+    // Whether the workflow is published. Set to true to publish the workflow.
+    optional bool is_published = 10;
+    // The workflow's replacement set of tags: when present, the workflow ends
+    // up with exactly the given tag ids (an empty set clears every tag).
+    // Omit to leave tags unchanged.
+    TagIdsUpdate tag_ids = 11;
+    // Whether to list this workflow in the Service Catalog. Omit to leave
+    // unchanged.
+    optional bool show_in_service_catalog = 12;
+    // Description shown at the top of the Service Catalog run form. Omit to
+    // leave unchanged; send an empty string to clear it.
+    optional string service_catalog_description = 13;
+    // The ID of a named approval procedure that must approve each run of the
+    // workflow. Omit to leave the workflow's approval unchanged; send an empty
+    // string to remove it. Attaching requires permission to view approval
+    // procedures and removing requires permission to delete them. Requires
+    // first-class approval procedures on the workspace.
+    optional string approval_procedure_id = 14;
+    // Moves the workflow to the access package of this name. Omit to leave it
+    // unchanged; send an empty string to move it to the workspace's default
+    // package. The move takes effect at once: new runs use the package's
+    // connections. Ignored for workspaces without access packages.
+    optional string package = 15;
+    // Destination folder ID. Omit to preserve placement; empty selects root.
+    optional string folder_id = 16;
+}

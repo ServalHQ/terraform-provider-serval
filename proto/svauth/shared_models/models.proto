@@ -1,0 +1,259 @@
+syntax = "proto3";
+
+package svauth.models;
+
+import "google/protobuf/timestamp.proto";
+import public "svauth/shared_models/changesets.proto";
+
+enum AdditionalMagicLinkChannel {
+    ADDITIONAL_MAGIC_LINK_CHANNEL_UNSPECIFIED = 0;
+    ADDITIONAL_MAGIC_LINK_CHANNEL_WHATSAPP = 1;
+}
+
+message AdditionalMagicLinkChannelSetting {
+    AdditionalMagicLinkChannel channel = 1;
+    bool enabled = 2;
+}
+
+message AuthTokenInfo {
+    string access_token = 1;
+    string token_type = 2;
+    int32 expires_in = 3;
+    int32 expires_at = 4;
+    string refresh_token = 5;
+}
+
+message TeamEditOverrideUsage {
+    string team_id = 1;
+    string user_id = 2;
+    google.protobuf.Timestamp expires_at = 3;
+}
+
+message Team {
+    string id = 1;
+    string name = 2;
+    string prefix = 3;
+    string description = 4;
+    string org_id = 5;
+    google.protobuf.Timestamp created_at = 6;
+    string color = 7;
+    // True when the team's organization is in a non-active lifecycle state
+    // (paused, soft-deleted, cold-stored, or purged). Consumers that run
+    // background work per team (e.g. the worker reconciler via svflow's
+    // workermgmt activities) must suspend it — scale to zero without tearing
+    // anything down, since a paused org can return to active. Only populated
+    // by RPCs that join organizations (currently private ListTeams); defaults
+    // to false elsewhere.
+    bool org_suspended = 8;
+    string org_name = 9;
+    // Personal teams are per-user workspaces, excluded from team
+    // enumeration surfaces by default — consumers opt in.
+    TeamKind kind = 10;
+    // Set iff kind == TEAM_KIND_PERSONAL: the owning user.
+    optional string owner_user_id = 11;
+    optional string branched_from_team_id = 14;
+    reserved 12, 13, 16, 17, 18;
+    reserved "workspace_id", "environment_order", "workspace_name", "parent_environment_name", "is_live";
+    optional string avatar_url = 19;
+    TeamBranchProtectionMode branch_protection_mode = 20;
+    // Absent when the original branch creation grant is unavailable.
+    optional string branch_creator_user_id = 21;
+    // Organization environment placement; branches inherit their parent's value.
+    optional string environment_id = 22;
+    optional string environment_name = 23;
+    optional google.protobuf.Timestamp deleted_at = 25;
+}
+
+enum TeamBranchProtectionMode {
+    TEAM_BRANCH_PROTECTION_MODE_UNSPECIFIED = 0;
+    TEAM_BRANCH_PROTECTION_MODE_OFF = 1;
+    // Advises users to work in a branch; does not restrict mutations.
+    TEAM_BRANCH_PROTECTION_MODE_ADVISORY = 2;
+}
+
+enum TeamKind {
+    // Never emitted: teams.kind is NOT NULL in the DB.
+    TEAM_KIND_UNSPECIFIED = 0;
+    TEAM_KIND_STANDARD = 1;
+    TEAM_KIND_PERSONAL = 2;
+    TEAM_KIND_ORGANIZATION_MANAGEMENT = 3;
+    reserved 4;
+    reserved "TEAM_KIND_ENVIRONMENT";
+    // Excluded from enumeration surfaces by default, like personal teams.
+    TEAM_KIND_BRANCH = 5;
+}
+
+// Discriminates synthetic (non-person) users from humans. Consumers MUST
+// treat UNSPECIFIED as HUMAN: responses from binaries predating this field
+// carry no value, and misreading them would misclassify every person.
+enum UserType {
+    USER_TYPE_UNSPECIFIED = 0;
+    USER_TYPE_HUMAN = 1;
+    USER_TYPE_SYNTHETIC = 2;
+}
+
+// A custom role a user inherits by belonging to a group that holds it on a
+// team. Group-only members surface these in the team-members UI, since their
+// `role` carries only the effective built-in tier, not the custom role name.
+message InheritedCustomRole {
+    string custom_role_id = 1;
+    string custom_role_name = 2;
+}
+
+// The source of an effective or superseded access grant.
+message GrantVia {
+    reserved 3;
+    reserved "workspace";
+    oneof source {
+        DirectGrant direct = 1;
+        GroupGrant group = 2;
+    }
+}
+
+message DirectGrant {}
+
+message GroupGrant {
+    // Empty when the effective-teams query could not pair a name with this
+    // row's role; the grant is still known to come from a group. There is no
+    // group id because that query aggregates names only.
+    string group_name = 1;
+}
+
+// One membership row's standing. A single enum rather than the pair of bools
+// this would otherwise be ("confers access", "is in effect"), because two of
+// that pair's four combinations are contradictory and would still compile.
+enum GrantStatus {
+    GRANT_STATUS_UNSPECIFIED = 0;
+    GRANT_STATUS_IN_EFFECT = 1;
+    // The row maps to a relationship that is NOT in force: the subject is an
+    // ORG_GUEST and holds no team role at all.
+    GRANT_STATUS_SUPERSEDED = 2;
+    // A team_user_role value this server build cannot map to a relationship.
+    // Contributes nothing. Renderers must show the provenance and say the
+    // row grants no access; they must NOT render raw_role as a role name.
+    GRANT_STATUS_UNMAPPED = 3;
+}
+
+// One membership row's contribution to a user's standing on a team.
+// Server-resolved by permissions.ResolveTeamGrants, so status states what IS
+// in effect and a client must never re-decide it.
+message RoleGrant {
+    GrantVia via = 1;
+    GrantStatus status = 2;
+    // Set when status is IN_EFFECT or SUPERSEDED.
+    TeamRole role = 3;
+    // Set only when status is UNMAPPED: the raw db value, carried verbatim
+    // for support diagnosis.
+    string raw_role = 4;
+    // Whether this grant's role confers at least one action no OTHER role in
+    // force confers. False unless status is IN_EFFECT.
+    //
+    // Resolved here because the judgment reads auth.Policy, which no client
+    // holds. A renderer listing what a member's groups ADD must filter on
+    // this: the tiers are cumulative, so a group mapped at Agent beside a
+    // Contributor direct row widens nothing, and naming it tells the user
+    // about a role that grants them nothing extra.
+    bool adds_actions = 5;
+}
+
+message TeamWithRole {
+    Team team = 1;
+    // Precedence-resolved: the direct team_users row wins outright, else the
+    // highest-priority group role. Subsumed by effective_roles, and KEPT
+    // anyway: every Role column and team picker reads it, and moving them off
+    // it de-duplicates nothing on this message. That is a deliberate
+    // follow-up, not part of the grant model landing.
+    TeamRole role = 2;
+    // Every membership row, in effect or not, so provenance is complete and
+    // an unmapped row is visible rather than silently dropped. This is what
+    // makes a group-only member legible: `role` cannot say which group routed
+    // them in, and the booleans this replaced could not either.
+    repeated RoleGrant role_grants = 8;
+    // The roles in force: every mapped membership row's role, deduplicated.
+    //
+    // EMPTY MEANS MEMBERSHIP THAT CONFERS NOTHING, NOT "not a member" — a
+    // team the user does not reach carries no TeamWithRole at all. Two causes:
+    // every row's role is unmapped by this build, or the subject is an
+    // ORG_GUEST, whose team access is the SAME_ORG_GUEST set and never a team
+    // role however their rows read. Never read empty as license to fall back
+    // to org-level access.
+    repeated TeamRole effective_roles = 9;
+    // IDs of the custom roles the user holds on this team, whether assigned
+    // directly (team_users.custom_role_id) or through a group mapping
+    // (team_groups.custom_role_id). Live roles only: deleting a custom role
+    // clears its assignments in the same transaction.
+    repeated string custom_role_ids = 7;
+
+    // Legacy provenance flags kept live during the deploy gap between this
+    // backend and the frontend that reads role_grants / effective_roles. The
+    // previous serval-web bundle branches membership writes on these bools:
+    // reading is_direct_member as its wire default (false) makes a custom-role
+    // assign write a new team_users row at the role's base, demoting an
+    // existing direct member and clearing their prior custom grant. Populated
+    // from the same permissions.TeamMembership that feeds role_grants so the
+    // two shapes cannot disagree; deleted once every client is off them.
+    // TODO(arjun): remove after the frontend reader migration ships.
+    bool is_direct_member = 3;
+    bool is_group_member = 4;
+    repeated string via_group_names = 5;
+
+    // additive_group_roles was populated from role.AdditiveGroupRoles, whose
+    // machinery this refactor removed. The legacy client reads it only for a
+    // display-only "+role" badge (no membership mutation branches on it), so
+    // the field stays reserved and the badge simply disappears for the deploy
+    // gap.
+    reserved 6;
+    reserved "additive_group_roles";
+}
+
+// Audit logging
+
+message Actor {
+    string id = 1;
+    oneof actor_type {
+        UserActor user = 2;
+        WorkerActor worker = 3;
+        SystemActor system = 4;
+        ImpersonatedUserActor impersonated_user = 5;
+        ApiKeyActor api_key = 6;
+    }
+}
+
+message UserActor {
+    string display_name = 1; // Use to simplify display / export for audit logs
+    string email = 2;
+    string name = 3;
+}
+
+message WorkerActor {
+    string display_name = 1; // Use to simplify display / export for audit logs
+}
+
+message SystemActor {
+    string display_name = 1; // Use to simplify display / export for audit logs
+}
+
+// ImpersonatedUserActor represents actions taken by a support agent on behalf of a user.
+// The user fields (display_name, email, name) describe the impersonated customer,
+// while the support_agent_* fields identify the support agent performing the action.
+message ImpersonatedUserActor {
+    string display_name = 1; // Use to simplify display / export for audit logs
+    string email = 2;
+    string name = 3;
+    string support_agent_id = 4;    // Okta ID of the support agent
+    string support_agent_email = 5; // Email of the support agent
+    string support_token_id = 6;    // ID of the support token used for impersonation
+}
+
+message ApiKeyActor {
+    string display_name = 1; // Use to simplify display / export for audit logs
+}
+
+message PhoneMessagingVerificationUpdate {
+    // Required by the handler; identifies the phone number revision at challenge start.
+    optional int64 expected_revision = 1;
+    oneof value {
+        google.protobuf.Timestamp verified_for_sms_until = 2;
+        bool revoke = 3;
+    }
+}

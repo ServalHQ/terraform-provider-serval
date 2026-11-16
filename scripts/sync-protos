@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+: "${MONO_DIR:?set MONO_DIR to a ServalHQ/mono checkout}"
+
+rm -rf proto
+python3 - "$MONO_DIR/backend/services" proto <<'PY'
+import os, re, shutil, sys
+
+services, out = sys.argv[1], sys.argv[2]
+roots = sorted(os.path.join(services, d, "proto") for d in os.listdir(services) if os.path.isdir(os.path.join(services, d, "proto")))
+entrypoints = ["svflow/publicapi/service.proto", "svauth/public/service.proto"]
+external = ("google/", "buf/validate/")
+
+def locate(name):
+    for root in roots:
+        path = os.path.join(root, name)
+        if os.path.exists(path):
+            return path
+    sys.exit(f"{name}: not found under {services}/*/proto")
+
+seen, stack = set(), list(entrypoints)
+while stack:
+    name = stack.pop()
+    if name in seen or name.startswith(external):
+        continue
+    seen.add(name)
+    src = locate(name)
+    dst = os.path.join(out, name)
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    shutil.copyfile(src, dst)
+    stack += re.findall(r'^import\s+(?:public\s+|weak\s+)?"([^"]+)"', open(src).read(), re.M)
+PY
+
+git -C "$MONO_DIR" rev-parse HEAD > proto/MONO_COMMIT
+
+rm -rf internal/gen/proto
+buf generate

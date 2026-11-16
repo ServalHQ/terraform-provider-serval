@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+// Org-scoped principal references, shared across resource kinds; references
+// for resource types live next to that type (e.g. WorkflowReference in
+// workflow.proto). In change-set JSON a resource reference id may hold a
+// `draft:<uuid>` placeholder until the ResourceManager's draft-ref rewrite
+// resolves it; user/group references are never draft-rewritten.
+package serval.resources.v1;
+
+import "buf/validate/validate.proto";
+
+message UserReference {
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message GroupReference {
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+// A Slack conversation in the team's own workspace, by its Slack ID.
+message ChannelReference {
+  string slack_channel_id = 1 [(buf.validate.field).string.pattern = "^[CG][A-Z0-9]{2,}$"];
+}

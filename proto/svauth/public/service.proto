@@ -1,0 +1,939 @@
+syntax = "proto3";
+
+package svauth.public;
+
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+service SvAuthPublicService {
+  rpc AddUserPhoneNumber (AddUserPhoneNumberRequest) returns (AddUserPhoneNumberResponse);
+  rpc UpdateUserPhoneNumber (UpdateUserPhoneNumberRequest) returns (UpdateUserPhoneNumberResponse);
+  rpc RemoveUserPhoneNumber (RemoveUserPhoneNumberRequest) returns (RemoveUserPhoneNumberResponse);
+  rpc ListUserPhoneNumbers (ListUserPhoneNumbersRequest) returns (ListUserPhoneNumbersResponse);
+  rpc SetUserPhoneLoginTrust (SetUserPhoneLoginTrustRequest) returns (SetUserPhoneLoginTrustResponse);
+  rpc GetCreditBalance (GetCreditBalanceRequest) returns (GetCreditBalanceResponse);
+    // User CRUD operations
+  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
+  rpc GetUser (GetUserRequest) returns (GetUserResponse);
+  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
+  rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+  // Reactivates a previously deactivated (soft-deleted) user, restoring their
+  // org membership. Recovers the email a DeleteUser would otherwise keep
+  // reserved forever via the (lower(email), organization_id) unique index.
+  rpc ReactivateUser (ReactivateUserRequest) returns (ReactivateUserResponse);
+  rpc ListUsers (ListUsersRequest) returns (ListUsersResponse);
+
+    // Group CRUD operations
+  rpc CreateGroup (CreateGroupRequest) returns (CreateGroupResponse);
+  rpc GetGroup (GetGroupRequest) returns (GetGroupResponse);
+  rpc UpdateGroup (UpdateGroupRequest) returns (UpdateGroupResponse);
+  rpc DeleteGroup (DeleteGroupRequest) returns (DeleteGroupResponse);
+  rpc ListGroups (ListGroupsRequest) returns (ListGroupsResponse);
+  // Finds groups by name. Same visibility as ListGroups, ranked by relevance.
+  rpc SearchGroups (SearchGroupsRequest) returns (SearchGroupsResponse);
+
+    // Workspace CRUD operations
+  rpc CreateTeam (CreateTeamRequest) returns (CreateTeamResponse);
+  rpc GetTeam (GetTeamRequest) returns (GetTeamResponse);
+  rpc UpdateTeam (UpdateTeamRequest) returns (UpdateTeamResponse);
+  rpc DeleteTeam (DeleteTeamRequest) returns (DeleteTeamResponse);
+  rpc ListTeams (ListTeamsRequest) returns (ListTeamsResponse);
+
+  // TeamUser CRUD operations
+  rpc CreateTeamUser (CreateTeamUserRequest) returns (CreateTeamUserResponse);
+  rpc GetTeamUser (GetTeamUserRequest) returns (GetTeamUserResponse);
+  rpc UpdateTeamUser (UpdateTeamUserRequest) returns (UpdateTeamUserResponse);
+  rpc DeleteTeamUser (DeleteTeamUserRequest) returns (DeleteTeamUserResponse);
+  rpc ListTeamUsers (ListTeamUsersRequest) returns (ListTeamUsersResponse);
+
+  // TeamGroup CRUD operations — a group's role binding on a workspace. Members of
+  // the group hold the role on the workspace transitively; ListTeamUsers returns
+  // the resolved per-user roster.
+  rpc CreateTeamGroup (CreateTeamGroupRequest) returns (CreateTeamGroupResponse);
+  rpc GetTeamGroup (GetTeamGroupRequest) returns (GetTeamGroupResponse);
+  rpc UpdateTeamGroup (UpdateTeamGroupRequest) returns (UpdateTeamGroupResponse);
+  rpc DeleteTeamGroup (DeleteTeamGroupRequest) returns (DeleteTeamGroupResponse);
+  rpc ListTeamGroups (ListTeamGroupsRequest) returns (ListTeamGroupsResponse);
+
+  // CustomRole CRUD operations — a workspace-scoped role that extends a built-in
+  // base role with additional grantable actions. Assign one to a group with
+  // TeamGroup.custom_role_id. Requires custom roles to be enabled for the
+  // organization.
+  rpc CreateCustomRole (CreateCustomRoleRequest) returns (CreateCustomRoleResponse);
+  rpc GetCustomRole (GetCustomRoleRequest) returns (GetCustomRoleResponse);
+  rpc UpdateCustomRole (UpdateCustomRoleRequest) returns (UpdateCustomRoleResponse);
+  rpc DeleteCustomRole (DeleteCustomRoleRequest) returns (DeleteCustomRoleResponse);
+  rpc ListCustomRoles (ListCustomRolesRequest) returns (ListCustomRolesResponse);
+
+  // UserRelationship operations
+  rpc CreateUserRelationship (CreateUserRelationshipRequest) returns (CreateUserRelationshipResponse);
+  rpc DeleteUserRelationship (DeleteUserRelationshipRequest) returns (DeleteUserRelationshipResponse);
+  rpc GetUserRelationship (GetUserRelationshipRequest) returns (GetUserRelationshipResponse);
+  rpc ListUserRelationships (ListUserRelationshipsRequest) returns (ListUserRelationshipsResponse);
+
+  // Current user
+  rpc GetCurrentUser (GetCurrentUserRequest) returns (GetCurrentUserResponse);
+
+  // Self-hosted (hybrid) workers a workspace runs inside its own network.
+  rpc ListWorkers (ListWorkersRequest) returns (ListWorkersResponse);
+}
+
+message ListWorkersRequest {
+  string team_id = 1;
+}
+
+message ListWorkersResponse {
+  // Empty when the workspace has no self-hosted worker.
+  repeated Worker data = 1;
+}
+
+enum WorkerStatus {
+  WORKER_STATUS_UNSPECIFIED = 0;
+  // Authenticated with Serval within the staleness window.
+  WORKER_STATUS_CONNECTED = 1;
+  // Has authenticated before, but not recently — likely down or unable to
+  // reach Serval.
+  WORKER_STATUS_STALE = 2;
+  // Credential created; no worker has ever authenticated with it.
+  WORKER_STATUS_NEVER_CONNECTED = 3;
+}
+
+// A self-hosted worker credential and its liveness. One row per credential
+// generated in Settings → Workers; Serval-provisioned system keys are not
+// workers and are excluded.
+message Worker {
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string team_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  optional string name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // When the worker last authenticated (login or token refresh). Unset when
+  // it never has.
+  optional google.protobuf.Timestamp last_connected_at = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  WorkerStatus status = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// User CRUD Requests/Responses
+
+message CreateUserRequest {
+  string                  email       = 1 [(google.api.field_behavior) = REQUIRED];
+  string                  first_name  = 2;
+  string                  last_name   = 3;
+  UserOrganizationRole    role        = 4;
+  optional UserAuthMethod auth_method = 5;
+  // Profile fields to pin at creation. A pinned field is protected from
+  // automation (user ingestion) overwrites until it is released or replaced
+  // by a later deliberate edit. Only fields set by this request can be
+  // pinned: first_name, last_name. Without pins, creation seeds stay open
+  // for ingestion to enrich.
+  repeated UserProfileField pin_fields = 6;
+}
+
+message CreateUserResponse {
+  User data = 1;
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message GetUserResponse {
+  User data = 1;
+}
+
+// Governed profile fields (first/last name, avatar, locale, timezone) carry
+// per-field provenance: a user-token edit pins the field so automation cannot
+// overwrite it, and a directory-synced value locks it against everyone but the
+// directory. Writes from API-key or worker tokens to a pinned or locked field
+// are skipped — the rest of the update still applies, and the skipped fields
+// are reported in the response — unless the field is listed in pin_fields,
+// which makes the write a deliberate edit that replaces the pin (directory
+// locks still win). A pinned field whose requested value already matches the
+// pinned one succeeds as a clean no-op (not reported as skipped); a
+// directory-locked field is always reported as skipped, even when the
+// requested value matches. User-token writes replace pins but are rejected on
+// directory-locked fields (change those in the IdP).
+message UpdateUserRequest {
+  string                        id          = 1;
+  // The address the user logs in with, unique per organization and compared
+  // case-insensitively. Two rejections to expect: an email your directory
+  // supplies is only changeable in the identity provider, and an address
+  // another user in the organization already holds is refused — including a
+  // deactivated user's, because deactivating does not release it. The error
+  // names the user holding the address so you can move them off it first.
+  // Change email in a request by itself. Because login identity is global, an
+  // organization-scoped caller cannot rename a user who belongs to multiple
+  // organizations.
+  optional string               email       = 2;
+  optional string               first_name  = 3;
+  optional string               last_name   = 4;
+  optional UserOrganizationRole role        = 5;
+  optional string               avatar_url  = 6;
+  optional UserAuthMethod       auth_method = 7;
+  optional string               locale      = 8; // BCP 47 language tag
+  // Omitted/null leaves the primary unchanged; empty clears only its designation.
+  // An existing extra is promoted with its ID, label and trust intact; a new number
+  // starts untrusted. The old primary remains an extra. Inspect skipped fields.
+  optional string               phone_number = 9;
+  // Profile fields to hand back to automation (user ingestion). A pinned
+  // field keeps its current value but loses that protection, so the next
+  // ingestion sync may update it again. A field cannot be both set and
+  // released in the same request.
+  repeated UserProfileField release_fields = 10;
+  optional string               timezone    = 11; // IANA timezone, e.g., "America/New_York"
+  // Profile fields to pin against automation (user ingestion) overwrites.
+  // Edits made with a user token pin by default; API-key edits stay
+  // unpinned unless listed here. A pinned field must be set in the same
+  // request, and stays pinned until released (release_fields) or replaced
+  // by a later deliberate edit. avatar_url cannot be pinned; manager is
+  // pinned through the relationship endpoints' pin flag.
+  repeated UserProfileField pin_fields = 12;
+  // Department; empty string clears. Any saved value joins the org's
+  // department options automatically, adopting the casing of an existing
+  // case-insensitive match.
+  optional string department = 13;
+  // Free-text job title; empty string clears.
+  optional string job_title = 14;
+  // available or busy; empty string clears. Omission leaves the value unchanged.
+  optional string live_agent_availability = 15;
+}
+
+// The governed user profile fields, which carry per-field provenance and
+// edit protection.
+enum UserProfileField {
+  USER_PROFILE_FIELD_UNSPECIFIED = 0;
+  USER_PROFILE_FIELD_FIRST_NAME  = 1;
+  USER_PROFILE_FIELD_LAST_NAME   = 2;
+  USER_PROFILE_FIELD_AVATAR_URL  = 3;
+  USER_PROFILE_FIELD_TIMEZONE    = 4;
+  USER_PROFILE_FIELD_LOCALE      = 5;
+  // Releasable only (release_fields): manager is written — and pinned, via
+  // the pin flag — through the CreateUserRelationship/DeleteUserRelationship
+  // endpoints; releasing hands it back to ingestion.
+  USER_PROFILE_FIELD_MANAGER     = 6;
+  USER_PROFILE_FIELD_DEPARTMENT  = 7;
+  USER_PROFILE_FIELD_JOB_TITLE   = 8;
+  USER_PROFILE_FIELD_PRIMARY_PHONE = 9;
+  USER_PROFILE_FIELD_LIVE_AGENT_AVAILABILITY = 10;
+}
+
+message UpdateUserResponse {
+  User data = 1;
+  // Requested profile fields this update did NOT apply because a manual
+  // (user-token) edit owns them. Only ever populated for API-key/worker
+  // callers — automation may not overwrite a deliberate human edit, so those
+  // fields keep their current value while the rest of the update applies.
+  // Empty when everything applied, including when the requested value already
+  // matched the pinned one.
+  repeated UserProfileField skipped_pinned_fields = 2;
+  // Requested profile fields this update did NOT apply because the org's
+  // directory (IdP sync) supplies them. Populated for API-key/worker callers;
+  // user-token writes to directory-locked fields fail the request instead.
+  // Unlike pins, a directory-locked field is reported here even when the
+  // requested value matches the locked one — the lock gates before any value
+  // comparison.
+  repeated UserProfileField skipped_directory_locked_fields = 3;
+  // Requested profile fields this update did NOT apply because the org locked
+  // them to its integration sync and the sync supplies the current value.
+  // Populated for API-key/worker callers; user-token writes to sync-locked
+  // fields fail the request instead. Reported even when the requested value
+  // matches, like directory locks.
+  repeated UserProfileField skipped_sync_locked_fields = 4;
+}
+
+message DeleteUserRequest {
+  string id = 1;
+}
+
+message DeleteUserResponse {}
+
+message ReactivateUserRequest {
+  string id = 1;
+}
+
+message ReactivateUserResponse {}
+
+message ListUsersRequest {
+  reserved 1, 2; // Previously: limit, cursor (removed)
+    // Whether to include deactivated users in the response.
+  optional bool include_deactivated = 3;
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+  optional int32 page_size = 4;
+    // Token for pagination. Leave empty for the first request.
+  optional string page_token = 5;
+    // Return only the users with these email addresses, matched exactly and
+    // case-insensitively. Repeat the parameter to resolve a batch
+    // (?emails=a@corp.com&emails=b@corp.com), up to 1000 per request.
+    // Addresses that match no user are simply absent from the response.
+    // Combines with include_deactivated: a deactivated user matches only when
+    // include_deactivated is true.
+  repeated string emails = 6;
+}
+
+message ListUsersResponse {
+    // The list of users.
+  repeated User data = 1;
+  reserved 2; // Previously: next_cursor (removed)
+    // Token for retrieving the next page of results. Empty if no more results.
+  optional string next_page_token = 3;
+}
+
+// Group CRUD Requests/Responses
+
+message CreateGroupRequest {
+  string          name     = 1 [(google.api.field_behavior) = REQUIRED];
+  repeated string user_ids = 2;
+  // When set, creates a workspace-scoped group managed by this workspace (seeded as the
+  // sole manager workspace, with a default all-members viewer entry). Unset creates
+  // an org-wide group.
+  optional string manager_team_id = 3;
+  optional string scoped_id = 4;
+}
+
+message CreateGroupResponse {
+  Group data = 1;
+}
+
+message GetGroupRequest {
+  string id = 1;
+  optional string team_id = 2;
+}
+
+message GetGroupResponse {
+  Group data = 1;
+}
+
+message GroupMembersUpdate {
+  repeated string user_ids = 1;
+}
+
+message UpdateGroupRequest {
+  string          id       = 1;
+  optional string name     = 2;
+  repeated string user_ids = 3;
+  GroupMembersUpdate members = 4;
+  optional string scoped_id = 5;
+  optional string team_id = 6;
+}
+
+message UpdateGroupResponse {
+  Group data = 1;
+}
+
+message DeleteGroupRequest {
+  string id = 1;
+}
+
+message DeleteGroupResponse {}
+
+message ListGroupsRequest {
+  reserved 1, 2; // Previously: limit, cursor (removed)
+    // Maximum number of results to return. Default is 100, maximum is 10000.
+  optional int32 page_size = 3;
+    // Token for pagination. Leave empty for the first request.
+  optional string page_token = 4;
+    // Filter to the groups this user is a member of. Each returned group still
+    // carries its full user_ids roster, not just this user.
+  optional string user_id = 5;
+  // Configuration-workspace namespace, not manager ACL. Unset lists org-visible groups.
+  optional string team_id = 6;
+  // Resolve only these group UUIDs and workspace-scoped portable IDs. Requires
+  // team_id, and cannot be combined with user_id or page_token.
+  repeated string group_ids = 7;
+  // Workspace-scoped portable IDs to resolve; like group_ids, requires team_id.
+  repeated string scoped_ids = 8;
+  // Omit the user roster when only group identity and configuration are needed.
+  bool omit_members = 9;
+}
+
+message ListGroupsResponse {
+    // The list of groups.
+  repeated Group data = 1;
+  reserved 2; // Previously: next_cursor (removed)
+    // Token for retrieving the next page of results. Empty if no more results.
+  optional string next_page_token = 3;
+}
+
+message SearchGroupsRequest {
+  // Case-insensitive substring match on the group name. Exact name matches
+  // rank first, then names that start with it, then names that contain it;
+  // alphabetical within each tier. Max 256 characters.
+  string name_search = 1 [(google.api.field_behavior) = REQUIRED];
+  // Configuration-workspace namespace, as in ListGroups. Leave unset to search
+  // every group visible to the caller.
+  optional string team_id = 2;
+  // Maximum number of results to return. Default 50, maximum 200.
+  optional int32 page_size = 3;
+  // Token for pagination. Leave empty for the first request.
+  optional string page_token = 4;
+  // Omit the user roster when only group identity is needed. When set,
+  // user_ids is empty for every group, including groups that have members.
+  bool omit_members = 5;
+}
+
+message SearchGroupsResponse {
+  // Matching groups, most relevant first.
+  repeated Group data = 1;
+  // Token for retrieving the next page of results. Empty if no more results.
+  optional string next_page_token = 2;
+}
+
+// Workspace CRUD Requests/Responses
+
+message CreateTeamRequest {
+  string          name        = 1 [(google.api.field_behavior) = REQUIRED];
+  optional string prefix      = 2;
+  optional string description = 3;
+}
+
+message CreateTeamResponse {
+  Team data = 1;
+}
+
+message GetTeamRequest {
+  string id = 1;
+}
+
+message GetTeamResponse {
+  Team data = 1;
+}
+
+message UpdateTeamRequest {
+  string          id          = 1;
+  optional string name        = 2;
+  optional string prefix      = 3;
+  optional string description = 4;
+}
+
+message UpdateTeamResponse {
+  Team data = 1;
+}
+
+message DeleteTeamRequest {
+  string id = 1;
+}
+
+message DeleteTeamResponse {}
+
+message ListTeamsRequest {
+  reserved 1, 2; // Previously: limit, cursor (removed)
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+  optional int32 page_size = 3;
+    // Token for pagination. Leave empty for the first request.
+  optional string page_token = 4;
+}
+
+message ListTeamsResponse {
+    // The list of workspaces.
+  repeated Team data = 1;
+  reserved 2; // Previously: next_cursor (removed)
+    // Token for retrieving the next page of results. Empty if no more results.
+  optional string next_page_token = 3;
+}
+
+// TeamUser CRUD Requests/Responses
+
+message CreateTeamUserRequest {
+  string       team_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string       user_id = 2 [(google.api.field_behavior) = REQUIRED];
+  TeamUserRole role    = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateTeamUserResponse {
+  TeamUser data = 1;
+}
+
+message GetTeamUserRequest {
+  string team_id = 1;
+  string user_id = 2;
+  // Composite identifier ({team_id}:{user_id}). Alternative to team_id + user_id.
+  string id = 3;
+}
+
+message GetTeamUserResponse {
+  TeamUser data = 1;
+}
+
+message UpdateTeamUserRequest {
+  string       team_id = 1;
+  string       user_id = 2;
+  TeamUserRole role    = 3 [(google.api.field_behavior) = REQUIRED];
+  // Composite identifier ({team_id}:{user_id}). Alternative to team_id + user_id.
+  string       id      = 4;
+}
+
+message UpdateTeamUserResponse {
+  TeamUser data = 1;
+}
+
+message DeleteTeamUserRequest {
+  string team_id = 1;
+  string user_id = 2;
+  // Composite identifier ({team_id}:{user_id}). Alternative to team_id + user_id.
+  string id = 3;
+}
+
+message DeleteTeamUserResponse {}
+
+message ListTeamUsersRequest {
+    // Filter by workspace ID. Required when using /v2/teams/{team_id}/users path.
+  string team_id = 1;
+    // Filter by user ID. If not provided, returns all users in the workspace.
+  optional string user_id = 2;
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+  optional int32 page_size = 3;
+    // Token for pagination. Leave empty for the first request.
+  optional string page_token = 4;
+}
+
+message ListTeamUsersResponse {
+    // The list of workspace users.
+  repeated TeamUser data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+  optional string next_page_token = 2;
+}
+
+// TeamGroup CRUD Requests/Responses
+
+message CreateTeamGroupRequest {
+  string       team_id  = 1 [(google.api.field_behavior) = REQUIRED];
+  string       group_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // The built-in role this group's members get on the workspace. Required unless
+  // custom_role_id is set; then it may be omitted, and if given it must equal
+  // that custom role's base role. Purely additive: every other grant on the
+  // workspace — other groups' bindings and direct user memberships, custom roles
+  // included — is left untouched.
+  TeamUserRole role     = 3;
+  // Bind the group to one of this workspace's custom roles instead of a plain
+  // built-in role. The binding's role is pinned to the custom role's base
+  // role. Requires custom roles to be enabled for the organization.
+  optional string custom_role_id = 4;
+}
+
+message CreateTeamGroupResponse {
+  TeamGroup data = 1;
+}
+
+message GetTeamGroupRequest {
+  string team_id  = 1;
+  string group_id = 2;
+  // Composite identifier ({team_id}:{group_id}). Alternative to team_id + group_id.
+  string id       = 3;
+}
+
+message GetTeamGroupResponse {
+  TeamGroup data = 1;
+}
+
+message UpdateTeamGroupRequest {
+  string       team_id  = 1;
+  string       group_id = 2;
+  // The built-in role this group's members get on the workspace. Required unless
+  // custom_role_id is set; then it may be omitted, and if given it must equal
+  // that custom role's base role. Other grants on the workspace — other groups'
+  // bindings and direct user memberships — are left untouched. One binding
+  // row carries exactly one grant, so a built-in role replaces whatever
+  // *this* group held on *this* workspace, including a custom role.
+  TeamUserRole role     = 3;
+  // Composite identifier ({team_id}:{group_id}). Alternative to team_id + group_id.
+  string       id       = 4;
+  // Bind the group to one of this workspace's custom roles instead of a plain
+  // built-in role. The binding's role is pinned to the custom role's base
+  // role. Requires custom roles to be enabled for the organization.
+  optional string custom_role_id = 5;
+}
+
+message UpdateTeamGroupResponse {
+  TeamGroup data = 1;
+}
+
+message DeleteTeamGroupRequest {
+  string team_id  = 1;
+  string group_id = 2;
+  // Composite identifier ({team_id}:{group_id}). Alternative to team_id + group_id.
+  string id       = 3;
+}
+
+message DeleteTeamGroupResponse {}
+
+message ListTeamGroupsRequest {
+    // Filter by workspace ID. Required when using the /v2/teams/{team_id}/groups path.
+  string team_id = 1;
+    // Filter by group ID. Returns the group's bindings across every workspace.
+  optional string group_id = 2;
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+  optional int32 page_size = 3;
+    // Token for pagination. Leave empty for the first request. Only honored
+    // when filtering by team_id alone; the group_id shape is unpaginated.
+  optional string page_token = 4;
+}
+
+message ListTeamGroupsResponse {
+    // The list of workspace groups.
+  repeated TeamGroup data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+  optional string next_page_token = 2;
+}
+
+// Models
+
+message User {
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    string email = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string name = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    UserOrganizationRole role = 6;
+    optional string avatar_url = 7;
+    google.protobuf.Timestamp created_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    optional google.protobuf.Timestamp deactivated_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+    optional string timezone = 10; // IANA timezone, e.g., "America/New_York"
+    optional UserAuthMethod auth_method = 11;
+    optional string locale = 12; // BCP 47 language tag
+    optional string department = 13;
+    optional string job_title = 14;
+  optional string live_agent_availability = 15;
+}
+
+message Group {
+  string                             id              = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string                             name            = 2;
+  string                             organization_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp          created_at      = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  optional google.protobuf.Timestamp deleted_at      = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated string                    user_ids        = 6;
+  // Workspaces whose group-managers manage this group. Empty = org-wide visibility
+  // (the group may still carry individual owners, managed in the app's group
+  // access settings).
+  repeated string                    manager_team_ids = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string scoped_id = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  bool externally_managed = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  optional string configuration_team_id = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message Team {
+  string                    id              = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string                    name            = 2;
+  string                    prefix          = 3;
+  optional string           description     = 4;
+  string                    organization_id = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp created_at      = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  optional string           color           = 7;
+  reserved 8, 9, 10;
+  reserved "workspace_name", "parent_environment_name", "is_live";
+}
+
+message TeamUser {
+  string                    team_id    = 1;
+  string                    user_id    = 2;
+  TeamUserRole              role       = 3;
+  google.protobuf.Timestamp created_at = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Composite identifier in the format {team_id}:{user_id}.
+  string                    id         = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// CustomRole CRUD Requests/Responses
+
+message CreateCustomRoleRequest {
+  // The workspace that owns the role. A custom role can only be assigned on its
+  // own workspace.
+  string       team_id     = 1 [(google.api.field_behavior) = REQUIRED];
+  // Unique among the workspace's custom roles.
+  string       name        = 2 [(google.api.field_behavior) = REQUIRED];
+  string       description = 3;
+  // The built-in role the custom role extends. A member holding the custom
+  // role has everything the base role grants plus granted_actions.
+  TeamUserRole base_role   = 4 [(google.api.field_behavior) = REQUIRED];
+  // Action slugs the role grants on top of its base role. Only grantable
+  // actions are accepted; an unknown or non-grantable slug rejects the
+  // request.
+  repeated string granted_actions = 5;
+}
+
+message CreateCustomRoleResponse {
+  CustomRole data = 1;
+}
+
+message GetCustomRoleRequest {
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetCustomRoleResponse {
+  CustomRole data = 1;
+}
+
+message UpdateCustomRoleRequest {
+  string       id          = 1 [(google.api.field_behavior) = REQUIRED];
+  string       name        = 2 [(google.api.field_behavior) = REQUIRED];
+  string       description = 3;
+  // The built-in role the custom role extends. Unspecified keeps the current
+  // base. Changing it re-pins every member of the role to the new base.
+  TeamUserRole base_role   = 4;
+  // Replaces the full set of granted actions; an empty list removes every
+  // grant.
+  repeated string granted_actions = 5;
+}
+
+message UpdateCustomRoleResponse {
+  CustomRole data = 1;
+}
+
+message DeleteCustomRoleRequest {
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteCustomRoleResponse {}
+
+message ListCustomRolesRequest {
+  // The workspace whose custom roles to list. Required.
+  string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ListCustomRolesResponse {
+  repeated CustomRole data = 1;
+}
+
+message CustomRole {
+  string                    id              = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string                    team_id         = 2;
+  string                    name            = 3;
+  string                    description     = 4;
+  // The built-in role the custom role extends.
+  TeamUserRole              base_role       = 5;
+  // Action slugs the role grants on top of its base role, sorted.
+  repeated string           granted_actions = 6;
+  google.protobuf.Timestamp created_at      = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message TeamGroup {
+  string                    team_id    = 1;
+  string                    group_id   = 2;
+  // The built-in role the binding grants. When custom_role_id is set this is
+  // that custom role's base role.
+  TeamUserRole              role       = 3;
+  google.protobuf.Timestamp created_at = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Composite identifier in the format {team_id}:{group_id}.
+  string                    id         = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The custom role the binding grants, if any. Absent for a plain built-in
+  // role binding.
+  optional string           custom_role_id = 6;
+}
+
+enum TeamUserRole {
+    TEAM_USER_ROLE_UNSPECIFIED = 0;
+    TEAM_USER_ROLE_AGENT = 1;
+    TEAM_USER_ROLE_MANAGER = 2;
+    TEAM_USER_ROLE_BUILDER = 3;
+    TEAM_USER_ROLE_VIEWER = 4;
+    TEAM_USER_ROLE_CONTRIBUTOR = 5;
+    TEAM_USER_ROLE_DRAFTER = 6;
+    TEAM_USER_ROLE_READONLY_AGENT = 7;
+    TEAM_USER_ROLE_APP_BUILDER = 8;
+    TEAM_USER_ROLE_APP_VIEWER = 9;
+    TEAM_USER_ROLE_PERSONAL_TEAM_OWNER = 10;
+}
+
+enum UserOrganizationRole {
+  USER_ROLE_UNSPECIFIED = 0;
+  USER_ROLE_ORG_MEMBER  = 1;
+  USER_ROLE_ORG_ADMIN   = 2;
+  USER_ROLE_ORG_GUEST   = 3;
+}
+
+// Specifies the authentication method for a user. If unset, the org default applies.
+// Set to MAGIC_LINK to allow the user to bypass SSO (e.g. guest or break-glass accounts).
+enum UserAuthMethod {
+  USER_AUTH_METHOD_UNSPECIFIED = 0;
+  USER_AUTH_METHOD_MAGIC_LINK  = 1;
+}
+
+// UserRelationship types
+
+enum UserRelationshipType {
+    USER_RELATIONSHIP_TYPE_UNSPECIFIED = 0;
+    USER_RELATIONSHIP_TYPE_MANAGER = 1;
+}
+
+message UserRelationship {
+    string user_id = 1;
+    string related_user_id = 2;
+    UserRelationshipType relationship_type = 3;
+    google.protobuf.Timestamp created_at = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message CreateUserRelationshipRequest {
+    string user_id = 1 [(google.api.field_behavior) = REQUIRED];
+    string related_user_id = 2 [(google.api.field_behavior) = REQUIRED];
+    UserRelationshipType relationship_type = 3 [(google.api.field_behavior) = REQUIRED];
+    // Pin the assignment against automation (user ingestion) overwrites.
+    // Defaults by principal: user-token writes pin, API-key writes don't.
+    // Release through UpdateUser's release_fields (MANAGER).
+    optional bool pin = 4;
+}
+
+message CreateUserRelationshipResponse {
+    UserRelationship data = 1;
+}
+
+message DeleteUserRelationshipRequest {
+    string user_id = 1 [(google.api.field_behavior) = REQUIRED];
+    UserRelationshipType relationship_type = 2 [(google.api.field_behavior) = REQUIRED];
+    // Pin the cleared state ("no manager") against automation re-assignment.
+    // Defaults by principal: user-token deletes pin, API-key deletes don't.
+    // Release through UpdateUser's release_fields (MANAGER).
+    optional bool pin = 3;
+}
+
+message DeleteUserRelationshipResponse {}
+
+message GetUserRelationshipRequest {
+    string user_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Part of the identifier, mirroring DeleteUserRelationship: a user holds
+    // at most one relationship per type, but may hold several types, so
+    // user_id alone does not name a single relationship.
+    UserRelationshipType relationship_type = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetUserRelationshipResponse {
+    UserRelationship data = 1;
+}
+
+message ListUserRelationshipsRequest {
+    // Filter by the subject user of the relationship (for MANAGER, the
+    // report whose manager the relationship records).
+    optional string user_id = 1;
+    // Filter by the related user (for MANAGER, list a manager's direct
+    // reports).
+    optional string related_user_id = 2;
+    optional UserRelationshipType relationship_type = 3;
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+    optional int32 page_size = 4;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 5;
+}
+
+message ListUserRelationshipsResponse {
+    // The list of user relationships.
+    repeated UserRelationship data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// GetCurrentUser (whoami)
+
+message GetCurrentUserRequest {}
+
+message GetCurrentUserResponse {
+    CurrentUser data = 1;
+}
+
+message CurrentUser {
+    string id = 1;
+    string email = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string name = 5;
+    UserOrganizationRole organization_role = 6;
+    optional string avatar_url = 7;
+    optional string timezone = 8;
+    repeated CurrentUserTeamMembership team_memberships = 9;
+    string organization_id = 10;
+    optional string locale = 11; // BCP 47 language tag
+}
+
+message CurrentUserTeamMembership {
+    Team team = 1;
+    TeamUserRole role = 2;
+}
+
+message UserPhoneNumber {
+  string id = 1 [(google.api.field_behavior) = REQUIRED, (google.api.field_behavior) = OUTPUT_ONLY];
+  string e164 = 2 [(google.api.field_behavior) = REQUIRED, (google.api.field_behavior) = OUTPUT_ONLY];
+  bool verified_for_magic_link_login = 3 [(google.api.field_behavior) = REQUIRED, (google.api.field_behavior) = OUTPUT_ONLY];
+  bool is_primary = 4 [(google.api.field_behavior) = REQUIRED, (google.api.field_behavior) = OUTPUT_ONLY];
+  optional string label = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ListUserPhoneNumbersRequest {
+  string user_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+message ListUserPhoneNumbersResponse {
+  repeated UserPhoneNumber data = 1 [(google.api.field_behavior) = REQUIRED, (google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message AddUserPhoneNumberRequest {
+  string user_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Include a country code; formatting is normalized to E.164.
+  string phone_number = 2 [(google.api.field_behavior) = REQUIRED];
+  optional string label = 3;
+}
+message AddUserPhoneNumberResponse {
+  UserPhoneNumber data = 1 [(google.api.field_behavior) = REQUIRED, (google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message UpdateUserPhoneNumberRequest {
+  string user_id = 1 [(google.api.field_behavior) = REQUIRED];
+  string phone_number_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // The oneof preserves omission across codecs that emit unpopulated messages.
+  oneof label_update {
+    google.protobuf.Value label = 3;
+  }
+}
+message UpdateUserPhoneNumberResponse {
+  UserPhoneNumber data = 1 [(google.api.field_behavior) = REQUIRED, (google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message RemoveUserPhoneNumberRequest {
+  string user_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Only non-primary assignments can be removed through this endpoint.
+  string phone_number_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+message RemoveUserPhoneNumberResponse {}
+
+message SetUserPhoneLoginTrustRequest {
+  string user_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Identifies the current assignment; remove/re-add requires a new ID.
+  string phone_number_id = 2 [(google.api.field_behavior) = REQUIRED];
+  optional bool verified_for_magic_link_login = 3 [(google.api.field_behavior) = REQUIRED];
+}
+message SetUserPhoneLoginTrustResponse {
+  UserPhoneNumber data = 1 [(google.api.field_behavior) = REQUIRED, (google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message GetCreditBalanceRequest {}
+
+message GetCreditBalanceResponse {
+  CreditBalance data = 1;
+}
+
+// Credits granted to the current organization. This is not the full contract
+// commitment: an annual contract may issue grants monthly, and grants may
+// include promotional credits. Different grant periods can overlap.
+message CreditBalance {
+  bool has_pool = 1;
+  string currency_key = 2;
+  string currency_name = 3;
+  double total = 4;
+  double used = 5;
+  // Read independently from total and used because rollover affects availability.
+  double available = 6;
+  repeated CreditGrant grants = 7;
+  google.protobuf.Timestamp fetched_at = 8;
+  // The grant window available refers to; unset when the pool has no grants.
+  CreditPeriod period = 9;
+}
+
+message CreditPeriod {
+  google.protobuf.Timestamp start = 1;
+  google.protobuf.Timestamp end = 2;
+}
+
+message CreditGrant {
+  double total = 1;
+  double used = 2;
+  double available = 3;
+  google.protobuf.Timestamp period_start = 4;
+  google.protobuf.Timestamp period_end = 5;
+  google.protobuf.Timestamp expires_at = 6;
+  bool is_in_rollover_window = 7;
+}

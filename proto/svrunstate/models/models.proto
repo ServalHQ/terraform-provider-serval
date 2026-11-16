@@ -1,0 +1,195 @@
+syntax = "proto3";
+
+package svrunstate.models;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+message JSONWrapper {
+    string json = 1;
+}
+
+enum TaskType {
+    WORKFLOW = 0;
+    ACTION = 1;
+}
+
+message DataWrapper {
+    google.protobuf.Any data = 1;
+}
+
+message Task {
+    string name = 1;
+    string description = 2; // deprecate, not used
+    TaskType task_type = 3;
+    string function_name = 4;
+    google.protobuf.Any args = 5;
+}
+
+message WorkflowRun {
+    string run_id = 1;
+    string parent_run_id = 2;
+    Task initial_task = 3;
+    repeated ScheduledTask scheduled_tasks = 4;
+}
+
+enum WorkflowRunStatus {
+    WORKFLOW_RUN_STATUS_UNSPECIFIED = 0;
+    WORKFLOW_RUN_STATUS_ACTIVE = 1;
+    WORKFLOW_RUN_STATUS_CANCELLED = 2;
+    WORKFLOW_RUN_STATUS_TIMEOUT = 3;
+}
+
+message WorkflowVersionInfo {
+    string workflow_id = 1;
+    string workflow_version_id = 2;
+}
+
+message WorkflowRunStorageInfo {
+    string storage_class = 1;
+    google.protobuf.Timestamp run_created_at = 2;
+}
+
+message ScheduledTask {
+    string run_id = 1;
+    oneof related_run_id {
+        string parent_run_id = 2;
+        string child_run_id = 3;
+    }
+    uint64 step = 4;
+    Task task = 5;
+    repeated TaskRun runs = 6;
+}
+
+message TaskRun {
+    google.protobuf.Timestamp started_at = 1;
+    TaskRunResult result = 2;
+    google.protobuf.Any progress = 3;
+}
+
+message TaskStarted {}
+
+message TaskRunResult {
+    oneof result {
+        TaskCompleted completed = 1;
+        TaskFailed failed = 2;
+        TaskPaused paused = 3;
+    }
+}
+
+message TaskCompleted {
+	google.protobuf.Any result = 1;
+}
+
+message TaskFailed {
+	google.protobuf.Any exception = 1;
+}
+
+message TaskPaused {}
+
+message PathPart {
+    string run_id = 1;
+    string name = 2;
+    PathPart parent = 3;
+}
+
+message Event {
+    // Keys are out of order for backwards compatibility
+    string id = 2;
+    string name = 1;
+}
+
+message EventSubscription {
+    string event_name = 1;
+    string run_id = 2;
+    string event_subscription_id = 3;
+    string event_id = 4;
+    string received_at = 5;
+}
+
+// Worker replicas: one per worker process (pod), reported by the process
+// itself. See svrunstate's worker_replicas table.
+
+enum WorkerHosting {
+    WORKER_HOSTING_UNSPECIFIED = 0;
+    // Runs in Serval's cluster, provisioned by svmanager.
+    WORKER_HOSTING_SERVAL = 1;
+    // Runs in the customer's cluster (hybrid worker chart).
+    WORKER_HOSTING_CUSTOMER = 2;
+}
+
+// Why a worker's proxy could not reach an upstream. A closed set: the worker
+// reports a class, never error text or resolved addresses.
+enum WorkerEgressFailureCause {
+    WORKER_EGRESS_FAILURE_CAUSE_UNSPECIFIED = 0;
+    // The hostname did not resolve from inside the worker's cluster.
+    WORKER_EGRESS_FAILURE_CAUSE_DNS = 1;
+    // Nothing answered before the connection timed out: network policy, a
+    // firewall, or a closed port.
+    WORKER_EGRESS_FAILURE_CAUSE_TIMEOUT = 2;
+    // The host refused the connection.
+    WORKER_EGRESS_FAILURE_CAUSE_REFUSED = 3;
+    // The host's certificate is not signed by a CA the worker trusts.
+    WORKER_EGRESS_FAILURE_CAUSE_TLS_UNTRUSTED = 4;
+    // The host's certificate does not name the host (no matching Subject
+    // Alternative Name, or a Common-Name-only certificate).
+    WORKER_EGRESS_FAILURE_CAUSE_TLS_HOSTNAME = 5;
+    // Any other TLS handshake failure (protocol version, cipher suites).
+    WORKER_EGRESS_FAILURE_CAUSE_TLS_HANDSHAKE = 6;
+    // Connected, but the request failed before a response arrived.
+    WORKER_EGRESS_FAILURE_CAUSE_OTHER = 7;
+}
+
+enum WorkerConnectivityStage {
+    WORKER_CONNECTIVITY_STAGE_UNSPECIFIED = 0;
+    WORKER_CONNECTIVITY_STAGE_DNS = 1;
+    WORKER_CONNECTIVITY_STAGE_TCP = 2;
+    WORKER_CONNECTIVITY_STAGE_TLS = 3;
+}
+
+// Result of a replica's proactive DNS → TCP → TLS probe of one upstream host.
+// svrunstate knows hosts, not apps; svflow owns the host → app mapping.
+message WorkerConnectivityCheck {
+    // host[:port] probed; the upstream's configured address, not a
+    // discovered one.
+    string target_host = 1;
+    google.protobuf.Timestamp checked_at = 2;
+    bool reachable = 3;
+    // Set when reachable is false: the stage that failed and why.
+    WorkerConnectivityStage failed_stage = 4;
+    WorkerEgressFailureCause cause = 5;
+    // Short error text from the failing stage, bounded by the reporter.
+    string detail = 6;
+    int32 latency_ms = 7;
+}
+
+// A worker replica's self-report.
+message WorkerReplica {
+    string id = 1;
+    string namespace_id = 2;
+    WorkerHosting hosting = 3;
+    string chart_version = 4;
+    string worker_image_tag = 5;
+    string proxy_image_tag = 6;
+    repeated string queues = 7;
+    string config_generation = 8;
+    google.protobuf.Timestamp first_seen_at = 9;
+    google.protobuf.Timestamp last_seen_at = 10;
+    repeated WorkerConnectivityCheck connectivity_checks = 11;
+    // The install (Helm release) the replica belongs to; empty from charts
+    // that predate it.
+    string deployment_name = 12;
+    // Set when the replica announced its own shutdown. A replica that went
+    // silent without it is presumed to have died.
+    google.protobuf.Timestamp stopped_at = 13;
+}
+
+// Failures one replica saw dialing one upstream host for one cause.
+message WorkerEgressFailure {
+    string replica_id = 1;
+    string target_host = 2;
+    WorkerEgressFailureCause cause = 3;
+    int64 count = 4;
+    google.protobuf.Timestamp first_seen_at = 5;
+    google.protobuf.Timestamp last_seen_at = 6;
+}

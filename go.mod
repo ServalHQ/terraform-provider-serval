@@ -3,6 +3,7 @@ module github.com/ServalHQ/terraform-provider-serval
 go 1.24.0
 
 require (
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260825204119-511051f7f437.2
 	github.com/ServalHQ/serval-go v0.23.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/hashicorp/hcl/v2 v2.19.1
@@ -17,6 +18,8 @@ require (
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 	github.com/zclconf/go-cty v1.17.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20250218202821-56aae31c358a
+	google.golang.org/protobuf v1.36.12
 )
 
 require (
@@ -82,7 +85,6 @@ require (
 	golang.org/x/text v0.33.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250218202821-56aae31c358a // indirect
 	google.golang.org/grpc v1.72.1 // indirect
-	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
