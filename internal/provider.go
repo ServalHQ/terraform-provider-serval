@@ -12,6 +12,7 @@ import (
 	"github.com/ServalHQ/serval-go"
 	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/cache"
+	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_policy"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_policy_approval_procedure"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_request"
@@ -105,35 +106,39 @@ func (p *ServalProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
+	cfg := client.Config{MaxRetries: client.DefaultMaxRetries}
 	opts := []option.RequestOption{}
 
-	if !data.BaseURL.IsNull() && !data.BaseURL.IsUnknown() {
-		opts = append(opts, option.WithBaseURL(data.BaseURL.ValueString()))
-	} else if o, ok := os.LookupEnv("SERVAL_BASE_URL"); ok {
-		opts = append(opts, option.WithBaseURL(o))
+	if v, ok := configValue(data.BaseURL, "SERVAL_BASE_URL"); ok {
+		cfg.BaseURL = v
+		opts = append(opts, option.WithBaseURL(v))
 	}
 
-	if !data.ClientID.IsNull() && !data.ClientID.IsUnknown() {
-		opts = append(opts, option.WithClientID(data.ClientID.ValueString()))
-	} else if o, ok := os.LookupEnv("SERVAL_CLIENT_ID"); ok {
-		opts = append(opts, option.WithClientID(o))
+	if v, ok := configValue(data.ClientID, "SERVAL_CLIENT_ID"); ok {
+		cfg.ClientID = v
+		opts = append(opts, option.WithClientID(v))
 	}
 
-	if !data.ClientSecret.IsNull() && !data.ClientSecret.IsUnknown() {
-		opts = append(opts, option.WithClientSecret(data.ClientSecret.ValueString()))
-	} else if o, ok := os.LookupEnv("SERVAL_CLIENT_SECRET"); ok {
-		opts = append(opts, option.WithClientSecret(o))
+	if v, ok := configValue(data.ClientSecret, "SERVAL_CLIENT_SECRET"); ok {
+		cfg.ClientSecret = v
+		opts = append(opts, option.WithClientSecret(v))
 	}
 
-	if !data.BearerToken.IsNull() && !data.BearerToken.IsUnknown() {
-		opts = append(opts, option.WithBearerToken(data.BearerToken.ValueString()))
-	} else if o, ok := os.LookupEnv("SERVAL_BEARER_TOKEN"); ok {
-		opts = append(opts, option.WithBearerToken(o))
+	if v, ok := configValue(data.BearerToken, "SERVAL_BEARER_TOKEN"); ok {
+		cfg.BearerToken = v
+		opts = append(opts, option.WithBearerToken(v))
 	}
 
-	client := serval.NewClient(
+	legacy := serval.NewClient(
 		opts...,
 	)
+	cfg.Legacy = &legacy
+
+	c, err := client.New(cfg)
+	if err != nil {
+		resp.Diagnostics.AddError("invalid provider configuration", err.Error())
+		return
+	}
 
 	// Extract team IDs from prefetch_for_teams list attribute
 	var teamIDs []string
@@ -196,21 +201,21 @@ func (p *ServalProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 		// All resources prefetched in a single parallel phase (team-scoped endpoints)
 		jobs := []prefetchJob{
-			{"users", func() (int, error) { return user.Prefetch(ctx, &client) }, func() int { return user.Cache.Len() }},
-			{"groups", func() (int, error) { return group.Prefetch(ctx, &client) }, func() int { return group.Cache.Len() }},
-			{"teams", func() (int, error) { return team.Prefetch(ctx, &client) }, func() int { return team.Cache.Len() }},
-			{"workflows", func() (int, error) { return workflow.Prefetch(ctx, &client, teamIDs) }, func() int { return workflow.Cache.Len() }},
-			{"guidances", func() (int, error) { return guidance.Prefetch(ctx, &client, teamIDs) }, func() int { return guidance.Cache.Len() }},
-			{"access_policies", func() (int, error) { return access_policy.Prefetch(ctx, &client, teamIDs) }, func() int { return access_policy.Cache.Len() }},
-			{"app_instances", func() (int, error) { return app_instance.Prefetch(ctx, &client, teamIDs) }, func() int { return app_instance.Cache.Len() }},
-			{"custom_services", func() (int, error) { return custom_service.Prefetch(ctx, &client, teamIDs) }, func() int { return custom_service.Cache.Len() }},
-			{"app_resources", func() (int, error) { return app_resource.Prefetch(ctx, &client, teamIDs) }, func() int { return app_resource.Cache.Len() }},
-			{"app_resource_roles", func() (int, error) { return app_resource_role.Prefetch(ctx, &client, teamIDs) }, func() int { return app_resource_role.Cache.Len() }},
+			{"users", func() (int, error) { return user.Prefetch(ctx, c) }, func() int { return user.Cache.Len() }},
+			{"groups", func() (int, error) { return group.Prefetch(ctx, c) }, func() int { return group.Cache.Len() }},
+			{"teams", func() (int, error) { return team.Prefetch(ctx, c) }, func() int { return team.Cache.Len() }},
+			{"workflows", func() (int, error) { return workflow.Prefetch(ctx, c, teamIDs) }, func() int { return workflow.Cache.Len() }},
+			{"guidances", func() (int, error) { return guidance.Prefetch(ctx, c, teamIDs) }, func() int { return guidance.Cache.Len() }},
+			{"access_policies", func() (int, error) { return access_policy.Prefetch(ctx, c, teamIDs) }, func() int { return access_policy.Cache.Len() }},
+			{"app_instances", func() (int, error) { return app_instance.Prefetch(ctx, c, teamIDs) }, func() int { return app_instance.Cache.Len() }},
+			{"custom_services", func() (int, error) { return custom_service.Prefetch(ctx, c, teamIDs) }, func() int { return custom_service.Cache.Len() }},
+			{"app_resources", func() (int, error) { return app_resource.Prefetch(ctx, c, teamIDs) }, func() int { return app_resource.Cache.Len() }},
+			{"app_resource_roles", func() (int, error) { return app_resource_role.Prefetch(ctx, c, teamIDs) }, func() int { return app_resource_role.Cache.Len() }},
 			{"workflow_approval_procedures", func() (int, error) {
-				return workflow_approval_procedure.Prefetch(ctx, &client, teamIDs)
+				return workflow_approval_procedure.Prefetch(ctx, c, teamIDs)
 			}, func() int { return workflow_approval_procedure.Cache.Len() }},
 			{"access_policy_approval_procedures", func() (int, error) {
-				return access_policy_approval_procedure.Prefetch(ctx, &client, teamIDs)
+				return access_policy_approval_procedure.Prefetch(ctx, c, teamIDs)
 			}, func() int { return access_policy_approval_procedure.Cache.Len() }},
 		}
 
@@ -259,8 +264,15 @@ func (p *ServalProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		tflog.Info(ctx, "prefetch: complete", report)
 	}
 
-	resp.DataSourceData = &client
-	resp.ResourceData = &client
+	resp.DataSourceData = c
+	resp.ResourceData = c
+}
+
+func configValue(v types.String, env string) (string, bool) {
+	if !v.IsNull() && !v.IsUnknown() {
+		return v.ValueString(), true
+	}
+	return os.LookupEnv(env)
 }
 
 func (p *ServalProvider) ConfigValidators(_ context.Context) []provider.ConfigValidator {

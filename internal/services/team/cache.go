@@ -9,12 +9,13 @@ import (
 	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/cache"
+	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 )
 
 var Cache *cache.Store[TeamModel]
 
-func Prefetch(ctx context.Context, client *serval.Client) (int, error) {
+func Prefetch(ctx context.Context, c *client.Client) (int, error) {
 	Cache = cache.NewStore[TeamModel]()
 	apiCalls := 0
 	var pageToken *string
@@ -26,7 +27,7 @@ func Prefetch(ctx context.Context, client *serval.Client) (int, error) {
 			params.PageToken = serval.String(*pageToken)
 		}
 		res := new(http.Response)
-		_, err := client.Teams.List(ctx, params,
+		_, err := c.Teams.List(ctx, params,
 			option.WithResponseBodyInto(&res),
 			option.WithMiddleware(logging.Middleware(ctx)),
 		)

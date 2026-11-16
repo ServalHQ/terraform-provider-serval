@@ -11,6 +11,7 @@ import (
 	"github.com/ServalHQ/serval-go"
 	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
+	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -28,7 +29,7 @@ func NewResource() resource.Resource {
 
 // AppResourceResource defines the resource implementation.
 type AppResourceResource struct {
-	client *serval.Client
+	client *client.Client
 }
 
 func (r *AppResourceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -40,18 +41,18 @@ func (r *AppResourceResource) Configure(ctx context.Context, req resource.Config
 		return
 	}
 
-	client, ok := req.ProviderData.(*serval.Client)
+	c, ok := req.ProviderData.(*client.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *serval.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *client.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
 
-	r.client = client
+	r.client = c
 }
 
 func (r *AppResourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

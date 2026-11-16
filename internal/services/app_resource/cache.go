@@ -10,13 +10,14 @@ import (
 	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/cache"
+	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var Cache *cache.Store[AppResourceModel]
 
-func Prefetch(ctx context.Context, client *serval.Client, teamIDs []string) (int, error) {
+func Prefetch(ctx context.Context, c *client.Client, teamIDs []string) (int, error) {
 	Cache = cache.NewStore[AppResourceModel]()
 	apiCalls := 0
 	for _, teamID := range teamIDs {
@@ -30,7 +31,7 @@ func Prefetch(ctx context.Context, client *serval.Client, teamIDs []string) (int
 				params.PageToken = serval.String(*pageToken)
 			}
 			res := new(http.Response)
-			_, err := client.AppResources.List(ctx, params,
+			_, err := c.AppResources.List(ctx, params,
 				option.WithResponseBodyInto(&res),
 				option.WithMiddleware(logging.Middleware(ctx)),
 			)
