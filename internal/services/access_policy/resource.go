@@ -8,8 +8,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
@@ -69,15 +67,8 @@ func (r *AccessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := AccessPolicyDataEnvelope{*data}
-	_, err = r.client.AccessPolicies.New(
-		ctx,
-		serval.AccessPolicyNewParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.Do(ctx, client.Request{Method: http.MethodPost, Path: "v2/access-policies", Body: dataBytes, Middlewares: []client.Middleware{logging.Middleware(ctx)}})
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -115,16 +106,8 @@ func (r *AccessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := AccessPolicyDataEnvelope{*data}
-	_, err = r.client.AccessPolicies.Update(
-		ctx,
-		data.ID.ValueString(),
-		serval.AccessPolicyUpdateParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodPut, "v2/access-policies", data.ID.ValueString(), dataBytes, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -150,17 +133,15 @@ func (r *AccessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	if item, ok, err := TryRead(data.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
-	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error())
+		return
+	} else if ok {
+		resp.Diagnostics.Append(resp.State.Set(ctx, item)...)
+		return
+	}
 
-	res := new(http.Response)
 	env := AccessPolicyDataEnvelope{*data}
-	_, err := r.client.AccessPolicies.Get(
-		ctx,
-		data.ID.ValueString(),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodGet, "v2/access-policies", data.ID.ValueString(), nil, logging.Middleware(ctx))
 	if res != nil && res.StatusCode == 404 {
 		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
 		resp.State.RemoveResource(ctx)
@@ -190,11 +171,10 @@ func (r *AccessPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	_, err := r.client.AccessPolicies.Delete(
-		ctx,
-		data.ID.ValueString(),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodDelete, "v2/access-policies", data.ID.ValueString(), nil, logging.Middleware(ctx))
+	if res != nil {
+		res.Body.Close()
+	}
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -220,17 +200,15 @@ func (r *AccessPolicyResource) ImportState(ctx context.Context, req resource.Imp
 	data.ID = types.StringValue(path)
 
 	if item, ok, err := TryRead(path); err != nil {
-		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
-	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error())
+		return
+	} else if ok {
+		resp.Diagnostics.Append(resp.State.Set(ctx, item)...)
+		return
+	}
 
-	res := new(http.Response)
 	env := AccessPolicyDataEnvelope{*data}
-	_, err := r.client.AccessPolicies.Get(
-		ctx,
-		path,
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodGet, "v2/access-policies", path, nil, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

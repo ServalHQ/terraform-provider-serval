@@ -1,0 +1,12 @@
+
+## prefetch two pages
+> GET /v2/groups?pageSize=5000
+  auth="Bearer tok" content-type=""
+> GET /v2/groups?pageSize=5000&pageToken=page-2
+  auth="Bearer tok" content-type=""
+  calls=2 err=<nil> cached=true
+
+## prefetch rejected
+> GET /v2/groups?pageSize=5000
+  auth="Bearer tok" content-type=""
+  calls=1 err=GET "SERVER/v2/groups?pageSize=5000": 403 Forbidden {"error":"forbidden"}

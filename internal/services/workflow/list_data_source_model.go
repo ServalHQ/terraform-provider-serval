@@ -5,11 +5,12 @@ package workflow
 import (
 	"context"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/packages/param"
+	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
+	flowapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svflow/publicapi"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"google.golang.org/protobuf/proto"
 )
 
 type WorkflowsDataListDataSourceEnvelope struct {
@@ -22,13 +23,16 @@ type WorkflowsDataSourceModel struct {
 	Items    customfield.NestedObjectList[WorkflowsItemsDataSourceModel] `tfsdk:"items"`
 }
 
-func (m *WorkflowsDataSourceModel) toListParams(_ context.Context) (params serval.WorkflowListParams, diags diag.Diagnostics) {
-	params = serval.WorkflowListParams{}
+func (m *WorkflowsDataSourceModel) toListParams(_ context.Context) (params proto.Message, diags diag.Diagnostics) {
+	req := &flowapi.ListWorkflowsRequest{}
+	var explicit []string
 
 	if !m.TeamID.IsNull() {
-		params.TeamID = param.NewOpt(m.TeamID.ValueString())
+		req.TeamId = m.TeamID.ValueString()
+		explicit = append(explicit, "teamId")
 	}
 
+	params = client.WithExplicit(req, explicit...)
 	return
 }
 

@@ -8,8 +8,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
@@ -69,15 +67,8 @@ func (r *TeamResource) Create(ctx context.Context, req resource.CreateRequest, r
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := TeamDataEnvelope{*data}
-	_, err = r.client.Teams.New(
-		ctx,
-		serval.TeamNewParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.Do(ctx, client.Request{Method: http.MethodPost, Path: "v2/teams", Body: dataBytes, Middlewares: []client.Middleware{logging.Middleware(ctx)}})
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -115,16 +106,8 @@ func (r *TeamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := TeamDataEnvelope{*data}
-	_, err = r.client.Teams.Update(
-		ctx,
-		data.ID.ValueString(),
-		serval.TeamUpdateParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodPut, "v2/teams", data.ID.ValueString(), dataBytes, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -150,17 +133,15 @@ func (r *TeamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	if item, ok, err := TryRead(data.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
-	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error())
+		return
+	} else if ok {
+		resp.Diagnostics.Append(resp.State.Set(ctx, item)...)
+		return
+	}
 
-	res := new(http.Response)
 	env := TeamDataEnvelope{*data}
-	_, err := r.client.Teams.Get(
-		ctx,
-		data.ID.ValueString(),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodGet, "v2/teams", data.ID.ValueString(), nil, logging.Middleware(ctx))
 	if res != nil && res.StatusCode == 404 {
 		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
 		resp.State.RemoveResource(ctx)
@@ -190,11 +171,10 @@ func (r *TeamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	_, err := r.client.Teams.Delete(
-		ctx,
-		data.ID.ValueString(),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodDelete, "v2/teams", data.ID.ValueString(), nil, logging.Middleware(ctx))
+	if res != nil {
+		res.Body.Close()
+	}
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -220,17 +200,15 @@ func (r *TeamResource) ImportState(ctx context.Context, req resource.ImportState
 	data.ID = types.StringValue(path)
 
 	if item, ok, err := TryRead(path); err != nil {
-		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
-	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error())
+		return
+	} else if ok {
+		resp.Diagnostics.Append(resp.State.Set(ctx, item)...)
+		return
+	}
 
-	res := new(http.Response)
 	env := TeamDataEnvelope{*data}
-	_, err := r.client.Teams.Get(
-		ctx,
-		path,
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodGet, "v2/teams", path, nil, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

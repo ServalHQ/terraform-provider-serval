@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
+	authapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svauth/public"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"google.golang.org/protobuf/proto"
 )
 
 type TeamDataSource struct {
@@ -60,14 +60,8 @@ func (d *TeamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 
 	// If ID is provided, use direct Get method
 	if !data.ID.IsNull() && !data.ID.IsUnknown() {
-		res := new(http.Response)
 		env := TeamDataDataSourceEnvelope{*data}
-		_, err := d.client.Teams.Get(
-			ctx,
-			data.ID.ValueString(),
-			option.WithResponseBodyInto(&res),
-			option.WithMiddleware(logging.Middleware(ctx)),
-		)
+		res, err := d.client.DoID(ctx, http.MethodGet, "v2/teams", data.ID.ValueString(), nil, logging.Middleware(ctx))
 		if err != nil {
 			resp.Diagnostics.AddError("failed to make http request", err.Error())
 			return
@@ -95,23 +89,17 @@ func (d *TeamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 			filterValue = data.Prefix.ValueString()
 		}
 
-		params := serval.TeamListParams{
-			PageSize: serval.Int(1000),
+		params := &authapi.ListTeamsRequest{
+			PageSize: proto.Int32(1000),
 		}
 
-		res := new(http.Response)
-		_, err := d.client.Teams.List(
-			ctx,
-			params,
-			option.WithResponseBodyInto(&res),
-			option.WithMiddleware(logging.Middleware(ctx)),
-		)
+		page, err := d.client.FirstPage(ctx, "v2/teams", params)
 		if err != nil {
 			resp.Diagnostics.AddError("failed to list teams", err.Error())
 			return
 		}
 
-		bytes, _ := io.ReadAll(res.Body)
+		bytes := page.Raw
 
 		// Parse the list response - API returns {data: [...]}
 		var listResponse struct {

@@ -204,6 +204,7 @@ type dataSourceCase struct {
 	fixture  string
 	byID     map[string]tftypes.Value
 	findBy   map[string]tftypes.Value
+	lookups  []map[string]tftypes.Value
 	listArgs map[string]tftypes.Value
 
 	emptyFindBy   map[string]tftypes.Value
@@ -237,6 +238,11 @@ func runDataSources(t *testing.T, tc dataSourceCase) {
 	if tc.findBy != nil {
 		r.step("data source find_one_by", r.page(""), r.item())
 		readDataSource(r, tc.single(), findOneBy(r.ctx, tc.single(), tc.findBy))
+	}
+
+	for _, set := range tc.lookups {
+		r.step(fmt.Sprintf("data source lookup %v", set), r.page(""))
+		readDataSource(r, tc.single(), set)
 	}
 
 	r.step("list data source, two pages", r.page("page-2"), r.page(""))

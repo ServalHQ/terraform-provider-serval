@@ -1,0 +1,40 @@
+
+## create
+> POST /v2/teams
+  auth="Bearer tok" content-type="application/json"
+  body={"description":"d","name":"it","prefix":"IT"}
+  state=tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "description":tftypes.String<"d">, "id":tftypes.String<"id-1">, "name":tftypes.String<"it">, "organization_id":tftypes.String<"org-1">, "prefix":tftypes.String<"IT">>
+
+## read
+> GET /v2/teams/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "description":tftypes.String<"d">, "id":tftypes.String<"id-1">, "name":tftypes.String<"it">, "organization_id":tftypes.String<"org-1">, "prefix":tftypes.String<"IT">>
+
+## update
+> PUT /v2/teams/id-1
+  auth="Bearer tok" content-type="application/json"
+  body={"description":null,"name":"it-2","prefix":"IT"}
+  state=tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "description":tftypes.String<null>, "id":tftypes.String<"id-1">, "name":tftypes.String<"it-2">, "organization_id":tftypes.String<"org-1">, "prefix":tftypes.String<"IT">>
+
+## read not found
+> GET /v2/teams/id-1
+  auth="Bearer tok" content-type=""
+  Warning: Resource not found: The resource was not found on the server and will be removed from state.
+  state=tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]<null>
+
+## delete
+> DELETE /v2/teams/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "description":tftypes.String<"d">, "id":tftypes.String<"id-1">, "name":tftypes.String<"it">, "organization_id":tftypes.String<"org-1">, "prefix":tftypes.String<"IT">>
+
+## import
+> GET /v2/teams/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "description":tftypes.String<"d">, "id":tftypes.String<"id-1">, "name":tftypes.String<"it">, "organization_id":tftypes.String<"org-1">, "prefix":tftypes.String<"IT">>
+
+## create rejected
+> POST /v2/teams
+  auth="Bearer tok" content-type="application/json"
+  body={"description":"d","name":"it","prefix":"IT"}
+  Error: failed to make http request: POST "SERVER/v2/teams": 400 Bad Request {"error":"invalid name"}
+  state=tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]<null>

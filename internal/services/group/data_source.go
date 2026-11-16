@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
+	authapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svauth/public"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"google.golang.org/protobuf/proto"
 )
 
 type GroupDataSource struct {
@@ -60,14 +60,8 @@ func (d *GroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 	// If ID is provided, use direct Get method
 	if !data.ID.IsNull() && !data.ID.IsUnknown() {
-		res := new(http.Response)
 		env := GroupDataDataSourceEnvelope{*data}
-		_, err := d.client.Groups.Get(
-			ctx,
-			data.ID.ValueString(),
-			option.WithResponseBodyInto(&res),
-			option.WithMiddleware(logging.Middleware(ctx)),
-		)
+		res, err := d.client.DoID(ctx, http.MethodGet, "v2/groups", data.ID.ValueString(), nil, logging.Middleware(ctx))
 		if err != nil {
 			resp.Diagnostics.AddError("failed to make http request", err.Error())
 			return
@@ -88,23 +82,17 @@ func (d *GroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	if !data.Name.IsNull() && !data.Name.IsUnknown() {
 		targetName := data.Name.ValueString()
 
-		params := serval.GroupListParams{
-			PageSize: serval.Int(1000),
+		params := &authapi.ListGroupsRequest{
+			PageSize: proto.Int32(1000),
 		}
 
-		res := new(http.Response)
-		_, err := d.client.Groups.List(
-			ctx,
-			params,
-			option.WithResponseBodyInto(&res),
-			option.WithMiddleware(logging.Middleware(ctx)),
-		)
+		page, err := d.client.FirstPage(ctx, "v2/groups", params)
 		if err != nil {
 			resp.Diagnostics.AddError("failed to list groups", err.Error())
 			return
 		}
 
-		bytes, _ := io.ReadAll(res.Body)
+		bytes := page.Raw
 
 		// Parse the list response - API returns {data: [...]}
 		var listResponse struct {

@@ -1,0 +1,40 @@
+
+## create
+> POST /v2/app-instances
+  auth="Bearer tok" content-type="application/json"
+  body={"externalServiceInstanceId":"acme","name":"gh","service":"github","teamId":"team-1"}
+  state=tftypes.Object["access_requests_enabled":tftypes.Bool, "custom_service_id":tftypes.String, "default_access_policy_id":tftypes.String, "external_service_instance_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "service":tftypes.String, "team_id":tftypes.String]<"access_requests_enabled":tftypes.Bool<"true">, "custom_service_id":tftypes.String<null>, "default_access_policy_id":tftypes.String<null>, "external_service_instance_id":tftypes.String<"acme">, "id":tftypes.String<"id-1">, "name":tftypes.String<"gh">, "service":tftypes.String<"github">, "team_id":tftypes.String<"team-1">>
+
+## read
+> GET /v2/app-instances/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["access_requests_enabled":tftypes.Bool, "custom_service_id":tftypes.String, "default_access_policy_id":tftypes.String, "external_service_instance_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "service":tftypes.String, "team_id":tftypes.String]<"access_requests_enabled":tftypes.Bool<"true">, "custom_service_id":tftypes.String<null>, "default_access_policy_id":tftypes.String<null>, "external_service_instance_id":tftypes.String<"acme">, "id":tftypes.String<"id-1">, "name":tftypes.String<"gh">, "service":tftypes.String<"github">, "team_id":tftypes.String<"team-1">>
+
+## update
+> PUT /v2/app-instances/id-1
+  auth="Bearer tok" content-type="application/json"
+  body={"accessRequestsEnabled":true,"externalServiceInstanceId":"acme","name":"gh-2","service":"github","teamId":"team-1"}
+  state=tftypes.Object["access_requests_enabled":tftypes.Bool, "custom_service_id":tftypes.String, "default_access_policy_id":tftypes.String, "external_service_instance_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "service":tftypes.String, "team_id":tftypes.String]<"access_requests_enabled":tftypes.Bool<"true">, "custom_service_id":tftypes.String<null>, "default_access_policy_id":tftypes.String<null>, "external_service_instance_id":tftypes.String<"acme">, "id":tftypes.String<"id-1">, "name":tftypes.String<"gh-2">, "service":tftypes.String<"github">, "team_id":tftypes.String<"team-1">>
+
+## read not found
+> GET /v2/app-instances/id-1
+  auth="Bearer tok" content-type=""
+  Warning: Resource not found: The resource was not found on the server and will be removed from state.
+  state=tftypes.Object["access_requests_enabled":tftypes.Bool, "custom_service_id":tftypes.String, "default_access_policy_id":tftypes.String, "external_service_instance_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "service":tftypes.String, "team_id":tftypes.String]<null>
+
+## delete
+> DELETE /v2/app-instances/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["access_requests_enabled":tftypes.Bool, "custom_service_id":tftypes.String, "default_access_policy_id":tftypes.String, "external_service_instance_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "service":tftypes.String, "team_id":tftypes.String]<"access_requests_enabled":tftypes.Bool<"true">, "custom_service_id":tftypes.String<null>, "default_access_policy_id":tftypes.String<null>, "external_service_instance_id":tftypes.String<"acme">, "id":tftypes.String<"id-1">, "name":tftypes.String<"gh">, "service":tftypes.String<"github">, "team_id":tftypes.String<"team-1">>
+
+## import
+> GET /v2/app-instances/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["access_requests_enabled":tftypes.Bool, "custom_service_id":tftypes.String, "default_access_policy_id":tftypes.String, "external_service_instance_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "service":tftypes.String, "team_id":tftypes.String]<"access_requests_enabled":tftypes.Bool<"true">, "custom_service_id":tftypes.String<null>, "default_access_policy_id":tftypes.String<null>, "external_service_instance_id":tftypes.String<"acme">, "id":tftypes.String<"id-1">, "name":tftypes.String<"gh">, "service":tftypes.String<"github">, "team_id":tftypes.String<"team-1">>
+
+## create rejected
+> POST /v2/app-instances
+  auth="Bearer tok" content-type="application/json"
+  body={"externalServiceInstanceId":"acme","name":"gh","service":"github","teamId":"team-1"}
+  Error: failed to make http request: POST "SERVER/v2/app-instances": 400 Bad Request {"error":"invalid name"}
+  state=tftypes.Object["access_requests_enabled":tftypes.Bool, "custom_service_id":tftypes.String, "default_access_policy_id":tftypes.String, "external_service_instance_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "service":tftypes.String, "team_id":tftypes.String]<null>

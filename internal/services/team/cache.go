@@ -5,12 +5,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/cache"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
+	authapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svauth/public"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
+	"google.golang.org/protobuf/proto"
 )
 
 var Cache *cache.Store[TeamModel]
@@ -20,17 +20,22 @@ func Prefetch(ctx context.Context, c *client.Client) (int, error) {
 	apiCalls := 0
 	var pageToken *string
 	for {
-		params := serval.TeamListParams{
-			PageSize: serval.Int(1000),
+		params := &authapi.ListTeamsRequest{
+			PageSize: proto.Int32(1000),
 		}
 		if pageToken != nil {
-			params.PageToken = serval.String(*pageToken)
+			params.PageToken = proto.String(*pageToken)
 		}
-		res := new(http.Response)
-		_, err := c.Teams.List(ctx, params,
-			option.WithResponseBodyInto(&res),
-			option.WithMiddleware(logging.Middleware(ctx)),
-		)
+		query, err := client.QueryFromMessage(params)
+		if err != nil {
+			return apiCalls, err
+		}
+		res, err := c.Do(ctx, client.Request{
+			Method:      http.MethodGet,
+			Path:        "v2/teams",
+			Query:       query,
+			Middlewares: []client.Middleware{logging.Middleware(ctx)},
+		})
 		apiCalls++
 		if err != nil {
 			return apiCalls, err
