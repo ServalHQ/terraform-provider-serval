@@ -8,8 +8,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
@@ -69,15 +67,8 @@ func (r *ApprovalDelegationResource) Create(ctx context.Context, req resource.Cr
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := ApprovalDelegationDataEnvelope{*data}
-	_, err = r.client.ApprovalDelegations.New(
-		ctx,
-		serval.ApprovalDelegationNewParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.Do(ctx, client.Request{Method: http.MethodPost, Path: "v2/approval-delegations", Body: dataBytes, Middlewares: []client.Middleware{logging.Middleware(ctx)}})
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -115,16 +106,8 @@ func (r *ApprovalDelegationResource) Update(ctx context.Context, req resource.Up
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := ApprovalDelegationDataEnvelope{*data}
-	_, err = r.client.ApprovalDelegations.Update(
-		ctx,
-		data.ID.ValueString(),
-		serval.ApprovalDelegationUpdateParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodPut, "v2/approval-delegations", data.ID.ValueString(), dataBytes, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -149,14 +132,8 @@ func (r *ApprovalDelegationResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	res := new(http.Response)
 	env := ApprovalDelegationDataEnvelope{*data}
-	_, err := r.client.ApprovalDelegations.Get(
-		ctx,
-		data.ID.ValueString(),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodGet, "v2/approval-delegations", data.ID.ValueString(), nil, logging.Middleware(ctx))
 	if res != nil && res.StatusCode == 404 {
 		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
 		resp.State.RemoveResource(ctx)
@@ -186,11 +163,10 @@ func (r *ApprovalDelegationResource) Delete(ctx context.Context, req resource.De
 		return
 	}
 
-	_, err := r.client.ApprovalDelegations.Delete(
-		ctx,
-		data.ID.ValueString(),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodDelete, "v2/approval-delegations", data.ID.ValueString(), nil, logging.Middleware(ctx))
+	if res != nil {
+		res.Body.Close()
+	}
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -215,14 +191,8 @@ func (r *ApprovalDelegationResource) ImportState(ctx context.Context, req resour
 
 	data.ID = types.StringValue(path)
 
-	res := new(http.Response)
 	env := ApprovalDelegationDataEnvelope{*data}
-	_, err := r.client.ApprovalDelegations.Get(
-		ctx,
-		path,
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodGet, "v2/approval-delegations", path, nil, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

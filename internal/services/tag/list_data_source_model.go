@@ -5,8 +5,10 @@ package tag
 import (
 	"context"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/packages/param"
+	"github.com/ServalHQ/terraform-provider-serval/internal/client"
+	flowapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svflow/publicapi"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -22,13 +24,16 @@ type TagsDataSourceModel struct {
 	Items    customfield.NestedObjectList[TagsItemsDataSourceModel] `tfsdk:"items"`
 }
 
-func (m *TagsDataSourceModel) toListParams(_ context.Context) (params serval.TagListParams, diags diag.Diagnostics) {
-	params = serval.TagListParams{}
+func (m *TagsDataSourceModel) toListParams(_ context.Context) (params proto.Message, diags diag.Diagnostics) {
+	req := &flowapi.ListTagsRequest{}
+	var explicit []string
 
 	if !m.TeamID.IsNull() {
-		params.TeamID = param.NewOpt(m.TeamID.ValueString())
+		req.TeamId = m.TeamID.ValueString()
+		explicit = append(explicit, "teamId")
 	}
 
+	params = client.WithExplicit(req, explicit...)
 	return
 }
 

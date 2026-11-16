@@ -73,6 +73,26 @@ func TestQueryFromMessageMatchesServalGoListParams(t *testing.T) {
 	}
 }
 
+func TestWithExplicitMatchesServalGoForEmptyTeamID(t *testing.T) {
+	want, err := serval.TagListParams{TeamID: serval.String("")}.URLQuery()
+	require.NoError(t, err)
+	got, err := QueryFromMessage(WithExplicit(&flowapi.ListTagsRequest{}, "teamId"))
+	require.NoError(t, err)
+	require.Equal(t, want.Encode(), got.Encode())
+	require.Equal(t, "teamId=", got.Encode())
+}
+
+func TestWithExplicitKeepsSetValue(t *testing.T) {
+	got, err := QueryFromMessage(WithExplicit(&flowapi.ListTagsRequest{TeamId: "team-1"}, "teamId"))
+	require.NoError(t, err)
+	require.Equal(t, "teamId=team-1", got.Encode())
+}
+
+func TestWithExplicitRejectsUnknownField(t *testing.T) {
+	_, err := QueryFromMessage(WithExplicit(&flowapi.ListTagsRequest{}, "nope"))
+	require.ErrorContains(t, err, `no scalar field "nope"`)
+}
+
 func TestQueryFromMessageJoinsRepeatedFields(t *testing.T) {
 	got, err := QueryFromMessage(&authapi.ListUsersRequest{Emails: []string{"a@x.com", "b@x.com"}})
 	require.NoError(t, err)

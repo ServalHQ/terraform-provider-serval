@@ -8,8 +8,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
@@ -69,15 +67,8 @@ func (r *TagResource) Create(ctx context.Context, req resource.CreateRequest, re
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := TagDataEnvelope{*data}
-	_, err = r.client.Tags.New(
-		ctx,
-		serval.TagNewParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.Do(ctx, client.Request{Method: http.MethodPost, Path: "v2/tags", Body: dataBytes, Middlewares: []client.Middleware{logging.Middleware(ctx)}})
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -115,16 +106,8 @@ func (r *TagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := TagDataEnvelope{*data}
-	_, err = r.client.Tags.Update(
-		ctx,
-		data.ID.ValueString(),
-		serval.TagUpdateParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodPut, "v2/tags", data.ID.ValueString(), dataBytes, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -149,14 +132,8 @@ func (r *TagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	res := new(http.Response)
 	env := TagDataEnvelope{*data}
-	_, err := r.client.Tags.Get(
-		ctx,
-		data.ID.ValueString(),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodGet, "v2/tags", data.ID.ValueString(), nil, logging.Middleware(ctx))
 	if res != nil && res.StatusCode == 404 {
 		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
 		resp.State.RemoveResource(ctx)
@@ -186,11 +163,10 @@ func (r *TagResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	_, err := r.client.Tags.Delete(
-		ctx,
-		data.ID.ValueString(),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodDelete, "v2/tags", data.ID.ValueString(), nil, logging.Middleware(ctx))
+	if res != nil {
+		res.Body.Close()
+	}
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -215,14 +191,8 @@ func (r *TagResource) ImportState(ctx context.Context, req resource.ImportStateR
 
 	data.ID = types.StringValue(path)
 
-	res := new(http.Response)
 	env := TagDataEnvelope{*data}
-	_, err := r.client.Tags.Get(
-		ctx,
-		path,
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodGet, "v2/tags", path, nil, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

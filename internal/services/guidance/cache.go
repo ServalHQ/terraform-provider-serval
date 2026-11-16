@@ -6,8 +6,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
+	flowapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svflow/publicapi"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/cache"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
@@ -23,18 +24,23 @@ func Prefetch(ctx context.Context, c *client.Client, teamIDs []string) (int, err
 	for _, teamID := range teamIDs {
 		var pageToken *string
 		for {
-			params := serval.GuidanceListParams{
-				PageSize: serval.Int(1000),
-				TeamID:   serval.String(teamID),
+			params := &flowapi.ListGuidancesRequest{
+				PageSize: proto.Int32(1000),
+				TeamId:   teamID,
 			}
 			if pageToken != nil {
-				params.PageToken = serval.String(*pageToken)
+				params.PageToken = proto.String(*pageToken)
 			}
-			res := new(http.Response)
-			_, err := c.Guidances.List(ctx, params,
-				option.WithResponseBodyInto(&res),
-				option.WithMiddleware(logging.Middleware(ctx)),
-			)
+			query, err := client.QueryFromMessage(client.WithExplicit(params, "teamId"))
+			if err != nil {
+				return apiCalls, err
+			}
+			res, err := c.Do(ctx, client.Request{
+				Method:      http.MethodGet,
+				Path:        "v2/guidances",
+				Query:       query,
+				Middlewares: []client.Middleware{logging.Middleware(ctx)},
+			})
 			apiCalls++
 			if err != nil {
 				if cache.IsServerError(err) {
