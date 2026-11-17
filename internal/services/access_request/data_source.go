@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
@@ -57,14 +56,8 @@ func (d *AccessRequestDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	res := new(http.Response)
 	env := AccessRequestDataDataSourceEnvelope{*data}
-	_, err := d.client.AccessRequests.Get(
-		ctx,
-		data.ID.ValueString(),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := d.client.DoID(ctx, http.MethodGet, "v2/access-requests", data.ID.ValueString(), nil, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

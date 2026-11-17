@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
@@ -57,14 +56,8 @@ func (d *WorkflowRunDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	res := new(http.Response)
 	env := WorkflowRunDataDataSourceEnvelope{*data}
-	_, err := d.client.WorkflowRuns.Get(
-		ctx,
-		data.ID.ValueString(),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := d.client.DoID(ctx, http.MethodGet, "v2/workflow-runs", data.ID.ValueString(), nil, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

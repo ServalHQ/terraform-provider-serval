@@ -5,8 +5,9 @@ package user
 import (
 	"context"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/packages/param"
+	authapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svauth/public"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -23,13 +24,14 @@ type UsersDataSourceModel struct {
 	Items              customfield.NestedObjectList[UsersItemsDataSourceModel] `tfsdk:"items"`
 }
 
-func (m *UsersDataSourceModel) toListParams(_ context.Context) (params serval.UserListParams, diags diag.Diagnostics) {
-	params = serval.UserListParams{}
+func (m *UsersDataSourceModel) toListParams(_ context.Context) (params proto.Message, diags diag.Diagnostics) {
+	req := &authapi.ListUsersRequest{}
 
 	if !m.IncludeDeactivated.IsNull() {
-		params.IncludeDeactivated = param.NewOpt(m.IncludeDeactivated.ValueBool())
+		req.IncludeDeactivated = proto.Bool(m.IncludeDeactivated.ValueBool())
 	}
 
+	params = req
 	return
 }
 

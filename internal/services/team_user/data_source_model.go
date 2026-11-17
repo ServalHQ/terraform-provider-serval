@@ -4,9 +4,8 @@ package team_user
 
 import (
 	"context"
+	"net/url"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/packages/param"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -24,14 +23,14 @@ type TeamUserDataSourceModel struct {
 	Role      types.String      `tfsdk:"role" json:"role,computed"`
 }
 
-func (m *TeamUserDataSourceModel) toReadParams(_ context.Context) (params serval.TeamUserGetParams, diags diag.Diagnostics) {
-	params = serval.TeamUserGetParams{}
+func (m *TeamUserDataSourceModel) toReadParams(_ context.Context) (params url.Values, diags diag.Diagnostics) {
+	params = url.Values{}
 
 	if !m.TeamID.IsNull() {
-		params.TeamID = param.NewOpt(m.TeamID.ValueString())
+		params.Set("teamId", m.TeamID.ValueString())
 	}
 	if !m.UserID.IsNull() {
-		params.UserID = param.NewOpt(m.UserID.ValueString())
+		params.Set("userId", m.UserID.ValueString())
 	}
 
 	return

@@ -1,0 +1,40 @@
+
+## create
+> POST /v2/app-resources
+  auth="Bearer tok" content-type="application/json"
+  body={"appInstanceId":"ai-1","name":"repo","resourceType":"repository"}
+  state=tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]<"app_instance_id":tftypes.String<"ai-1">, "description":tftypes.String<null>, "external_id":tftypes.String<null>, "id":tftypes.String<"id-1">, "name":tftypes.String<"repo">, "resource_type":tftypes.String<"repository">>
+
+## read
+> GET /v2/app-resources/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]<"app_instance_id":tftypes.String<"ai-1">, "description":tftypes.String<"d">, "external_id":tftypes.String<"ext-1">, "id":tftypes.String<"id-1">, "name":tftypes.String<"repo">, "resource_type":tftypes.String<"repository">>
+
+## update
+> PUT /v2/app-resources/id-1
+  auth="Bearer tok" content-type="application/json"
+  body={"appInstanceId":"ai-1","name":"repo-2","resourceType":"repository"}
+  state=tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]<"app_instance_id":tftypes.String<"ai-1">, "description":tftypes.String<null>, "external_id":tftypes.String<null>, "id":tftypes.String<"id-1">, "name":tftypes.String<"repo-2">, "resource_type":tftypes.String<"repository">>
+
+## read not found
+> GET /v2/app-resources/id-1
+  auth="Bearer tok" content-type=""
+  Warning: Resource not found: The resource was not found on the server and will be removed from state.
+  state=tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]<null>
+
+## delete
+> DELETE /v2/app-resources/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]<"app_instance_id":tftypes.String<"ai-1">, "description":tftypes.String<null>, "external_id":tftypes.String<null>, "id":tftypes.String<"id-1">, "name":tftypes.String<"repo">, "resource_type":tftypes.String<"repository">>
+
+## import
+> GET /v2/app-resources/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]<"app_instance_id":tftypes.String<"ai-1">, "description":tftypes.String<"d">, "external_id":tftypes.String<"ext-1">, "id":tftypes.String<"id-1">, "name":tftypes.String<"repo">, "resource_type":tftypes.String<"repository">>
+
+## create rejected
+> POST /v2/app-resources
+  auth="Bearer tok" content-type="application/json"
+  body={"appInstanceId":"ai-1","name":"repo","resourceType":"repository"}
+  Error: failed to make http request: POST "SERVER/v2/app-resources": 400 Bad Request {"error":"invalid name"}
+  state=tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]<null>

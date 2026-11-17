@@ -3,12 +3,8 @@
 package access_policy_approval_procedure
 
 import (
-	"context"
-
-	"github.com/ServalHQ/serval-go"
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -20,14 +16,6 @@ type AccessPolicyApprovalProcedureDataSourceModel struct {
 	AccessPolicyID types.String                                                                    `tfsdk:"access_policy_id" path:"access_policy_id,required"`
 	ID             types.String                                                                    `tfsdk:"id" path:"id,required"`
 	Steps          customfield.NestedObjectList[AccessPolicyApprovalProcedureStepsDataSourceModel] `tfsdk:"steps" json:"steps,computed"`
-}
-
-func (m *AccessPolicyApprovalProcedureDataSourceModel) toReadParams(_ context.Context) (params serval.AccessPolicyApprovalProcedureGetParams, diags diag.Diagnostics) {
-	params = serval.AccessPolicyApprovalProcedureGetParams{
-		AccessPolicyID: m.AccessPolicyID.ValueString(),
-	}
-
-	return
 }
 
 type AccessPolicyApprovalProcedureStepsDataSourceModel struct {

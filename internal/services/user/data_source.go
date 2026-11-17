@@ -8,8 +8,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
+	authapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svauth/public"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
@@ -60,14 +61,8 @@ func (d *UserDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 
 	// Check if ID is provided for direct lookup
 	if !data.ID.IsNull() && !data.ID.IsUnknown() {
-		res := new(http.Response)
 		env := UserDataDataSourceEnvelope{*data}
-		_, err := d.client.Users.Get(
-			ctx,
-			data.ID.ValueString(),
-			option.WithResponseBodyInto(&res),
-			option.WithMiddleware(logging.Middleware(ctx)),
-		)
+		res, err := d.client.DoID(ctx, http.MethodGet, "v2/users", data.ID.ValueString(), nil, logging.Middleware(ctx))
 		if err != nil {
 			resp.Diagnostics.AddError("failed to make http request", err.Error())
 			return
@@ -92,24 +87,18 @@ func (d *UserDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		if data.FindOneBy != nil && !data.FindOneBy.IncludeDeactivated.IsNull() {
 			includeDeactivated = data.FindOneBy.IncludeDeactivated.ValueBool()
 		}
-		params := serval.UserListParams{
-			PageSize:           serval.Int(1000),
-			IncludeDeactivated: serval.Bool(includeDeactivated),
+		params := &authapi.ListUsersRequest{
+			PageSize:           proto.Int32(1000),
+			IncludeDeactivated: proto.Bool(includeDeactivated),
 		}
 
-		res := new(http.Response)
-		_, err := d.client.Users.List(
-			ctx,
-			params,
-			option.WithResponseBodyInto(&res),
-			option.WithMiddleware(logging.Middleware(ctx)),
-		)
+		page, err := d.client.FirstPage(ctx, "v2/users", params)
 		if err != nil {
 			resp.Diagnostics.AddError("failed to make http request", err.Error())
 			return
 		}
 
-		bytes, _ := io.ReadAll(res.Body)
+		bytes := page.Raw
 
 		// Parse the response which contains a Data array
 		var listResponse struct {

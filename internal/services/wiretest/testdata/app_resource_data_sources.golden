@@ -1,0 +1,37 @@
+
+## data source by id
+> GET /v2/app-resources/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "find_one_by":tftypes.Object["app_instance_id":tftypes.String, "team_id":tftypes.String], "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]<"app_instance_id":tftypes.String<"ai-1">, "description":tftypes.String<"d">, "external_id":tftypes.String<"ext-1">, "find_one_by":tftypes.Object["app_instance_id":tftypes.String, "team_id":tftypes.String]<null>, "id":tftypes.String<"id-1">, "name":tftypes.String<"repo">, "resource_type":tftypes.String<"repository">>
+
+## data source find_one_by
+> GET /v2/app-resources?appInstanceId=ai-1&teamId=team-1
+  auth="Bearer tok" content-type=""
+> GET /v2/app-resources/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "find_one_by":tftypes.Object["app_instance_id":tftypes.String, "team_id":tftypes.String], "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]<"app_instance_id":tftypes.String<"ai-1">, "description":tftypes.String<"d">, "external_id":tftypes.String<"ext-1">, "find_one_by":tftypes.Object["app_instance_id":tftypes.String, "team_id":tftypes.String]<"app_instance_id":tftypes.String<"ai-1">, "team_id":tftypes.String<"team-1">>, "id":tftypes.String<"id-1">, "name":tftypes.String<"repo">, "resource_type":tftypes.String<"repository">>
+
+## list data source, two pages
+> GET /v2/app-resources?appInstanceId=ai-1&teamId=team-1
+  auth="Bearer tok" content-type=""
+> GET /v2/app-resources?appInstanceId=ai-1&pageToken=page-2&teamId=team-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["app_instance_id":tftypes.String, "items":tftypes.List[tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]], "max_items":tftypes.Number, "team_id":tftypes.String]<"app_instance_id":tftypes.String<"ai-1">, "items":tftypes.List[tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]]<tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]<"app_instance_id":tftypes.String<"ai-1">, "description":tftypes.String<"d">, "external_id":tftypes.String<"ext-1">, "id":tftypes.String<"id-1">, "name":tftypes.String<"repo">, "resource_type":tftypes.String<"repository">>, tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]<"app_instance_id":tftypes.String<"ai-1">, "description":tftypes.String<"d">, "external_id":tftypes.String<"ext-1">, "id":tftypes.String<"id-1">, "name":tftypes.String<"repo">, "resource_type":tftypes.String<"repository">>>, "max_items":tftypes.Number<null>, "team_id":tftypes.String<"team-1">>
+
+## list data source rejected
+> GET /v2/app-resources?appInstanceId=ai-1&teamId=team-1
+  auth="Bearer tok" content-type=""
+  Error: failed to make http request: GET "SERVER/v2/app-resources?appInstanceId=ai-1&teamId=team-1": 403 Forbidden {"error":"forbidden"}
+  state=tftypes.Object["app_instance_id":tftypes.String, "items":tftypes.List[tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]], "max_items":tftypes.Number, "team_id":tftypes.String]<null>
+
+## data source find_one_by, empty filter
+> GET /v2/app-resources?teamId=
+  auth="Bearer tok" content-type=""
+> GET /v2/app-resources/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "find_one_by":tftypes.Object["app_instance_id":tftypes.String, "team_id":tftypes.String], "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]<"app_instance_id":tftypes.String<"ai-1">, "description":tftypes.String<"d">, "external_id":tftypes.String<"ext-1">, "find_one_by":tftypes.Object["app_instance_id":tftypes.String, "team_id":tftypes.String]<"app_instance_id":tftypes.String<null>, "team_id":tftypes.String<"">>, "id":tftypes.String<"id-1">, "name":tftypes.String<"repo">, "resource_type":tftypes.String<"repository">>
+
+## list data source, empty filter
+> GET /v2/app-resources?teamId=
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["app_instance_id":tftypes.String, "items":tftypes.List[tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]], "max_items":tftypes.Number, "team_id":tftypes.String]<"app_instance_id":tftypes.String<null>, "items":tftypes.List[tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]]<tftypes.Object["app_instance_id":tftypes.String, "description":tftypes.String, "external_id":tftypes.String, "id":tftypes.String, "name":tftypes.String, "resource_type":tftypes.String]<"app_instance_id":tftypes.String<"ai-1">, "description":tftypes.String<"d">, "external_id":tftypes.String<"ext-1">, "id":tftypes.String<"id-1">, "name":tftypes.String<"repo">, "resource_type":tftypes.String<"repository">>>, "max_items":tftypes.Number<null>, "team_id":tftypes.String<"">>

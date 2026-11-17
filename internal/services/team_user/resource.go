@@ -8,8 +8,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
@@ -69,15 +67,8 @@ func (r *TeamUserResource) Create(ctx context.Context, req resource.CreateReques
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := TeamUserDataEnvelope{*data}
-	_, err = r.client.TeamUsers.New(
-		ctx,
-		serval.TeamUserNewParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.Do(ctx, client.Request{Method: http.MethodPost, Path: "v2/team-users", Body: dataBytes, Middlewares: []client.Middleware{logging.Middleware(ctx)}})
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -115,16 +106,8 @@ func (r *TeamUserResource) Update(ctx context.Context, req resource.UpdateReques
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := TeamUserDataEnvelope{*data}
-	_, err = r.client.TeamUsers.Update(
-		ctx,
-		data.ID.ValueString(),
-		serval.TeamUserUpdateParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodPut, "v2/team-users", data.ID.ValueString(), dataBytes, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -149,15 +132,8 @@ func (r *TeamUserResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	res := new(http.Response)
 	env := TeamUserDataEnvelope{*data}
-	_, err := r.client.TeamUsers.Get(
-		ctx,
-		data.ID.ValueString(),
-		serval.TeamUserGetParams{},
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodGet, "v2/team-users", data.ID.ValueString(), nil, logging.Middleware(ctx))
 	if res != nil && res.StatusCode == 404 {
 		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
 		resp.State.RemoveResource(ctx)
@@ -187,12 +163,10 @@ func (r *TeamUserResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	_, err := r.client.TeamUsers.Delete(
-		ctx,
-		data.ID.ValueString(),
-		serval.TeamUserDeleteParams{},
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodDelete, "v2/team-users", data.ID.ValueString(), nil, logging.Middleware(ctx))
+	if res != nil {
+		res.Body.Close()
+	}
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -217,15 +191,8 @@ func (r *TeamUserResource) ImportState(ctx context.Context, req resource.ImportS
 
 	data.ID = types.StringValue(path)
 
-	res := new(http.Response)
 	env := TeamUserDataEnvelope{*data}
-	_, err := r.client.TeamUsers.Get(
-		ctx,
-		path,
-		serval.TeamUserGetParams{},
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodGet, "v2/team-users", path, nil, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

@@ -5,8 +5,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
+	authapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svauth/public"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/cache"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
@@ -20,18 +21,23 @@ func Prefetch(ctx context.Context, c *client.Client) (int, error) {
 	apiCalls := 0
 	var pageToken *string
 	for {
-		params := serval.UserListParams{
-			PageSize:           serval.Int(1000),
-			IncludeDeactivated: serval.Bool(true),
+		params := &authapi.ListUsersRequest{
+			PageSize:           proto.Int32(1000),
+			IncludeDeactivated: proto.Bool(true),
 		}
 		if pageToken != nil {
-			params.PageToken = serval.String(*pageToken)
+			params.PageToken = proto.String(*pageToken)
 		}
-		res := new(http.Response)
-		_, err := c.Users.List(ctx, params,
-			option.WithResponseBodyInto(&res),
-			option.WithMiddleware(logging.Middleware(ctx)),
-		)
+		query, err := client.QueryFromMessage(params)
+		if err != nil {
+			return apiCalls, err
+		}
+		res, err := c.Do(ctx, client.Request{
+			Method:      http.MethodGet,
+			Path:        "v2/users",
+			Query:       query,
+			Middlewares: []client.Middleware{logging.Middleware(ctx)},
+		})
 		apiCalls++
 		if err != nil {
 			return apiCalls, err

@@ -8,12 +8,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
-	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -69,16 +66,8 @@ func (r *WorkflowApprovalProcedureResource) Create(ctx context.Context, req reso
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := WorkflowApprovalProcedureDataEnvelope{*data}
-	_, err = r.client.Workflows.ApprovalProcedures.New(
-		ctx,
-		data.WorkflowID.ValueString(),
-		serval.WorkflowApprovalProcedureNewParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := doRequest(ctx, r.client, http.MethodPost, data.WorkflowID.ValueString(), "", dataBytes)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -116,18 +105,8 @@ func (r *WorkflowApprovalProcedureResource) Update(ctx context.Context, req reso
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := WorkflowApprovalProcedureDataEnvelope{*data}
-	_, err = r.client.Workflows.ApprovalProcedures.Update(
-		ctx,
-		data.ID.ValueString(),
-		serval.WorkflowApprovalProcedureUpdateParams{
-			WorkflowID: data.WorkflowID.ValueString(),
-		},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := doRequest(ctx, r.client, http.MethodPut, data.WorkflowID.ValueString(), data.ID.ValueString(), dataBytes)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -153,20 +132,15 @@ func (r *WorkflowApprovalProcedureResource) Read(ctx context.Context, req resour
 	}
 
 	if item, ok, err := TryRead(data.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
-	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error())
+		return
+	} else if ok {
+		resp.Diagnostics.Append(resp.State.Set(ctx, item)...)
+		return
+	}
 
-	res := new(http.Response)
 	env := WorkflowApprovalProcedureDataEnvelope{*data}
-	_, err := r.client.Workflows.ApprovalProcedures.Get(
-		ctx,
-		data.ID.ValueString(),
-		serval.WorkflowApprovalProcedureGetParams{
-			WorkflowID: data.WorkflowID.ValueString(),
-		},
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := doRequest(ctx, r.client, http.MethodGet, data.WorkflowID.ValueString(), data.ID.ValueString(), nil)
 	if res != nil && res.StatusCode == 404 {
 		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
 		resp.State.RemoveResource(ctx)
@@ -196,14 +170,10 @@ func (r *WorkflowApprovalProcedureResource) Delete(ctx context.Context, req reso
 		return
 	}
 
-	_, err := r.client.Workflows.ApprovalProcedures.Delete(
-		ctx,
-		data.ID.ValueString(),
-		serval.WorkflowApprovalProcedureDeleteParams{
-			WorkflowID: data.WorkflowID.ValueString(),
-		},
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := doRequest(ctx, r.client, http.MethodDelete, data.WorkflowID.ValueString(), data.ID.ValueString(), nil)
+	if res != nil {
+		res.Body.Close()
+	}
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -232,20 +202,15 @@ func (r *WorkflowApprovalProcedureResource) ImportState(ctx context.Context, req
 	data.ID = types.StringValue(path_id)
 
 	if item, ok, err := TryRead(path_id); err != nil {
-		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
-	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error())
+		return
+	} else if ok {
+		resp.Diagnostics.Append(resp.State.Set(ctx, item)...)
+		return
+	}
 
-	res := new(http.Response)
 	env := WorkflowApprovalProcedureDataEnvelope{*data}
-	_, err := r.client.Workflows.ApprovalProcedures.Get(
-		ctx,
-		path_id,
-		serval.WorkflowApprovalProcedureGetParams{
-			WorkflowID: path_workflow_id,
-		},
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := doRequest(ctx, r.client, http.MethodGet, path_workflow_id, path_id, nil)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

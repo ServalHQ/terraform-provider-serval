@@ -5,8 +5,9 @@ package app_resource
 import (
 	"context"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/packages/param"
+	flowapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svflow/publicapi"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -23,16 +24,17 @@ type AppResourcesDataSourceModel struct {
 	Items         customfield.NestedObjectList[AppResourcesItemsDataSourceModel] `tfsdk:"items"`
 }
 
-func (m *AppResourcesDataSourceModel) toListParams(_ context.Context) (params serval.AppResourceListParams, diags diag.Diagnostics) {
-	params = serval.AppResourceListParams{}
+func (m *AppResourcesDataSourceModel) toListParams(_ context.Context) (params proto.Message, diags diag.Diagnostics) {
+	req := &flowapi.ListAppResourcesRequest{}
 
 	if !m.AppInstanceID.IsNull() {
-		params.AppInstanceID = param.NewOpt(m.AppInstanceID.ValueString())
+		req.AppInstanceId = proto.String(m.AppInstanceID.ValueString())
 	}
 	if !m.TeamID.IsNull() {
-		params.TeamID = param.NewOpt(m.TeamID.ValueString())
+		req.TeamId = proto.String(m.TeamID.ValueString())
 	}
 
+	params = req
 	return
 }
 

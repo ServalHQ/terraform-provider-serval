@@ -5,8 +5,10 @@ package team_user
 import (
 	"context"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/packages/param"
+	"github.com/ServalHQ/terraform-provider-serval/internal/client"
+	authapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svauth/public"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -24,16 +26,19 @@ type TeamUsersDataSourceModel struct {
 	Items    customfield.NestedObjectList[TeamUsersItemsDataSourceModel] `tfsdk:"items"`
 }
 
-func (m *TeamUsersDataSourceModel) toListParams(_ context.Context) (params serval.TeamUserListParams, diags diag.Diagnostics) {
-	params = serval.TeamUserListParams{}
+func (m *TeamUsersDataSourceModel) toListParams(_ context.Context) (params proto.Message, diags diag.Diagnostics) {
+	req := &authapi.ListTeamUsersRequest{}
+	var explicit []string
 
 	if !m.TeamID.IsNull() {
-		params.TeamID = param.NewOpt(m.TeamID.ValueString())
+		req.TeamId = m.TeamID.ValueString()
+		explicit = append(explicit, "teamId")
 	}
 	if !m.UserID.IsNull() {
-		params.UserID = param.NewOpt(m.UserID.ValueString())
+		req.UserId = proto.String(m.UserID.ValueString())
 	}
 
+	params = client.WithExplicit(req, explicit...)
 	return
 }
 

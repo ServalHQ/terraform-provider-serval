@@ -8,10 +8,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
-	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
@@ -57,21 +55,8 @@ func (d *AccessPolicyApprovalProcedureDataSource) Read(ctx context.Context, req 
 		return
 	}
 
-	params, diags := data.toReadParams(ctx)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	res := new(http.Response)
 	env := AccessPolicyApprovalProcedureDataDataSourceEnvelope{*data}
-	_, err := d.client.AccessPolicies.ApprovalProcedures.Get(
-		ctx,
-		data.ID.ValueString(),
-		params,
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := doRequest(ctx, d.client, http.MethodGet, data.AccessPolicyID.ValueString(), data.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

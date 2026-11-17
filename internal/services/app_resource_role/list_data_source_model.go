@@ -5,8 +5,9 @@ package app_resource_role
 import (
 	"context"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/packages/param"
+	flowapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svflow/publicapi"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -25,19 +26,20 @@ type AppResourceRolesDataSourceModel struct {
 	Items         customfield.NestedObjectList[AppResourceRolesItemsDataSourceModel] `tfsdk:"items"`
 }
 
-func (m *AppResourceRolesDataSourceModel) toListParams(_ context.Context) (params serval.AppResourceRoleListParams, diags diag.Diagnostics) {
-	params = serval.AppResourceRoleListParams{}
+func (m *AppResourceRolesDataSourceModel) toListParams(_ context.Context) (params proto.Message, diags diag.Diagnostics) {
+	req := &flowapi.ListAppResourceRolesRequest{}
 
 	if !m.AppInstanceID.IsNull() {
-		params.AppInstanceID = param.NewOpt(m.AppInstanceID.ValueString())
+		req.AppInstanceId = proto.String(m.AppInstanceID.ValueString())
 	}
 	if !m.ResourceID.IsNull() {
-		params.ResourceID = param.NewOpt(m.ResourceID.ValueString())
+		req.ResourceId = proto.String(m.ResourceID.ValueString())
 	}
 	if !m.TeamID.IsNull() {
-		params.TeamID = param.NewOpt(m.TeamID.ValueString())
+		req.TeamId = proto.String(m.TeamID.ValueString())
 	}
 
+	params = req
 	return
 }
 

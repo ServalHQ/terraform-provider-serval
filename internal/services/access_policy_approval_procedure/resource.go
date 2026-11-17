@@ -8,12 +8,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
-	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -69,16 +66,8 @@ func (r *AccessPolicyApprovalProcedureResource) Create(ctx context.Context, req 
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := AccessPolicyApprovalProcedureDataEnvelope{*data}
-	_, err = r.client.AccessPolicies.ApprovalProcedures.New(
-		ctx,
-		data.AccessPolicyID.ValueString(),
-		serval.AccessPolicyApprovalProcedureNewParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := doRequest(ctx, r.client, http.MethodPost, data.AccessPolicyID.ValueString(), "", dataBytes)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -116,18 +105,8 @@ func (r *AccessPolicyApprovalProcedureResource) Update(ctx context.Context, req 
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := AccessPolicyApprovalProcedureDataEnvelope{*data}
-	_, err = r.client.AccessPolicies.ApprovalProcedures.Update(
-		ctx,
-		data.ID.ValueString(),
-		serval.AccessPolicyApprovalProcedureUpdateParams{
-			AccessPolicyID: data.AccessPolicyID.ValueString(),
-		},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := doRequest(ctx, r.client, http.MethodPut, data.AccessPolicyID.ValueString(), data.ID.ValueString(), dataBytes)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -153,20 +132,15 @@ func (r *AccessPolicyApprovalProcedureResource) Read(ctx context.Context, req re
 	}
 
 	if item, ok, err := TryRead(data.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
-	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error())
+		return
+	} else if ok {
+		resp.Diagnostics.Append(resp.State.Set(ctx, item)...)
+		return
+	}
 
-	res := new(http.Response)
 	env := AccessPolicyApprovalProcedureDataEnvelope{*data}
-	_, err := r.client.AccessPolicies.ApprovalProcedures.Get(
-		ctx,
-		data.ID.ValueString(),
-		serval.AccessPolicyApprovalProcedureGetParams{
-			AccessPolicyID: data.AccessPolicyID.ValueString(),
-		},
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := doRequest(ctx, r.client, http.MethodGet, data.AccessPolicyID.ValueString(), data.ID.ValueString(), nil)
 	if res != nil && res.StatusCode == 404 {
 		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
 		resp.State.RemoveResource(ctx)
@@ -196,14 +170,10 @@ func (r *AccessPolicyApprovalProcedureResource) Delete(ctx context.Context, req 
 		return
 	}
 
-	_, err := r.client.AccessPolicies.ApprovalProcedures.Delete(
-		ctx,
-		data.ID.ValueString(),
-		serval.AccessPolicyApprovalProcedureDeleteParams{
-			AccessPolicyID: data.AccessPolicyID.ValueString(),
-		},
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := doRequest(ctx, r.client, http.MethodDelete, data.AccessPolicyID.ValueString(), data.ID.ValueString(), nil)
+	if res != nil {
+		res.Body.Close()
+	}
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -232,20 +202,15 @@ func (r *AccessPolicyApprovalProcedureResource) ImportState(ctx context.Context,
 	data.ID = types.StringValue(path_id)
 
 	if item, ok, err := TryRead(path_id); err != nil {
-		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
-	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error())
+		return
+	} else if ok {
+		resp.Diagnostics.Append(resp.State.Set(ctx, item)...)
+		return
+	}
 
-	res := new(http.Response)
 	env := AccessPolicyApprovalProcedureDataEnvelope{*data}
-	_, err := r.client.AccessPolicies.ApprovalProcedures.Get(
-		ctx,
-		path_id,
-		serval.AccessPolicyApprovalProcedureGetParams{
-			AccessPolicyID: path_access_policy_id,
-		},
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := doRequest(ctx, r.client, http.MethodGet, path_access_policy_id, path_id, nil)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

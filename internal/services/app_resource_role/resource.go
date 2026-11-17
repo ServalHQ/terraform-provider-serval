@@ -8,8 +8,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/importpath"
@@ -69,15 +67,8 @@ func (r *AppResourceRoleResource) Create(ctx context.Context, req resource.Creat
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := AppResourceRoleDataEnvelope{*data}
-	_, err = r.client.AppResourceRoles.New(
-		ctx,
-		serval.AppResourceRoleNewParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.Do(ctx, client.Request{Method: http.MethodPost, Path: "v2/app-resource-roles", Body: dataBytes, Middlewares: []client.Middleware{logging.Middleware(ctx)}})
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -115,16 +106,8 @@ func (r *AppResourceRoleResource) Update(ctx context.Context, req resource.Updat
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
 		return
 	}
-	res := new(http.Response)
 	env := AppResourceRoleDataEnvelope{*data}
-	_, err = r.client.AppResourceRoles.Update(
-		ctx,
-		data.ID.ValueString(),
-		serval.AppResourceRoleUpdateParams{},
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodPut, "v2/app-resource-roles", data.ID.ValueString(), dataBytes, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -150,17 +133,15 @@ func (r *AppResourceRoleResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	if item, ok, err := TryRead(data.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
-	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error())
+		return
+	} else if ok {
+		resp.Diagnostics.Append(resp.State.Set(ctx, item)...)
+		return
+	}
 
-	res := new(http.Response)
 	env := AppResourceRoleDataEnvelope{*data}
-	_, err := r.client.AppResourceRoles.Get(
-		ctx,
-		data.ID.ValueString(),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodGet, "v2/app-resource-roles", data.ID.ValueString(), nil, logging.Middleware(ctx))
 	if res != nil && res.StatusCode == 404 {
 		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
 		resp.State.RemoveResource(ctx)
@@ -190,11 +171,10 @@ func (r *AppResourceRoleResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	_, err := r.client.AppResourceRoles.Delete(
-		ctx,
-		data.ID.ValueString(),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodDelete, "v2/app-resource-roles", data.ID.ValueString(), nil, logging.Middleware(ctx))
+	if res != nil {
+		res.Body.Close()
+	}
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -220,17 +200,15 @@ func (r *AppResourceRoleResource) ImportState(ctx context.Context, req resource.
 	data.ID = types.StringValue(path)
 
 	if item, ok, err := TryRead(path); err != nil {
-		resp.Diagnostics.AddError("prefetch cache miss", err.Error()); return
-	} else if ok { resp.Diagnostics.Append(resp.State.Set(ctx, item)...); return }
+		resp.Diagnostics.AddError("prefetch cache miss", err.Error())
+		return
+	} else if ok {
+		resp.Diagnostics.Append(resp.State.Set(ctx, item)...)
+		return
+	}
 
-	res := new(http.Response)
 	env := AppResourceRoleDataEnvelope{*data}
-	_, err := r.client.AppResourceRoles.Get(
-		ctx,
-		path,
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := r.client.DoID(ctx, http.MethodGet, "v2/app-resource-roles", path, nil, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

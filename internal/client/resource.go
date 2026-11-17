@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/url"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -15,7 +16,14 @@ func (c *Client) DoID(ctx context.Context, method, collection, id string, body [
 	if id == "" {
 		return nil, errMissingID
 	}
-	return c.Do(ctx, Request{Method: method, Path: collection + "/" + id, Body: body, Middlewares: mws})
+	return c.DoIDQuery(ctx, method, collection, id, nil, body, mws...)
+}
+
+func (c *Client) DoIDQuery(ctx context.Context, method, collection, id string, query url.Values, body []byte, mws ...Middleware) (*http.Response, error) {
+	if id == "" {
+		return nil, errMissingID
+	}
+	return c.Do(ctx, Request{Method: method, Path: collection + "/" + id, Query: query, Body: body, Middlewares: mws})
 }
 
 // FirstPage fetches one page of a list endpoint with params encoded as its query.
