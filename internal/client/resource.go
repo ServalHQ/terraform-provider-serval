@@ -11,7 +11,7 @@ import (
 
 var errMissingID = errors.New("missing required id parameter")
 
-// DoID sends a request to collection/id, rejecting an empty id the way serval-go did.
+// DoID sends a request to collection/id, rejecting an empty id.
 func (c *Client) DoID(ctx context.Context, method, collection, id string, body []byte, mws ...Middleware) (*http.Response, error) {
 	if id == "" {
 		return nil, errMissingID

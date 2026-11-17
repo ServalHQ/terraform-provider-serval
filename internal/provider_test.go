@@ -6,14 +6,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-func TestConfigureSharesSettingsBetweenLegacyAndProviderClient(t *testing.T) {
+func TestConfigurePassesSettingsToClient(t *testing.T) {
 	type seen struct{ path, auth string }
 	var got []seen
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -51,16 +50,12 @@ func TestConfigureSharesSettingsBetweenLegacyAndProviderClient(t *testing.T) {
 		t.Fatalf("provider data = %T / %T, want the same *client.Client", resp.ResourceData, resp.DataSourceData)
 	}
 
-	res := new(http.Response)
-	if _, err := c.Tags.Get(ctx, "t1", option.WithResponseBodyInto(&res)); err != nil {
-		t.Fatalf("legacy get: %v", err)
-	}
 	if _, err := c.Do(ctx, client.Request{Method: http.MethodGet, Path: "v2/tags/t1"}); err != nil {
 		t.Fatalf("client get: %v", err)
 	}
 
 	want := seen{"/v2/tags/t1", "Bearer env-token"}
-	if len(got) != 2 || got[0] != want || got[1] != want {
-		t.Fatalf("requests = %+v, want two of %+v", got, want)
+	if len(got) != 1 || got[0] != want {
+		t.Fatalf("requests = %+v, want one %+v", got, want)
 	}
 }

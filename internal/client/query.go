@@ -12,7 +12,7 @@ import (
 
 // QueryFromMessage encodes a public API list/search request as query
 // parameters keyed by proto JSON name. Only populated fields are sent and
-// repeated fields are comma-joined, matching serval-go's query encoding.
+// repeated fields are comma-joined.
 func QueryFromMessage(m proto.Message) (url.Values, error) {
 	if e, ok := m.(explicitFields); ok {
 		return e.query()
@@ -68,7 +68,7 @@ type explicitFields struct {
 }
 
 // WithExplicit sends the named scalar fields even when they hold their zero
-// value, the way serval-go sends an optional parameter that was set.
+// value, the way an optional parameter that was set is sent.
 func WithExplicit(m proto.Message, jsonNames ...string) proto.Message {
 	if len(jsonNames) == 0 {
 		return m

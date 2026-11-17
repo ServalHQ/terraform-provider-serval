@@ -9,8 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/cache"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_policy"
@@ -107,32 +105,22 @@ func (p *ServalProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	cfg := client.Config{MaxRetries: client.DefaultMaxRetries}
-	opts := []option.RequestOption{}
 
 	if v, ok := configValue(data.BaseURL, "SERVAL_BASE_URL"); ok {
 		cfg.BaseURL = v
-		opts = append(opts, option.WithBaseURL(v))
 	}
 
 	if v, ok := configValue(data.ClientID, "SERVAL_CLIENT_ID"); ok {
 		cfg.ClientID = v
-		opts = append(opts, option.WithClientID(v))
 	}
 
 	if v, ok := configValue(data.ClientSecret, "SERVAL_CLIENT_SECRET"); ok {
 		cfg.ClientSecret = v
-		opts = append(opts, option.WithClientSecret(v))
 	}
 
 	if v, ok := configValue(data.BearerToken, "SERVAL_BEARER_TOKEN"); ok {
 		cfg.BearerToken = v
-		opts = append(opts, option.WithBearerToken(v))
 	}
-
-	legacy := serval.NewClient(
-		opts...,
-	)
-	cfg.Legacy = &legacy
 
 	c, err := client.New(cfg)
 	if err != nil {
@@ -163,8 +151,7 @@ func (p *ServalProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	if prefetchFromFile {
 		// FUTURE: Load caches from files at data.PrefetchCachePath.ValueString()
 		// Each service will have a LoadFromFile function that reads its cache.
-		// When implemented, the svmeta Fetcher will write these files using
-		// serval-go SDK types, and the provider will load them here.
+		// When implemented, the svmeta Fetcher will write these files and the provider will load them here.
 		prefetchFromAPI = true // Fallback until file loading is implemented
 	}
 

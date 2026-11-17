@@ -24,6 +24,8 @@ type reply struct {
 	body    string
 }
 
+var tokenReply = reply{status: http.StatusOK, body: `{"access_token":"tok-1","token_type":"bearer","expires_in":3600}`}
+
 // recorder serves scripted replies in order and records every request.
 type recorder struct {
 	t        *testing.T

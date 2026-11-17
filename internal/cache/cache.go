@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"os"
 
-	serval "github.com/ServalHQ/serval-go"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 )
 
@@ -77,10 +76,6 @@ func TryRead[T any](store *Store[T], id string) (*T, bool, error) {
 // During prefetch, server errors for individual teams/parents can be
 // skipped so that prefetch succeeds for the resources it can load.
 func IsServerError(err error) bool {
-	var apiErr *serval.Error
-	if errors.As(err, &apiErr) {
-		return apiErr.StatusCode >= 500
-	}
 	var clientErr *client.APIError
 	if errors.As(err, &clientErr) {
 		return clientErr.StatusCode >= 500
@@ -93,7 +88,7 @@ func IsServerError(err error) bool {
 // getID extracts the cache key from the deserialized item.
 //
 // This enables future file-based cache loading where the svmeta Fetcher writes
-// cache files using serval-go types, and the provider loads them here.
+// cache files, and the provider loads them here.
 func LoadFromFile[T any](path string, unmarshal func([]byte, *T) error, getID func(*T) string) (*Store[T], error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
