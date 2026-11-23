@@ -6,8 +6,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
+	flowapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svflow/publicapi"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/cache"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
@@ -23,18 +24,23 @@ func Prefetch(ctx context.Context, c *client.Client, teamIDs []string) (int, err
 	for _, teamID := range teamIDs {
 		var pageToken *string
 		for {
-			params := serval.AppResourceListParams{
-				TeamID:   serval.String(teamID),
-				PageSize: serval.Int(5000),
+			params := &flowapi.ListAppResourcesRequest{
+				TeamId:   proto.String(teamID),
+				PageSize: proto.Int32(5000),
 			}
 			if pageToken != nil {
-				params.PageToken = serval.String(*pageToken)
+				params.PageToken = proto.String(*pageToken)
 			}
-			res := new(http.Response)
-			_, err := c.AppResources.List(ctx, params,
-				option.WithResponseBodyInto(&res),
-				option.WithMiddleware(logging.Middleware(ctx)),
-			)
+			query, err := client.QueryFromMessage(params)
+			if err != nil {
+				return apiCalls, err
+			}
+			res, err := c.Do(ctx, client.Request{
+				Method:      http.MethodGet,
+				Path:        "v2/app-resources",
+				Query:       query,
+				Middlewares: []client.Middleware{logging.Middleware(ctx)},
+			})
 			apiCalls++
 			if err != nil {
 				if cache.IsServerError(err) {

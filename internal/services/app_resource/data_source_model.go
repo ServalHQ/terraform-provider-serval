@@ -5,8 +5,9 @@ package app_resource
 import (
 	"context"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/packages/param"
+	flowapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svflow/publicapi"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -25,16 +26,17 @@ type AppResourceDataSourceModel struct {
 	FindOneBy     *AppResourceFindOneByDataSourceModel `tfsdk:"find_one_by"`
 }
 
-func (m *AppResourceDataSourceModel) toListParams(_ context.Context) (params serval.AppResourceListParams, diags diag.Diagnostics) {
-	params = serval.AppResourceListParams{}
+func (m *AppResourceDataSourceModel) toListParams(_ context.Context) (params proto.Message, diags diag.Diagnostics) {
+	req := &flowapi.ListAppResourcesRequest{}
 
 	if !m.FindOneBy.AppInstanceID.IsNull() {
-		params.AppInstanceID = param.NewOpt(m.FindOneBy.AppInstanceID.ValueString())
+		req.AppInstanceId = proto.String(m.FindOneBy.AppInstanceID.ValueString())
 	}
 	if !m.FindOneBy.TeamID.IsNull() {
-		params.TeamID = param.NewOpt(m.FindOneBy.TeamID.ValueString())
+		req.TeamId = proto.String(m.FindOneBy.TeamID.ValueString())
 	}
 
+	params = req
 	return
 }
 

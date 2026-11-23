@@ -1,6 +1,7 @@
 package wiretest
 
 import (
+	"cmp"
 	"context"
 	"flag"
 	"fmt"
@@ -140,11 +141,12 @@ func objectWith(ctx context.Context, typ tftypes.Type, set map[string]tftypes.Va
 func str(s string) tftypes.Value { return tftypes.NewValue(tftypes.String, s) }
 
 type resourceCase struct {
-	name    string
-	new     func() resource.Resource
-	fixture string
-	create  map[string]tftypes.Value
-	update  map[string]tftypes.Value
+	name     string
+	new      func() resource.Resource
+	fixture  string
+	create   map[string]tftypes.Value
+	update   map[string]tftypes.Value
+	importID string
 }
 
 func runResource(t *testing.T, tc resourceCase) {
@@ -186,7 +188,7 @@ func runResource(t *testing.T, tc resourceCase) {
 
 	r.step("import", r.item())
 	ir := resource.ImportStateResponse{State: empty}
-	res.(resource.ResourceWithImportState).ImportState(ctx, resource.ImportStateRequest{ID: "id-1"}, &ir)
+	res.(resource.ResourceWithImportState).ImportState(ctx, resource.ImportStateRequest{ID: cmp.Or(tc.importID, "id-1")}, &ir)
 	r.outcome(ir.Diagnostics, ir.State.Raw)
 
 	r.step("create rejected", reply{http.StatusBadRequest, `{"error":"invalid name"}`})
@@ -245,11 +247,13 @@ func runDataSources(t *testing.T, tc dataSourceCase) {
 		readDataSource(r, tc.single(), set)
 	}
 
-	r.step("list data source, two pages", r.page("page-2"), r.page(""))
-	readDataSource(r, tc.list(), tc.listArgs)
+	if tc.list != nil {
+		r.step("list data source, two pages", r.page("page-2"), r.page(""))
+		readDataSource(r, tc.list(), tc.listArgs)
 
-	r.step("list data source rejected", reply{http.StatusForbidden, `{"error":"forbidden"}`})
-	readDataSource(r, tc.list(), tc.listArgs)
+		r.step("list data source rejected", reply{http.StatusForbidden, `{"error":"forbidden"}`})
+		readDataSource(r, tc.list(), tc.listArgs)
+	}
 
 	if tc.emptyFindBy != nil {
 		r.step("data source find_one_by, empty filter", r.page(""), r.item())

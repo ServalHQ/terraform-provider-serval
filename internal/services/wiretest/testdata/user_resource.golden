@@ -1,0 +1,40 @@
+
+## create
+> POST /v2/users
+  auth="Bearer tok" content-type="application/json"
+  body={"email":"a@example.com"}
+  state=tftypes.Object["auth_method":tftypes.String, "avatar_url":tftypes.String, "created_at":tftypes.String, "deactivated_at":tftypes.String, "email":tftypes.String, "first_name":tftypes.String, "id":tftypes.String, "last_name":tftypes.String, "name":tftypes.String, "role":tftypes.String, "timezone":tftypes.String]<"auth_method":tftypes.String<null>, "avatar_url":tftypes.String<null>, "created_at":tftypes.String<"2026-01-01T00:00:00Z">, "deactivated_at":tftypes.String<null>, "email":tftypes.String<"a@example.com">, "first_name":tftypes.String<null>, "id":tftypes.String<"id-1">, "last_name":tftypes.String<null>, "name":tftypes.String<null>, "role":tftypes.String<null>, "timezone":tftypes.String<null>>
+
+## read
+> GET /v2/users/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["auth_method":tftypes.String, "avatar_url":tftypes.String, "created_at":tftypes.String, "deactivated_at":tftypes.String, "email":tftypes.String, "first_name":tftypes.String, "id":tftypes.String, "last_name":tftypes.String, "name":tftypes.String, "role":tftypes.String, "timezone":tftypes.String]<"auth_method":tftypes.String<null>, "avatar_url":tftypes.String<null>, "created_at":tftypes.String<"2026-01-01T00:00:00Z">, "deactivated_at":tftypes.String<null>, "email":tftypes.String<"a@example.com">, "first_name":tftypes.String<"A">, "id":tftypes.String<"id-1">, "last_name":tftypes.String<"B">, "name":tftypes.String<null>, "role":tftypes.String<"USER_ROLE_ORG_MEMBER">, "timezone":tftypes.String<null>>
+
+## update
+> PUT /v2/users/id-1
+  auth="Bearer tok" content-type="application/json"
+  body={"email":"a@example.com","firstName":"A"}
+  state=tftypes.Object["auth_method":tftypes.String, "avatar_url":tftypes.String, "created_at":tftypes.String, "deactivated_at":tftypes.String, "email":tftypes.String, "first_name":tftypes.String, "id":tftypes.String, "last_name":tftypes.String, "name":tftypes.String, "role":tftypes.String, "timezone":tftypes.String]<"auth_method":tftypes.String<null>, "avatar_url":tftypes.String<null>, "created_at":tftypes.String<"2026-01-01T00:00:00Z">, "deactivated_at":tftypes.String<null>, "email":tftypes.String<"a@example.com">, "first_name":tftypes.String<"A">, "id":tftypes.String<"id-1">, "last_name":tftypes.String<null>, "name":tftypes.String<null>, "role":tftypes.String<null>, "timezone":tftypes.String<null>>
+
+## read not found
+> GET /v2/users/id-1
+  auth="Bearer tok" content-type=""
+  Warning: Resource not found: The resource was not found on the server and will be removed from state.
+  state=tftypes.Object["auth_method":tftypes.String, "avatar_url":tftypes.String, "created_at":tftypes.String, "deactivated_at":tftypes.String, "email":tftypes.String, "first_name":tftypes.String, "id":tftypes.String, "last_name":tftypes.String, "name":tftypes.String, "role":tftypes.String, "timezone":tftypes.String]<null>
+
+## delete
+> DELETE /v2/users/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["auth_method":tftypes.String, "avatar_url":tftypes.String, "created_at":tftypes.String, "deactivated_at":tftypes.String, "email":tftypes.String, "first_name":tftypes.String, "id":tftypes.String, "last_name":tftypes.String, "name":tftypes.String, "role":tftypes.String, "timezone":tftypes.String]<"auth_method":tftypes.String<null>, "avatar_url":tftypes.String<null>, "created_at":tftypes.String<"2026-01-01T00:00:00Z">, "deactivated_at":tftypes.String<null>, "email":tftypes.String<"a@example.com">, "first_name":tftypes.String<null>, "id":tftypes.String<"id-1">, "last_name":tftypes.String<null>, "name":tftypes.String<null>, "role":tftypes.String<null>, "timezone":tftypes.String<null>>
+
+## import
+> GET /v2/users/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["auth_method":tftypes.String, "avatar_url":tftypes.String, "created_at":tftypes.String, "deactivated_at":tftypes.String, "email":tftypes.String, "first_name":tftypes.String, "id":tftypes.String, "last_name":tftypes.String, "name":tftypes.String, "role":tftypes.String, "timezone":tftypes.String]<"auth_method":tftypes.String<null>, "avatar_url":tftypes.String<null>, "created_at":tftypes.String<"2026-01-01T00:00:00Z">, "deactivated_at":tftypes.String<null>, "email":tftypes.String<"a@example.com">, "first_name":tftypes.String<"A">, "id":tftypes.String<"id-1">, "last_name":tftypes.String<"B">, "name":tftypes.String<null>, "role":tftypes.String<"USER_ROLE_ORG_MEMBER">, "timezone":tftypes.String<null>>
+
+## create rejected
+> POST /v2/users
+  auth="Bearer tok" content-type="application/json"
+  body={"email":"a@example.com"}
+  Error: failed to make http request: POST "SERVER/v2/users": 400 Bad Request {"error":"invalid name"}
+  state=tftypes.Object["auth_method":tftypes.String, "avatar_url":tftypes.String, "created_at":tftypes.String, "deactivated_at":tftypes.String, "email":tftypes.String, "first_name":tftypes.String, "id":tftypes.String, "last_name":tftypes.String, "name":tftypes.String, "role":tftypes.String, "timezone":tftypes.String]<null>

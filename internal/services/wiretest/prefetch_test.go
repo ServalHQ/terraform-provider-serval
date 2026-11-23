@@ -8,12 +8,17 @@ import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/cache"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_policy"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/access_policy_approval_procedure"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_instance"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_resource"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/app_resource_role"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/custom_service"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/group"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/guidance"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/team"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/user"
 	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow"
+	"github.com/ServalHQ/terraform-provider-serval/internal/services/workflow_approval_procedure"
 )
 
 func TestPrefetchWire(t *testing.T) {
@@ -67,6 +72,37 @@ func TestPrefetchWire(t *testing.T) {
 			prefetch: orgWide(team.Prefetch),
 			orgWide:  true,
 			lookup:   func(id string) bool { _, ok, _ := team.TryRead(id); return ok },
+		},
+		{
+			name:     "access_policy_approval_procedure",
+			fixture:  accessPolicyApprovalProcedureFixture,
+			prefetch: access_policy_approval_procedure.Prefetch,
+			lookup:   func(id string) bool { _, ok, _ := access_policy_approval_procedure.TryRead(id); return ok },
+		},
+		{
+			name:     "workflow_approval_procedure",
+			fixture:  workflowApprovalProcedureFixture,
+			prefetch: workflow_approval_procedure.Prefetch,
+			lookup:   func(id string) bool { _, ok, _ := workflow_approval_procedure.TryRead(id); return ok },
+		},
+		{
+			name:     "app_resource",
+			fixture:  appResourceFixture,
+			prefetch: app_resource.Prefetch,
+			lookup:   func(id string) bool { _, ok, _ := app_resource.TryRead(id); return ok },
+		},
+		{
+			name:     "app_resource_role",
+			fixture:  appResourceRoleFixture,
+			prefetch: app_resource_role.Prefetch,
+			lookup:   func(id string) bool { _, ok, _ := app_resource_role.TryRead(id); return ok },
+		},
+		{
+			name:     "user",
+			fixture:  userFixture,
+			prefetch: orgWide(user.Prefetch),
+			orgWide:  true,
+			lookup:   func(id string) bool { _, ok, _ := user.TryRead(id); return ok },
 		},
 	}
 	cache.PrefetchMode = true

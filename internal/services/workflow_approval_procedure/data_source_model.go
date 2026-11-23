@@ -3,12 +3,8 @@
 package workflow_approval_procedure
 
 import (
-	"context"
-
-	"github.com/ServalHQ/serval-go"
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -20,14 +16,6 @@ type WorkflowApprovalProcedureDataSourceModel struct {
 	ID         types.String                                                                `tfsdk:"id" path:"id,required"`
 	WorkflowID types.String                                                                `tfsdk:"workflow_id" path:"workflow_id,required"`
 	Steps      customfield.NestedObjectList[WorkflowApprovalProcedureStepsDataSourceModel] `tfsdk:"steps" json:"steps,computed"`
-}
-
-func (m *WorkflowApprovalProcedureDataSourceModel) toReadParams(_ context.Context) (params serval.WorkflowApprovalProcedureGetParams, diags diag.Diagnostics) {
-	params = serval.WorkflowApprovalProcedureGetParams{
-		WorkflowID: m.WorkflowID.ValueString(),
-	}
-
-	return
 }
 
 type WorkflowApprovalProcedureStepsDataSourceModel struct {

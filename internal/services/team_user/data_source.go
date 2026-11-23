@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
@@ -63,15 +62,8 @@ func (d *TeamUserDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	res := new(http.Response)
 	env := TeamUserDataDataSourceEnvelope{*data}
-	_, err := d.client.TeamUsers.Get(
-		ctx,
-		data.ID.ValueString(),
-		params,
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := d.client.DoIDQuery(ctx, http.MethodGet, "v2/team-users", data.ID.ValueString(), params, nil, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

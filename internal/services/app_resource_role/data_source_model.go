@@ -5,8 +5,9 @@ package app_resource_role
 import (
 	"context"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/packages/param"
+	flowapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svflow/publicapi"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -30,19 +31,20 @@ type AppResourceRoleDataSourceModel struct {
 	FindOneBy          *AppResourceRoleFindOneByDataSourceModel                                   `tfsdk:"find_one_by"`
 }
 
-func (m *AppResourceRoleDataSourceModel) toListParams(_ context.Context) (params serval.AppResourceRoleListParams, diags diag.Diagnostics) {
-	params = serval.AppResourceRoleListParams{}
+func (m *AppResourceRoleDataSourceModel) toListParams(_ context.Context) (params proto.Message, diags diag.Diagnostics) {
+	req := &flowapi.ListAppResourceRolesRequest{}
 
 	if !m.FindOneBy.AppInstanceID.IsNull() {
-		params.AppInstanceID = param.NewOpt(m.FindOneBy.AppInstanceID.ValueString())
+		req.AppInstanceId = proto.String(m.FindOneBy.AppInstanceID.ValueString())
 	}
 	if !m.FindOneBy.ResourceID.IsNull() {
-		params.ResourceID = param.NewOpt(m.FindOneBy.ResourceID.ValueString())
+		req.ResourceId = proto.String(m.FindOneBy.ResourceID.ValueString())
 	}
 	if !m.FindOneBy.TeamID.IsNull() {
-		params.TeamID = param.NewOpt(m.FindOneBy.TeamID.ValueString())
+		req.TeamId = proto.String(m.FindOneBy.TeamID.ValueString())
 	}
 
+	params = req
 	return
 }
 

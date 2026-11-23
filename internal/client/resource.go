@@ -9,6 +9,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"google.golang.org/protobuf/proto"
@@ -21,7 +22,14 @@ func (c *Client) DoID(ctx context.Context, method, collection, id string, body [
 	if id == "" {
 		return nil, errMissingID
 	}
-	return c.Do(ctx, Request{Method: method, Path: collection + "/" + id, Body: body, Middlewares: mws})
+	return c.DoIDQuery(ctx, method, collection, id, nil, body, mws...)
+}
+
+func (c *Client) DoIDQuery(ctx context.Context, method, collection, id string, query url.Values, body []byte, mws ...Middleware) (*http.Response, error) {
+	if id == "" {
+		return nil, errMissingID
+	}
+	return c.Do(ctx, Request{Method: method, Path: collection + "/" + id, Query: query, Body: body, Middlewares: mws})
 }
 
 // DeleteID deletes collection/id, accepting only a JSON response body as serval-go did.
@@ -30,10 +38,11 @@ func (c *Client) DeleteID(ctx context.Context, collection, id string, mws ...Mid
 	if err != nil {
 		return err
 	}
-	return checkJSONBody(res)
+	return CheckJSONBody(res)
 }
 
-func checkJSONBody(res *http.Response) error {
+// CheckJSONBody consumes and closes res, failing unless it carries a JSON body as serval-go required.
+func CheckJSONBody(res *http.Response) error {
 	defer res.Body.Close()
 	contents, err := io.ReadAll(res.Body)
 	if err != nil {
