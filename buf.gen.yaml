@@ -1,0 +1,17 @@
+version: v2
+inputs:
+  - directory: proto
+managed:
+  enabled: true
+  disable:
+    - file_option: go_package
+      module: buf.build/googleapis/googleapis
+    - file_option: go_package
+      module: buf.build/bufbuild/protovalidate
+  override:
+    - file_option: go_package_prefix
+      value: github.com/ServalHQ/terraform-provider-serval/internal/gen/proto
+plugins:
+  - local: protoc-gen-go
+    out: internal/gen/proto
+    opt: paths=source_relative

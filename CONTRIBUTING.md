@@ -11,6 +11,19 @@ This will install all the required dependencies and build the Provider binary in
 
 You can also [install go 1.22+ manually](https://go.dev/doc/install).
 
+## Public API types
+
+`proto/` is a copy of the Serval public API protos from ServalHQ/mono (the files reachable from
+`svflow/publicapi/service.proto` and `svauth/public/service.proto`), and `internal/gen/proto` is
+generated from it. Don't edit either by hand. To refresh both, install
+[`buf`](https://buf.build/docs/installation) and `protoc-gen-go` v1.36.11, then run:
+
+```sh
+$ MONO_DIR=/path/to/mono ./scripts/sync-protos
+```
+
+`proto/MONO_COMMIT` records the mono commit the copy came from.
+
 ## Running the Provider locally
 
 You can build the provider locally and have your `.tf` files refer to the local build instead of the one in the Hashicorp registry.

@@ -1,0 +1,3000 @@
+syntax = "proto3";
+
+package svflow.common.models;
+
+import "google/protobuf/timestamp.proto";
+/*
+** These are common models used by svflow and other services (i.e. svhelp)
+** We currently share using symlinks.
+*/
+import "serval/resources/v1/agentchannels/channels.proto";
+import "svauth/shared_models/models.proto";
+
+option go_package = "serval.com/svflow/internal/gen/proto/svflow/common";
+
+// Whether a credits read could be answered. Same meaning as svauth's
+// UsageBillingAvailability: NOT_CONFIGURED is a deployment or organization
+// with nothing to charge against (no Paid credential, or no credit order), and
+// UNAVAILABLE is a read that failed.
+enum CreditsAvailability {
+    CREDITS_AVAILABILITY_UNSPECIFIED = 0;
+    CREDITS_AVAILABILITY_READY = 1;
+    CREDITS_AVAILABILITY_NOT_CONFIGURED = 2;
+    CREDITS_AVAILABILITY_UNAVAILABLE = 3;
+    // The caller may see the resource but not what it cost. No amounts are
+    // returned.
+    CREDITS_AVAILABILITY_HIDDEN = 4;
+    // More runs than one read covers. Unlike UNAVAILABLE, retrying will not
+    // help, so clients should not poll.
+    CREDITS_AVAILABILITY_TOO_LARGE = 5;
+}
+
+message AdvertisedCrossTeamWorkflowTarget {
+    string team_id = 1;
+    string team_name = 2;
+    repeated AdvertisedCrossTeamWorkflowAppInstance app_instances = 3;
+}
+
+message AdvertisedCrossTeamWorkflowAppInstance {
+    string app_instance_id = 1;
+    string service = 2;
+    string service_instance_name = 3;
+    string custom_service_id = 4;
+    string custom_service_name = 5;
+}
+
+message ApprovalConsumer {
+    string type = 1;
+    string id = 2;
+}
+
+enum ExecutionScope {
+    EXECUTION_SCOPE_UNSPECIFIED = 0;
+    TEAM_PRIVATE = 1;
+    TEAM_PUBLIC = 2;
+}
+
+enum ActionableItemType {
+    ACTIONABLE_ITEM_TYPE_UNSPECIFIED = 0;
+    TASK = 1;
+    ACCESS_REQUEST_APPROVAL = 2;
+    WORKFLOW_RUN_APPROVAL = 3;
+    ACCESS_REQUEST_ON_BEHALF_OF_CONFIRMATION = 4;
+    WORKFLOW_RUN_ON_BEHALF_OF_CONFIRMATION = 5;
+}
+
+message ActionableItem {
+    string ticket_id = 1;
+    ActionableItemType type = 2;
+    bool action_completed = 3;
+}
+
+enum TaskType {
+    TASK_TYPE_UNSPECIFIED = 0;
+    PROVISIONING = 1;
+    DEPROVISIONING = 2;
+}
+
+enum TaskResponse {
+    TASK_RESPONSE_UNSPECIFIED = 0;
+    TASK_RESPONSE_COMPLETED = 1;
+    TASK_RESPONSE_DISMISSED = 2;
+}
+
+message Task {
+    string id = 1;
+    string ticket_id = 2;
+    string workflow_run_id = 3;
+    google.protobuf.Timestamp created_at = 4;
+    reserved 5; // completed_at removed in favor of explicit response fields
+    reserved 6; // is_completed removed in favor of explicit response fields
+    string assigned_to_user_id = 7;
+    string name = 8;
+    string description = 9;
+    TaskType task_type = 10;
+    optional string response_by_user_id = 11;
+    optional google.protobuf.Timestamp response_at = 12;
+    TaskResponse response = 13;
+}
+
+enum ApprovalRequestResult {
+    APPROVAL_REQUEST_RESULT_UNSPECIFIED = 0;
+    PENDING = 1;
+    APPROVED = 2;
+    DENIED = 3;
+    TIMEDOUT = 4;
+    CANCELED = 5;  // User-initiated cancellation (e.g., cancel pending extension)
+}
+
+// Display status for extension/allocation cards in the UI.
+// Backend computes this to eliminate complex frontend state determination.
+enum ExtensionDisplayStatus {
+    EXTENSION_DISPLAY_STATUS_UNSPECIFIED = 0;
+    EXTENSION_DISPLAY_STATUS_PROCESSING = 1;      // Allocation being created, workflow starting
+    EXTENSION_DISPLAY_STATUS_PENDING_APPROVAL = 2; // Waiting for approval
+    EXTENSION_DISPLAY_STATUS_APPROVED = 3;         // Approved and active
+    EXTENSION_DISPLAY_STATUS_DENIED = 4;           // Rejected by approver
+    EXTENSION_DISPLAY_STATUS_CANCELED = 5;         // User canceled
+    EXTENSION_DISPLAY_STATUS_SUPERSEDED = 6;       // Replaced by newer extension
+    EXTENSION_DISPLAY_STATUS_TERMINATED = 7;       // Access ended (revoked/expired) while pending
+}
+
+enum ResourceType {
+    RESOURCE_TYPE_UNSPECIFIED = 0;
+    ACCESS = 1;
+    GROUP = 2;
+    ROLE = 3;
+    RESOURCE_TYPE_CUSTOM = 4;
+    // This is a bad long term pattern, but this is the best
+    // way to do this to get something out the door fast for an important customer.
+    RESOURCE_TYPE_ENTRA_SECURITY_GROUP = 5;
+    RESOURCE_TYPE_ENTRA_MICROSOFT_365_GROUP = 6;
+    // Ingested "team" resources (e.g. GitHub / Buildkite teams).
+    RESOURCE_TYPE_TEAM = 7;
+}
+
+// UserIngestionConfig is the per-app-instance toggle row that drives whether
+// svflow ingests raw IdP user payloads for that app and dispatches them to
+// svstore as user-extension records.
+message UserIngestionConfig {
+    string id = 1;
+    string team_id = 2;
+    string app_instance_id = 3;
+    bool enabled = 4;
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+    // Custom user ingestion: the team workflow replacing the service builtin
+    // for this app instance. Absent = the builtin runs implicitly.
+    optional string workflow_id = 7;
+    // Customer-chosen minimum seconds between scheduled syncs. Absent =
+    // platform default cadence.
+    optional int32 sync_interval_seconds = 8;
+    // Whether the end-of-sync reconcile may deactivate users absent from a
+    // custom-workflow sync (builtin syncs always reconcile).
+    bool sync_deactivations = 9;
+	// Whether user sync may create a Serval user for an email matching nobody;
+	// no integration ceiling exists on this side. Optional so a backend
+	// predating the field reads as absent (fall back to allowed), not "off".
+    optional bool allow_create_new_users = 10;
+    optional bool exclude_guest_users = 11;
+}
+
+message LastLoginIngestionConfig {
+    string id = 1;
+    string team_id = 2;
+    string app_instance_id = 3;
+    bool enabled = 4;
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+    optional string workflow_id = 7;
+    optional int32 sync_interval_seconds = 8;
+}
+
+// A resource type's membership source in one app: up to two team workflows
+// Serval runs once per resource of the type, the entitlement workflow first.
+// Each run records the resource's roles, then who holds them.
+message ResourceUserIngestionConfig {
+    string id = 1;
+    string app_instance_id = 2;
+    // The resource type it covers, e.g. "repository"; every live resource of
+    // the type in the app runs it.
+    string resource_type_slug = 10;
+    bool enabled = 3;
+    // The entitlement user workflow: returns ExternalResourceUserSyncResult
+    // pages of who holds each of the resource's roles.
+    optional string entitlement_user_workflow_id = 4;
+    // Unset runs on the app's interval, else every four hours.
+    optional int32 sync_interval_seconds = 5;
+    // An account no Serval user matches creates one.
+    bool allow_create_new_users = 7;
+    // The entitlement workflow: returns ExternalResourceEntitlementSyncResult
+    // pages of the resource's roles, creating the ones it lacks. Unset,
+    // holders match only roles the resource already has.
+    optional string entitlement_workflow_id = 11;
+    google.protobuf.Timestamp created_at = 8;
+    google.protobuf.Timestamp updated_at = 9;
+}
+
+// How a membership field's values parse, show and sort in access reviews.
+enum MembershipFieldType {
+    MEMBERSHIP_FIELD_TYPE_UNSPECIFIED = 0;
+    MEMBERSHIP_FIELD_TYPE_TEXT = 1;
+    MEMBERSHIP_FIELD_TYPE_NUMBER = 2;
+    MEMBERSHIP_FIELD_TYPE_BOOLEAN = 3;
+    // RFC 3339, YYYY-MM-DD, or Unix seconds or milliseconds.
+    MEMBERSHIP_FIELD_TYPE_DATE = 4;
+}
+
+// An org-wide review column for a field membership sources report about each
+// account. Its id is the column's identity in every review and export.
+message MembershipFieldDefinition {
+    string id = 1;
+    string name = 2;
+    // Never changes after creation.
+    MembershipFieldType type = 3;
+    // One of the core account fields every review shows (created date, last
+    // login). Built-ins have fixed ids, can't be renamed, and no source maps
+    // a key to one: the core keys fill them by alias.
+    bool builtin = 4;
+    // The built-in's key among an account's core facts; empty for an admin's
+    // definition.
+    string canonical_key = 5;
+}
+
+// A membership source shows one top-level key of the external_raw_data its
+// runs write on each grant as a field definition's column.
+message MembershipFieldMapping {
+    string key = 1;
+    string field_definition_id = 2;
+    // The definition's name and type, on reads; ignored on writes.
+    string field_name = 3;
+    MembershipFieldType field_type = 4;
+}
+enum IntegrationMethod {
+    NONE = 0;
+    OAUTH2_AUTH_CODE = 1;
+    OAUTH2_CLIENT_CREDENTIALS = 2;
+    API_KEY = 3;
+    // Requires some custom data to be stored
+    CUSTOM_DATA = 4;
+    // Entirely custom integration which
+    // does not fit into the above categories
+    CUSTOM = 5;
+}
+
+// How a custom-service connection authenticates. Mirrors the
+// custom_service_api_config.api_auth_type DB enum; surfaced on reads so the
+// connection-config UI can reopen a saved connection on the correct auth tab
+// (notably a delegated-OIDC connection) instead of inferring it from credential
+// rows, which don't exist for per-user delegated connections.
+enum CustomServiceAuthType {
+    CUSTOM_SERVICE_AUTH_TYPE_UNSPECIFIED = 0;
+    CUSTOM_SERVICE_AUTH_TYPE_API_KEY = 1;
+    CUSTOM_SERVICE_AUTH_TYPE_OAUTH_CLIENT_CREDENTIALS = 2;
+    CUSTOM_SERVICE_AUTH_TYPE_DELEGATED_OIDC = 3;
+    CUSTOM_SERVICE_AUTH_TYPE_OAUTH_JWT_BEARER = 4;
+}
+
+message CustomServiceAPIConfig {
+    string base_url = 1;
+    string token_url = 2;
+    string auth_header_name = 3;
+    repeated RedactedCustomAuthHeader auth_headers = 4;
+    // Marks this custom service as an external MCP server (Model Context
+    // Protocol): its tools are discovered and ingested as workflows. The MCP
+    // endpoint URL is base_url + mcp_endpoint_path. Presence is the enabled
+    // signal — a set path means MCP-enabled (must be a non-empty root-relative
+    // path, e.g. "/mcp"); unset means not an MCP server.
+    //
+    // Optional (presence-aware): a SetCustomIntegrationConfig update that omits
+    // mcp_endpoint_path leaves the persisted MCP setting untouched, so a partial
+    // or older caller that doesn't send it can't silently turn MCP off.
+    optional string mcp_endpoint_path = 6;
+
+    // Marks this custom service as an external A2A (Agent-to-Agent) agent: its
+    // skills are discovered from the agent card and ingested as workflows. The
+    // agent card URL is base_url + a2a_agent_card_path (the conventional path is
+    // "/.well-known/agent-card.json"); the card's `url` field is the JSON-RPC
+    // endpoint the send-message action posts to. Presence is the enabled signal
+    // — a set path means A2A-enabled (must be a non-empty root-relative path);
+    // unset means not an A2A agent. A connection is at most one of MCP or A2A.
+    //
+    // Auth is unchanged: A2A agents authenticate via api_auth_type
+    // (delegated_oidc for the per-user OIDC bearer the agent expects).
+    //
+    // Optional (presence-aware): an update that omits a2a_agent_card_path leaves
+    // the persisted A2A setting untouched (same rationale as mcp_endpoint_path).
+    optional string a2a_agent_card_path = 8;
+
+    // How this connection authenticates (read-only on this message; writes go
+    // through SetCustomIntegrationConfig's integration_auth oneof). Lets the UI
+    // reopen a saved connection on the correct auth tab. A delegated_oidc value
+    // with mcp_endpoint_path set is an MCP connection; without it, a plain
+    // delegated-OIDC HTTP connection.
+    CustomServiceAuthType auth_type = 9;
+
+    // The delegated-OIDC connection's currently-linked provider id (from
+    // app_instance_oidc_providers), so the config UI can preselect it in the
+    // provider picker. Optional (presence-aware): unset when the connection has
+    // no linked provider.
+    optional string oidc_provider_id = 10;
+
+    // Extra parameters sent in the OAuth client-credentials token-request POST
+    // body (form-encoded), alongside the always-present grant_type. For token
+    // endpoints that require body params the token URL can't carry — e.g.
+    // Workday's `tenant_alias` — especially when the provider rejects query
+    // params on the token URL. Sent body-only: the token URL is used verbatim
+    // with no query string appended, so these reach the provider in the body
+    // and nowhere else.
+    //
+    // Presence-aware (wrapped in a message, mirroring mcp_endpoint_path): a
+    // SetCustomIntegrationConfig update that OMITS this leaves the persisted
+    // params untouched, so a partial/older caller can't silently wipe them; a
+    // present value (even an empty map) REPLACES the stored set. A bare proto3
+    // map couldn't express "unset" vs "cleared".
+    OAuthTokenBodyParams oauth_token_body_params = 11;
+
+    // PEM bundle of CA certificate(s) the proxy trusts for this connection's
+    // upstream TLS handshake, in addition to the public roots — for an internal
+    // host whose certificate a private CA signed. Applies to this connection
+    // only, never to the worker as a whole. A CA certificate is public, so reads
+    // return it in full.
+    //
+    // Presence-aware on writes (mirroring mcp_endpoint_path): an update that
+    // omits it leaves the stored bundle untouched; "" clears it; a non-empty
+    // value replaces it. Every certificate must be a CA or self-signed and
+    // currently valid.
+    optional string ca_certificate_pem = 12;
+    JWTBearerConfig jwt_bearer_config = 13;
+}
+
+message JWTBearerConfig {
+    string token_url = 1;
+    string audience = 2;
+    // An empty subject uses the issuer from the signing credential.
+    string subject = 3;
+    string key_id = 4;
+}
+
+// OAuthTokenBodyParams wraps the token-request body params so the field is
+// presence-aware on CustomServiceAPIConfig (see field 11).
+message OAuthTokenBodyParams {
+    map<string, string> params = 1;
+}
+
+message RedactedCustomAuthHeader {
+    string auth_type = 1;
+    string header_name = 2;
+    int32 value_length = 3;
+    string value_last_four = 4;
+    int32 display_order = 5;
+}
+
+// A2AAgentCard is the agent card captured by the last A2A discovery sync for an
+// app instance: the external agent's self-description plus the Serval-side
+// context (generated send-message workflow, sync time).
+message A2AAgentCard {
+    string name = 1;
+    string description = 2;
+    // The agent's preferred A2A JSON-RPC endpoint, from the card's `url` field.
+    string url = 3;
+    string version = 4;
+    repeated A2AAgentSkill skills = 5;
+    // The generated send-message workflow that routes requests to this agent.
+    optional string workflow_id = 6;
+    optional google.protobuf.Timestamp last_synced_at = 7;
+    // How the agent says it must be authenticated. Empty both for agents that
+    // declare nothing and for cards synced before this was captured — a
+    // re-sync repopulates it, same as every other card field.
+    repeated A2AAgentSecurityScheme security_schemes = 8;
+}
+
+// A2AAgentSecurityScheme is one authentication scheme an agent card declares,
+// normalized from the two mutually invalid wire encodings (A2A v0.3's flat
+// `type`-discriminated object, v1.0's one-key oneof envelope) by the extraction
+// workflow. Third-party input: bounded at capture, and never trusted as
+// authorization — it describes what the agent ASKS for, which is what makes it
+// worth comparing against the provider an operator actually bound.
+message A2AAgentSecurityScheme {
+    // The card's own key for this scheme. Unique within a card.
+    string name = 1;
+    A2AAgentSecuritySchemeKind kind = 2;
+    // Set only for OPEN_ID_CONNECT: the OIDC discovery document URL.
+    string open_id_connect_url = 3;
+    // Set only for OAUTH2, and only when the scheme published exactly one flow
+    // (all v1.0 can express; the norm in v0.3). One of authorizationCode,
+    // clientCredentials, deviceCode, implicit, password. A free-form string
+    // rather than an enum because the value is the agent's, not Serval's, and
+    // a newer spec may add flows — same reasoning as AgentInterface's
+    // protocolBinding.
+    string flow = 4;
+    // Set only for OAUTH2: RFC 8414 authorization-server metadata URL.
+    string oauth2_metadata_url = 5;
+    // Scope names the scheme advertises. NEITHER A2A version carries an RFC
+    // 8707 resource field, so a required audience can appear only here, inside
+    // a scope string (e.g. "api://<app-id>/.default"). That makes these strings
+    // the only machine-readable statement of which API the agent's tokens must
+    // be addressed to.
+    repeated string scopes = 6;
+}
+
+enum A2AAgentSecuritySchemeKind {
+    A2A_AGENT_SECURITY_SCHEME_KIND_UNSPECIFIED = 0;
+    A2A_AGENT_SECURITY_SCHEME_KIND_OPEN_ID_CONNECT = 1;
+    A2A_AGENT_SECURITY_SCHEME_KIND_OAUTH2 = 2;
+    A2A_AGENT_SECURITY_SCHEME_KIND_API_KEY = 3;
+    A2A_AGENT_SECURITY_SCHEME_KIND_HTTP = 4;
+    A2A_AGENT_SECURITY_SCHEME_KIND_MUTUAL_TLS = 5;
+}
+
+message A2AAgentSkill {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    repeated string tags = 4;
+    repeated string examples = 5;
+    // Media types the skill accepts/returns (e.g. "text/plain").
+    repeated string input_modes = 6;
+    repeated string output_modes = 7;
+}
+
+message AssetCapabilityConfig {
+    repeated string supported_asset_types = 1;
+}
+
+message Service {
+    string name = 1;
+    string display_name = 2;
+    string domain = 3;
+    string logo_url = 4;
+    IntegrationMethod integration_method = 5;
+    CustomServiceAPIConfig custom_api_config = 6;
+    bool has_subresource_config = 7;
+    bool is_custom = 8;
+    bool use_integrated_service_registry = 9;
+    bool has_user_config = 10; // TODO: This, along with the subresource config, should not need to be fetched from the backend with the new integration system.
+    bool has_app_config = 11;
+    optional AssetCapabilityConfig asset_config = 12;
+    bool has_workflow_ingestion = 13; // Workflow ingestion capability (e.g., ServiceNow catalog items)
+    string unique_custom_app_alias = 14;
+    bool has_access_profile_ingestion = 15; // Access profile ingestion capability (e.g., ServiceNow user criteria)
+    // Whether this service implements per-user ("user-auth") auth — i.e. its
+    // backend implements integratedservice.UserScopedAuth. Drives the generic
+    // "Connect your account" affordance in the UI for any such service (Workday,
+    // future ones), so nothing service-specific is hardcoded client-side.
+    bool supports_user_scoped_auth = 16;
+    bool has_last_login_config = 17;
+}
+
+message ServiceMeta {
+    string display_name = 1;
+    string domain = 2;
+    string logo_url = 3;
+    // For service returned by new style integration.
+    // Tells client to use local service registry for this service (i.e. logo_url will not be set)
+    bool use_integrated_service_registry = 4;
+    // Service name (slug) used to look up service in the integration registry
+    string name = 5;
+}
+
+// Used when presenting info about an approval request to the approving
+// user
+message ApprovalRequestTask {
+    string id = 1;
+    google.protobuf.Timestamp created_at = 2;
+    string name = 3;
+    string description = 4;
+    ApprovalRequestResult result = 5;
+}
+
+// Used when presenting info about an approval request on
+// a ticket
+message ApprovalRequest {
+    string id = 1;
+    google.protobuf.Timestamp created_at = 2;
+    oneof for_resource {
+        string access_request_id = 3;
+        string workflow_run_id = 4;
+        string inline_run_id = 8;
+    }
+    ApprovalRequestResult result = 5;
+    repeated ApprovalRequestStep steps = 6;
+    // Free-text reason supplied by the requester. Currently only populated
+    // for inline approvals (the SDK's `requestApproval` action).
+    optional string reason = 7;
+    // Controls whether approvers are asked for a justification when deciding.
+    // Valid values: "not_requested", "optional", "required".
+    string approver_justification_mode = 9;
+    // Custom approve/deny button labels. Populated only for inline
+    // approvals where the SDK caller passed `approveButtonLabel` /
+    // `denyButtonLabel`. Absent for pre-run workflow approvals and
+    // access-policy approvals; renderers must fall back to the
+    // channel-default "Approve" / "Deny" labels when not set.
+    optional string approve_button_label = 10;
+    optional string deny_button_label = 11;
+    optional google.protobuf.Timestamp last_reminded_at = 12;
+    bool can_remind = 13;
+    // Absent means unresolved; empty means no human beneficiary. Never the on-behalf initiator.
+    optional string requester_user_id = 14;
+    ApprovalRequestKind request_kind = 15;
+    // The buttons the request offers, in order; empty answers with approve
+    // and deny. Shown only where the team has this option.
+    repeated ApprovalAction actions = 16;
+    // True when the actions are the default set supplied by svflow.
+    bool default_actions = 17;
+}
+
+// What an approval request asks of a person; UNSPECIFIED is an approval.
+// Option C, a generic HumanRequest with ApprovalRequest on top, is the planned
+// follow-up; request_kind is the bridge until then.
+enum ApprovalRequestKind {
+    APPROVAL_REQUEST_KIND_UNSPECIFIED = 0;
+    APPROVAL_REQUEST_KIND_APPROVAL = 1;
+    APPROVAL_REQUEST_KIND_HUMAN_TASK = 2;
+}
+
+// One button a request offers, as it was asked. Stored as JSON in svinbox
+// metadata, so the names are final.
+message ApprovalAction {
+    // What SetApprovalRequestStepApproverResultRequest.action_id sends back.
+    string id = 1;
+    string label = 2;
+    // primary | secondary | danger
+    string style = 3;
+    // APPROVED or DENIED: the result pressing it records.
+    ApprovalRequestResult outcome = 4;
+    // Asked before the answer is sent, with the label as its title. Empty
+    // sends at once.
+    string confirm = 5;
+    // none | optional | required: a free-text reason asked when pressed.
+    string reason = 6;
+    // False: pressing it does not hold the answer to the form's required
+    // fields.
+    bool validate_fields = 7;
+}
+
+message ApprovalRequestStep {
+    string id = 1;
+    int32 number = 2;
+    repeated ApprovalRequestStepApprover approvers = 3;
+    string result_set_by_user_id = 4; // Assumes one approver per step, this could change in future
+    ApprovalRequestResult result = 5;
+    bool is_auto_approved = 6;
+
+    // Custom workflow run information (if this step uses a custom approval workflow)
+    optional ApprovalRequestStepCustomWorkflowRun custom_workflow_run = 7;
+
+    // Configured approver sources for future steps (populated when approvers
+    // haven't been resolved yet, i.e. the step hasn't been activated).
+    // Each entry describes a source type (group, manager, app owner).
+    repeated ConfiguredApproverSource configured_approver_sources = 8;
+    // Controls whether approvers are asked for a justification when deciding this step.
+    // Valid values: "not_requested", "optional", "required".
+    string approver_justification_mode = 9;
+    // Parallel grouping for staged inline approvals. Absent on legacy backend
+    // responses, where clients should treat number as the singleton stage.
+    optional int32 stage_number = 10;
+    bool supports_dynamic_delegation = 11;
+    // Decides only once the stage_number step it backs up escalates.
+    bool is_fallback = 12;
+}
+
+message ApprovalDelegationContext {
+    bool supports_dynamic_delegation = 1;
+    optional string requester_user_id = 2;
+}
+
+enum ConfiguredApproverSourceType {
+    CONFIGURED_APPROVER_SOURCE_TYPE_UNSPECIFIED = 0;
+    CONFIGURED_APPROVER_SOURCE_TYPE_GROUP = 1;
+    CONFIGURED_APPROVER_SOURCE_TYPE_MANAGER = 2;
+    CONFIGURED_APPROVER_SOURCE_TYPE_APP_OWNER = 3;
+    CONFIGURED_APPROVER_SOURCE_TYPE_TEAM_OWNER = 4;
+    CONFIGURED_APPROVER_SOURCE_TYPE_RESOURCE_OWNER = 5;
+    CONFIGURED_APPROVER_SOURCE_TYPE_ROLE_OWNER = 6;
+}
+
+message ConfiguredApproverSource {
+    ConfiguredApproverSourceType type = 1;
+    string id = 2;  // group_id for GROUP type; empty for MANAGER/APP_OWNER
+}
+
+message ApprovalRequestStepCustomWorkflowRun {
+    string run_id = 1;
+    WorkflowRunStatus status = 2;
+    optional bool is_auto_approved = 3;
+    optional string reason = 4;
+    string workflow_id = 5;
+}
+
+enum ApprovalRequestUserType {
+    APPROVAL_REQUEST_USER_TYPE_UNSPECIFIED = 0;
+    PRIMARY = 1;
+    SECONDARY = 2;
+    // Team-level designated override approver, not part of any approval
+    // procedure and never notified. A resolution/approver row carries this
+    // type only once such an approver has actually acted on a step.
+    OVERRIDE = 3;
+}
+
+message ApprovalRequestStepApprover {
+    string id = 1;
+    string user_id = 2;
+    ApprovalRequestResult result = 3;
+    bool is_auto_approved = 4;
+    ApprovalRequestUserType user_type = 5;
+    google.protobuf.Timestamp result_set_at = 6;
+    // Free-text justification supplied by this approver alongside their decision.
+    optional string justification = 7;
+    // If this approver was assigned by a delegation rule, the id of the user the
+    // approval was originally routed to (the start of the delegation chain),
+    // reconstructed from delegation_resolutions. Unset for direct approvers.
+    optional string delegated_from_user_id = 8;
+    // The action recorded when this approver answered the request.
+    optional string action_id = 9;
+}
+
+message OnBehalfOfConfirmationRequest {
+    string id = 1;
+    google.protobuf.Timestamp created_at = 2;
+    oneof for_resource {
+        string access_request_id = 3;
+        string workflow_run_id = 4;
+    }
+    string by_user_id = 5;
+    string for_user_id = 6;
+    ApprovalRequestResult result = 7;
+}
+
+enum WorkflowRunStatus {
+    WORKFLOW_RUN_STATUS_UNSPECIFIED = 0;
+    WORKFLOW_RUN_STATUS_PENDING = 1;
+    WORKFLOW_RUN_STATUS_RUNNING = 2;
+    WORKFLOW_RUN_STATUS_COMPLETED = 3;
+    WORKFLOW_RUN_STATUS_FAILED = 4;
+    WORKFLOW_RUN_STATUS_DENIED = 5;
+    WORKFLOW_RUN_STATUS_CANCELED = 6;
+}
+
+// AccessRequestStatus represents the overall status of an access request.
+// Used by the public API for SDK consumers.
+enum AccessRequestStatus {
+    ACCESS_REQUEST_STATUS_UNSPECIFIED = 0;
+    // The access request is pending approval.
+    ACCESS_REQUEST_STATUS_PENDING = 1;
+    // The access request was approved and access is currently active.
+    ACCESS_REQUEST_STATUS_APPROVED = 2;
+    // The access request was denied.
+    ACCESS_REQUEST_STATUS_DENIED = 3;
+    // The access was provisioned and has since expired.
+    ACCESS_REQUEST_STATUS_EXPIRED = 4;
+    // The access was revoked before expiration.
+    ACCESS_REQUEST_STATUS_REVOKED = 5;
+    // The access request was canceled by the requester.
+    ACCESS_REQUEST_STATUS_CANCELED = 6;
+    // The provisioning of access failed.
+    ACCESS_REQUEST_STATUS_FAILED = 7;
+}
+
+message WorkflowRunMeta {
+    string run_id = 1;
+    WorkflowMeta workflow_meta = 2;
+    google.protobuf.Timestamp created_at = 3;
+    string arguments = 4;
+    WorkflowRunStatus run_status = 5;
+    string run_result = 6;
+    optional .svflow.common.models.ApprovalRequest approval_request = 7;
+    optional string linked_ticket_id = 8;
+    optional string initiated_by_trigger_id = 9; // Polymorphic ID — interpretation depends on initiated_by_trigger_type
+    optional .svflow.common.models.OnBehalfOfConfirmationRequest on_behalf_of_confirmation_request = 10;
+    repeated .svflow.common.models.Task tasks = 11;
+    string for_user_id = 12;
+    string by_user_id = 13;
+    string team_id = 14;
+    // When the run completed (for any terminal state)
+    optional google.protobuf.Timestamp completed_at = 16;
+    optional TriggerType initiated_by_trigger_type = 17;
+    optional string request_source_ip = 18;
+    optional string request_user_agent = 19;
+    // If this workflow is running as a custom approval workflow for an approval request
+    optional string for_approval_request_id = 20;
+    // Child workflow runs triggered by this workflow
+    repeated ChildWorkflowRun child_workflow_runs = 21;
+    // Parent workflow run info (if this is a child workflow)
+    optional ParentWorkflowRun parent_workflow_run = 22;
+    // Validation errors from a ValidationError thrown in workflow code.
+    // Only populated when the run status is FAILED.
+    optional ValidationErrors validation_errors = 23;
+    // Only populated when the workflow call belongs to a status_check
+    // relationship and run_status is COMPLETED.
+    optional StatusCheckResult status_check_result = 24;
+    // Inline approval requests (distinct from the pre-run approval gate in field 7)
+    repeated .svflow.common.models.ApprovalRequest inline_approval_requests = 25;
+    // When the current run status was last updated.
+    optional google.protobuf.Timestamp status_updated_at = 26;
+    // Shared (cross-team proxy) run provenance — set only when the run was
+    // initiated by a team this workflow is shared with. team_id (field 14)
+    // remains the owning/execution team; by_user_id (field 13) is the
+    // requesting-team caller the run executed as. id and name are always
+    // populated together (name resolved by the serving handler), so they are
+    // grouped into a sub-message to make that co-presence explicit.
+    optional SharedRunProvenance shared_run_provenance = 30;
+    // The workflow version this run executed, when a version was pinned at
+    // dispatch time. Unset when no version was recorded on the run
+    // (trigger-initiated runs and runs predating version stamping resolved
+    // the deployed version at execution time without persisting it).
+    optional RunWorkflowVersion workflow_version = 31;
+    // Stable 1-based ordinal of this run within its workflow's full run
+    // history, oldest = 1 (the "Run #N" label). Computed server-side over the
+    // *unfiltered* history so the number identifies the same run whether or
+    // not the caller filtered the list. Only populated by list endpoints that
+    // rank their results; unset elsewhere, where callers should fall back to
+    // deriving a position from the list itself.
+    optional int64 run_number = 32;
+    // What started the run; values match svflow's trigger_source_type DB enum
+    // ('meta_agent', 'event', 'help_agent', …). Unset for runs recorded
+    // before trigger_source stamping.
+    optional string trigger_source = 33;
+    // True when integration access hid this run's steps and result from the
+    // caller. run_result is blank either way, so a list view has no other way
+    // to tell "withheld" from "produced nothing".
+    bool result_withheld = 34;
+    // The version the run executed: the one its start recorded, or before it
+    // starts the one it asked for. Unset when it has neither, when it did not
+    // record whether that was the published version (every run from before
+    // ran_published_version), for a built-in, and in the run metas svflow's
+    // private BatchGetWorkflowRuns and ListEventTriggeredWorkflowRunsForTicket
+    // build from bare request rows.
+    optional RunExecutedVersion executed_version = 35;
+    reserved 27, 28, 29;
+    reserved "requesting_team_id", "requesting_team_name", "requested_by_user_id";
+}
+
+// RunWorkflowVersion identifies the workflow version a run executed.
+// file_version_id and version_number match the same-named fields on the
+// user service's WorkflowVersion (ListWorkflowVersions); version_number is
+// the display ordinal ("v10").
+message RunWorkflowVersion {
+    string file_version_id = 1;
+    int32 version_number = 2;
+}
+
+// RunExecutedVersion is the version a run executed.
+message RunExecutedVersion {
+    RunWorkflowVersion version = 1;
+    // The run asked for a version that was not the published one when it was
+    // requested, as the draft-run gate judges it. Never true for a run that
+    // asked for no version: its worker loads the published module.
+    bool draft = 2;
+}
+
+// SharedRunProvenance identifies the team that initiated a cross-team shared
+// run. Present on WorkflowRunMeta only for shared (proxy) runs.
+message SharedRunProvenance {
+    string requesting_team_id = 1;
+    // Display name of the requesting team, resolved by the serving handler
+    // (the viewer may not be a member of that team).
+    string requesting_team_name = 2;
+}
+
+message StatusCheckResult {
+    bool is_complete = 1;
+    // The message appropriate for the current status (pending or success).
+    string message = 2;
+    // Per-language translations of the message. Key = BCP 47 code.
+    map<string, string> message_translations = 3;
+}
+
+// Validation error details surfaced from a workflow's ValidationError.
+message ValidationErrors {
+    // General banner message shown above the form.
+    string display_message = 1;
+    // Per-field error messages. Keys are workflow input parameter names.
+    map<string, string> field_errors = 2;
+    // Per-language translations of error messages. Key = BCP 47 language code.
+    map<string, ValidationErrorTranslations> translations = 3;
+}
+
+message ValidationErrorTranslations {
+    string display_message = 1;
+    map<string, string> field_errors = 2;
+}
+
+// Information about a child workflow run triggered by a parent workflow
+message ChildWorkflowRun {
+    string run_id = 1;
+    int64 parent_step = 2; // The step in the parent workflow that triggered this child
+    string workflow_id = 3;
+    string workflow_name = 4;
+    string team_id = 5;
+    optional WorkflowRunStatus run_status = 6;
+    optional google.protobuf.Timestamp created_at = 7;
+    optional ApprovalRequest approval_request = 8;
+    repeated ChildWorkflowRun child_workflow_runs = 9;
+    bool has_active_inline_approval = 10;
+    // Set as on WorkflowRunMeta.executed_version.
+    optional RunExecutedVersion executed_version = 11;
+}
+
+// Information about the parent workflow run (when this is a child workflow)
+message ParentWorkflowRun {
+    string run_id = 1;
+    string workflow_id = 2;
+    string workflow_name = 3;
+    string team_id = 4;
+}
+
+enum TriggerType {
+    TRIGGER_TYPE_UNSPECIFIED = 0;
+    TRIGGER_TYPE_SCHEDULE = 1;
+    TRIGGER_TYPE_WEBHOOK = 2;
+    TRIGGER_TYPE_EVENT = 3;
+    TRIGGER_TYPE_SLA = 4;
+    TRIGGER_TYPE_HELP_AGENT = 5;
+    TRIGGER_TYPE_META_AGENT = 6;
+    TRIGGER_TYPE_USER = 7;
+    TRIGGER_TYPE_API = 8;
+    TRIGGER_TYPE_HEALTH_CHECK = 9;
+    TRIGGER_TYPE_CHILD_WORKFLOW = 10;
+    TRIGGER_TYPE_ROUTING_RULE = 11;
+    TRIGGER_TYPE_INGESTION = 12;
+    TRIGGER_TYPE_APPROVAL = 13;
+    TRIGGER_TYPE_ESCALATION = 14;
+    // A barcode scan session started the run (per-scan verb, curated
+    // selection, or session close-out). Derived server-side from the
+    // presence of DatabaseAuditContext on the private RunWorkflow call.
+    TRIGGER_TYPE_SCAN = 15;
+    TRIGGER_TYPE_ENTITY_WORKFLOW = 16;
+    TRIGGER_TYPE_CI_CHECK = 17;
+    TRIGGER_TYPE_DASHBOARD_REFRESH = 18;
+    TRIGGER_TYPE_ACCESS_REVIEW_REPORT = 19;
+    // An App Builder endpoint call started the run; the trigger id is the
+    // app version whose workflow ran.
+    TRIGGER_TYPE_APP = 20;
+}
+
+// A workflow's target user: the single person a run acts on.
+//
+// Presence is the answer to "does this workflow act on somebody" — the message
+// is set, possibly empty, exactly when it does. That co-presence is the point:
+// a surface that knows a run needs a person but not who they are renders a
+// picker it cannot label, which is what the separate boolean allowed.
+//
+// Producers MUST emit an empty message rather than omitting it when a workflow
+// has a target user the author never described. Omitting it turns the picker
+// off.
+message TargetUserConfiguration {
+    // The author's one-line answer to "who is this workflow's target user",
+    // from `context.TargetUser<{ description }>` in the workflow source.
+    // Absent when they declared none.
+    optional string description = 1;
+}
+
+message WorkflowMeta {
+    string id = 1;
+    string name = 2;
+    bool is_builtin = 3;
+    repeated ServiceMeta services = 4;
+    bool is_deleted = 5;
+    // Superseded by target_user, whose presence carries the same answer.
+    // Still populated for clients that predate that field; drop and reserve
+    // once no deployed client reads it.
+    bool runs_in_current_user_context = 6 [deprecated = true];
+    bool is_temporary = 7;
+    google.protobuf.Timestamp disabled_at = 8;
+    bool never_published = 9;
+    bool has_unpublished_edits = 10;
+    int32 num_workflow_runs = 11;
+    google.protobuf.Timestamp latest_run_requested_at = 12;
+    // Optional URL to a custom workflow icon. Empty means use the
+    // default emoji / initials-derived avatar.
+    optional string icon_url = 13;
+    // Set when this workflow is visible to the requesting team only via an
+    // active cross-team share (black-box view — no builder access).
+    optional SharedFromTeam shared_from_team = 14;
+    // Present exactly when the workflow acts on a specific person.
+    optional TargetUserConfiguration target_user = 15;
+    // Fixed approval-only workflow; use the ordinary run/approval lifecycle.
+    bool is_noop_workflow = 16;
+    // Whether the source this meta was read from declares a workflow test.
+    // False when no source was read, such as a builtin workflow's run.
+    bool is_workflow_test = 17;
+    bool is_synced_from_external = 18;
+}
+
+
+enum AccessRequestConclusionReason {
+    ACCESS_REQUEST_CONCLUSION_REASON_UNSPECIFIED = 0;
+    ACCESS_REQUEST_CONCLUSION_REASON_DENIED = 1;
+    ACCESS_REQUEST_CONCLUSION_REASON_TIMED_OUT = 2;
+    ACCESS_REQUEST_CONCLUSION_REASON_SCHEDULED_DEPROVISION = 3;
+    ACCESS_REQUEST_CONCLUSION_REASON_PROVISION_FAILED = 4;
+    ACCESS_REQUEST_CONCLUSION_REASON_APP_INSTANCE_NOT_FOUND = 5;
+    ACCESS_REQUEST_CONCLUSION_REASON_ENTITLEMENT_REMOVED = 6;
+    ACCESS_REQUEST_CONCLUSION_REASON_CANCELED = 7;
+    ACCESS_REQUEST_CONCLUSION_REASON_REQUEST_ALREADY_IN_PROGRESS = 8;
+    ACCESS_REQUEST_CONCLUSION_REASON_INVALID_REQUEST = 9;
+    ACCESS_REQUEST_CONCLUSION_REASON_REVOKED = 10;
+    ACCESS_REQUEST_CONCLUSION_REASON_DEPROVISION_FAILED = 11;
+    ACCESS_REQUEST_CONCLUSION_REASON_MANUAL_DEPROVISION_OVERRIDE = 12;
+    ACCESS_REQUEST_CONCLUSION_REASON_ACCESS_ALREADY_EXISTS = 13;
+    // The request was replaced by a newer request the same user started for the
+    // same entitlement before this one had provisioned. The system auto-concludes
+    // the older request — the user did NOT cancel it. Rendered as "Replaced by a
+    // newer request" rather than "Canceled by <user>".
+    ACCESS_REQUEST_CONCLUSION_REASON_SUPERSEDED = 14;
+    // Deprovision fail-fast: the target resource was deleted while its app
+    // instance survives. Distinct from ENTITLEMENT_REMOVED, which records access
+    // observably ending.
+    ACCESS_REQUEST_CONCLUSION_REASON_RESOURCE_NOT_FOUND = 15;
+    // Deprovision fail-fast: the target entitlement row was deleted while its
+    // resource and app instance survive.
+    ACCESS_REQUEST_CONCLUSION_REASON_ENTITLEMENT_NOT_FOUND = 16;
+    // An approver changed the request to another role on the same resource
+    // before it provisioned. Not a cancel: the replacement request
+    // (rerouted_to) carries the same ticket, requester and justification.
+    ACCESS_REQUEST_CONCLUSION_REASON_REROUTED = 17;
+    // The request expired or was revoked while a birthright profile still
+    // justified the grant, so it concluded without a deprovision run.
+    ACCESS_REQUEST_CONCLUSION_REASON_JUSTIFIED_BY_PROFILE = 18;
+}
+
+// One end of a reroute: the request on the other side and the role it is for.
+message AccessRequestRerouteLink {
+    string access_request_id = 1;
+    string entitlement_id = 2;
+    string entitlement_name = 3;
+}
+
+
+message AccessRequest {
+    string id = 1;
+    google.protobuf.Timestamp created_at = 2;
+    string for_user_id = 3;
+    Entitlement entitlement = 4;
+    int32 access_minutes = 5; // Original requested minutes (deprecated in favor of current_access_minutes)
+    string business_justification = 6;
+    string provision_run_id = 7;
+    google.protobuf.Timestamp provision_run_completed_at = 8;
+    string deprovision_run_id = 9;
+    google.protobuf.Timestamp deprovision_run_completed_at = 10;
+    google.protobuf.Timestamp concluded_at = 11;
+    AccessRequestConclusionReason conclusion_reason = 12;
+    google.protobuf.Timestamp expires_at = 13;
+    bool access_is_valid = 14; // Indicates if the access request is still valid (i.e. not concluded or expired)
+    optional .svflow.common.models.ApprovalRequest approval_request = 15;
+    string ticket_id = 16;
+    repeated Entitlement linked_entitlements = 17; // If other entitlements were provisioned as linked entitlements
+    google.protobuf.Timestamp provision_run_started_at = 18;
+    google.protobuf.Timestamp deprovision_run_started_at = 19;
+    string canceled_by_user_id = 20;
+    string revoked_by_user_id = 21;
+    string by_user_id = 22;
+    
+    // Current allocation info (may differ from original access_minutes after extensions)
+    int32 current_access_minutes = 23; // Current allocation's approved minutes (0 = unlimited)
+    repeated AccessRequestAllocationEvent allocation_events = 24; // History of allocations for timeline
+    
+    // Pending extension info (if one exists)
+    optional PendingExtension pending_extension = 25;
+
+    // When the access is scheduled to start. If set, provisioning will be delayed
+    // until this time. Unset means immediate (the default).
+    optional google.protobuf.Timestamp scheduled_start_at = 26;
+
+    // Set on a request concluded REROUTED: who changed it to another role and
+    // their note to the requester. rerouted_to is derived from the replacement
+    // request and is absent until that request exists.
+    string rerouted_by_user_id = 27;
+    string rerouted_justification = 28;
+    optional AccessRequestRerouteLink rerouted_to = 29;
+    // Set on a replacement request: the request it replaced.
+    optional AccessRequestRerouteLink rerouted_from = 30;
+}
+
+// Represents a pending extension request that is waiting for approval
+message PendingExtension {
+    string allocation_id = 1;        // ID of the pending allocation
+    int32 requested_minutes = 2;     // Total minutes requested (0 = unlimited)
+    google.protobuf.Timestamp requested_at = 3;  // When the extension was requested
+    string requested_by_user_id = 4; // Who requested the extension
+    optional .svflow.common.models.ApprovalRequest approval_request = 5; // Approval status
+    int32 previous_minutes = 6;      // Duration BEFORE this extension (what we're extending from)
+    ExtensionDisplayStatus display_status = 7; // Always PENDING_APPROVAL for pending extensions
+}
+
+// Represents a single allocation event (initial approval or extension) for timeline display
+message AccessRequestAllocationEvent {
+    google.protobuf.Timestamp timestamp = 1; // When this allocation was created/requested (not when it was approved)
+    int32 approved_minutes = 2;              // Total minutes after this allocation (0 = unlimited, -1 = never approved)
+    int32 change_minutes = 3;                // Change from previous: +X = extended, -X = shortened, 0 = initial
+    string by_user_id = 4;                   // User who requested this allocation (requester)
+    string id = 5;                           // Unique ID for this allocation (UUID)
+    string approved_by_user_id = 6;          // User who approved this allocation (approver) - may be empty if auto-approved
+    int32 requested_minutes = 7;             // What was originally requested (may differ from approved_minutes if modified by approver)
+    string invalidation_reason = 8;          // Why this allocation was invalidated: 'superseded', 'canceled', 'rejected', 'concluded'
+    ExtensionDisplayStatus display_status = 9; // Pre-computed display status for UI (eliminates frontend state computation)
+    google.protobuf.Timestamp result_set_at = 10; // When the approval/denial result was set (from the approver's action)
+    bool is_auto_approved_by_workflow = 11; // True if this allocation was auto-approved by a custom approval workflow (no human approver)
+    string ticket_id = 12;                   // svhelp ticket backing this allocation (original request or extension)
+    string business_justification = 13;      // Justification given for this allocation
+}
+
+message ListEntitlementOptions {
+    // previous opt-in flags
+    // optional bool filter_to_correctly_configured = 1;
+    // optional bool filter_to_enabled = 2;
+    reserved 1, 2;
+
+    optional bool include_disabled = 3;
+    optional bool include_misconfigured = 4;
+}
+
+message EntitlementUser {
+    string id = 1;
+    google.protobuf.Timestamp created_at = 2;
+    string entitlement_id = 3;
+    string user_id = 4;
+    optional AccessRequest access_request = 5;
+    string external_id = 6;
+    string external_raw_data = 7;
+    google.protobuf.Timestamp last_synced_at = 8;
+    optional string external_user_id = 9;
+    reserved 10, 11;
+    reserved "source", "license_reclamation_kept_until";
+    Entitlement entitlement = 12;
+    // The membership is confirmed by the user being in every group linked to
+    // the entitlement. Its record is not removed directly: revoking it takes
+    // the user out of those groups.
+    bool via_linked_groups = 13;
+    // The newest deprovision of this membership that ran without an access
+    // request (an ad-hoc revoke, a reclaim, or an access-review remediation).
+    // Unset when none has been started.
+    optional AccessGrantRevocation revocation = 14;
+    // The birthright profile justifying the grant. A grant with a pointer is
+    // not removed directly: an exception on the profile is how it goes away.
+    optional string birthright_profile_id = 15;
+}
+
+// A deprovision of a membership that has no access request behind it.
+message AccessGrantRevocation {
+    google.protobuf.Timestamp created_at = 4;
+    // Unset while the deprovision is still running.
+    google.protobuf.Timestamp concluded_at = 1;
+    AccessRequestConclusionReason conclusion_reason = 2;
+    // The ticket tracking the deprovision: the review's remediation task, the
+    // reclaim's ticket, or the revoke's own ticket.
+    string ticket_id = 3;
+}
+
+message EntitlementUserRow {
+    string entitlement_id = 1;
+    string entitlement_user_id = 2;
+    string user_id = 3;
+}
+
+enum SuggestionSetStatus {
+    SUGGESTION_SET_STATUS_UNSPECIFIED = 0;
+    SUGGESTION_SET_PENDING = 1;
+    SUGGESTION_SET_ACCEPTED = 2;
+    SUGGESTION_SET_REJECTED = 3;
+    SUGGESTION_SET_GENERATING = 4;
+    SUGGESTION_SET_FAILED = 5;
+}
+
+enum SuggestionType {
+    SUGGESTION_TYPE_UNSPECIFIED = 0;
+    SUGGESTION_TYPE_CREATE = 1;
+    SUGGESTION_TYPE_UPDATE = 2;
+}
+
+enum SuggestionSetSourceType {
+    SUGGESTION_SET_SOURCE_TYPE_UNSPECIFIED = 0;
+    SUGGESTION_SET_SOURCE_TYPE_TICKET = 1;
+}
+
+message SuggestionSet {
+    string id = 1;
+    google.protobuf.Timestamp created_at = 2;
+    SuggestionSetStatus status = 3;
+    google.protobuf.Timestamp status_updated_at = 4;
+    string status_updated_by_user_id = 5;
+    repeated GuidanceSuggestion guidance_suggestions = 6;
+    string source_id = 7;
+    SuggestionSetSourceType source_type = 8;
+    optional string name = 9;
+    repeated WorkflowSuggestion workflow_suggestions = 10;
+    repeated WorkflowInstallationSuggestion workflow_installation_suggestions = 11;
+    optional string reason = 12;
+    repeated AppConnectionSuggestion app_connection_suggestions = 13;
+    repeated KnowledgeUpdateSuggestion knowledge_update_suggestions = 14;
+    repeated KnowledgeCreationSuggestion knowledge_creation_suggestions = 15;
+    // Skill-named twin of guidance_suggestions, populated alongside it so the
+    // frontend can read skills without importing GuidanceSuggestion. Same data.
+    repeated SkillSuggestion skill_suggestions = 16;
+    // Set only when a Catalyst session produced this legacy suggestion set.
+    string catalyst_session_id = 17;
+}
+
+message GuidanceSuggestion {
+    string id = 1;
+    string guidance_id = 2;
+    string file_version_id = 3;
+    int32 version_number = 4;
+    google.protobuf.Timestamp created_at = 5;
+    string suggested_name = 6;
+    string suggested_content = 7;
+    string reason = 8;
+    SuggestionType suggestion_type = 9;
+    string suggested_description = 10;
+    bool is_valid = 11;
+    string invalidity_reason = 12;
+}
+
+// SkillSuggestion mirrors GuidanceSuggestion (guidance_id -> skill_id); the
+// underlying suggestion data is identical.
+message SkillSuggestion {
+    string id = 1;
+    string skill_id = 2;
+    string file_version_id = 3;
+    int32 version_number = 4;
+    google.protobuf.Timestamp created_at = 5;
+    string suggested_name = 6;
+    string suggested_content = 7;
+    string reason = 8;
+    SuggestionType suggestion_type = 9;
+    string suggested_description = 10;
+    bool is_valid = 11;
+    string invalidity_reason = 12;
+}
+
+message WorkflowSuggestion {
+    string id = 1;
+    string workflow_id = 2;
+    string file_version_id = 3;
+    int32 version_number = 4;
+    google.protobuf.Timestamp created_at = 5;
+    string suggested_name = 6;
+    string suggested_code = 7;
+    string reason = 8;
+    bool is_valid = 9;
+    string invalidity_reason = 10;
+    repeated string service_names = 11;
+}
+
+message WorkflowInstallationSuggestion {
+    string id = 1;
+    string installable_workflow_slug = 2;
+    google.protobuf.Timestamp created_at = 3;
+    string reason = 4;
+    string workflow_name = 5;
+    string workflow_description = 6;
+    string workflow_file_content = 7;
+}
+
+message AppConnectionSuggestion {
+    string id = 1;
+    string service_slug = 2;
+    google.protobuf.Timestamp created_at = 3;
+    string reason = 4;
+    string service_display_name = 5;
+}
+
+message KnowledgeUpdateSuggestion {
+    string id = 1;
+    google.protobuf.Timestamp created_at = 2;
+    string reason = 4;
+    string old_content = 5;
+    string new_content = 6;
+    optional string knowledge_item_id = 7;
+    string status = 8;
+}
+
+message KnowledgeCreationSuggestion {
+    string id = 1;
+    google.protobuf.Timestamp created_at = 2;
+    string reason = 3;
+    string title = 4;
+    string content = 5;
+    optional string external_url = 6;
+    // Optional service slug (e.g. "confluence", "notion") hinted by the agent
+    // when the user explicitly asked for the document to be created in a
+    // specific knowledge service. Empty string means no preference; the UI
+    // defaults to the first valid configured destination.
+    string target_service = 7;
+    // The knowledge source ID where the document was actually created. Only
+    // set after acceptance when the document has been written. Used by the
+    // frontend to display the correct service icon next to the created link.
+    optional string destination_knowledge_source_id = 8;
+}
+
+message Resource {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    ResourceType resource_type = 4;
+    string external_id = 5;
+    string extra_access_context = 6;
+    string resource_type_name = 7;
+    string external_raw_data = 8;
+    bool is_deleted = 9;
+}
+
+enum ManualProvisioningAssigneeType {
+    MANUAL_PROVISIONING_ASSIGNEE_TYPE_UNSPECIFIED = 0;
+    MANUAL_PROVISIONING_ASSIGNEE_TYPE_USER = 1;
+    MANUAL_PROVISIONING_ASSIGNEE_TYPE_GROUP = 2;
+}
+
+message ManualProvisioningAssignee {
+    string assignee_id = 1;
+    ManualProvisioningAssigneeType assignee_type = 2;
+}
+
+message Entitlement {
+    reserved 8, 11, 13, 14;
+
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string business_justification = 4;
+    bool is_enabled = 5;
+    AccessPolicy access_policy = 6;
+    string provisioning_method = 7;
+    repeated string linked_entitlement_ids = 9;
+    Resource resource = 10;
+    bool is_access_policy_overridden = 12;
+    WorkflowMeta custom_provisioning_workflow = 15;
+    WorkflowMeta custom_deprovisioning_workflow = 16;
+    bool is_ingested = 17; // Indicates if entitlement was created via ingestion config
+    bool is_app_access_default_role = 18; // Indicates if entitlement is a default role for app access
+    string app_instance_id = 19;
+    string access_policy_id = 20;
+    optional string provisioning_workflow_params = 21; // JSON string of provisioning workflow parameters schema
+    repeated ManualProvisioningAssignee manual_provisioning_assignees = 22;
+    bool require_form_confirmation = 23;
+    string scoped_id = 24;
+    bool is_deleted = 25; // own-row deleted_at only — resource/app deletedness ride Resource.is_deleted/AppInstance.is_deleted
+    // Serval (svauth) groups linked for the linked-entitlement provisioning
+    // method: provisioning adds the for-user to each group, deprovisioning
+    // removes them. Sibling of linked_entitlement_ids.
+    repeated string linked_serval_group_ids = 26;
+    // Manual provisioning with nobody named: the provisioning task is created
+    // unassigned and routed by the team's ticket assignment rules. Mutually
+    // exclusive with manual_provisioning_assignees.
+    bool manual_provisioning_route_to_team_queue = 27;
+    // True: users in every linked group hold this role and are seated on its
+    // roster. False: the links only drive provisioning (a bundle role).
+    bool infer_membership_from_links = 28;
+}
+
+message AccessPolicy {
+    string id = 1;
+    string team_id = 10;
+    string name = 2;
+    string description = 3;
+    ApprovalProcedure approval_procedure = 4;
+    int32 max_access_minutes = 5;
+    bool require_business_justification = 6;
+    OnBehalfOfConfirmationProcedure on_behalf_of_confirmation_procedure = 7;
+    bool is_team_default = 8;
+    optional int32 recommended_access_minutes = 9;
+    // Whether access requests for roles under this policy are collected via a
+    // form rather than a chat conversation. New home for the setting that is
+    // being migrated off the per-role entitlement / team-default fields.
+    bool require_form_confirmation = 11;
+}
+
+message TeamsFormSettings {
+  string configuration_hash = 1;
+  string tenant_id = 2;
+  string client_id = 3;
+  string form_host = 4;
+  bool uses_custom_app = 5;
+  string team_id = 6;
+  bool dialogs_available = 8;
+  string home_page_url = 9;
+  string organization_home_page_url = 10;
+  string organization_bot_home_page_url = 11;
+  // Host/cloud readiness only; feedback producers evaluate their ticket team rollout independently.
+  bool feedback_dialog_available = 12;
+}
+
+message AppInstance {
+    string id = 1;
+    string team_id = 2;
+    Service service = 3;
+    string display_name = 4;
+    string instance_name = 5;
+    string instance_id = 6;
+    repeated Integration integrations = 7;
+    reserved 8; // was app_owner_user_ids
+    string default_access_policy_id = 9;
+    bool default_new_resources_requests_enabled = 10;
+    bool resource_sync_enabled = 11;
+    bool access_requests_enabled = 12;
+    optional KnowledgeSource knowledge_source = 13;
+    bool is_deleted = 14;
+    bool user_sync_enabled = 15;
+    bool app_sync_enabled = 16;
+    repeated AccessRelationship access_relationships = 17;
+    bool exclusive_app_access_enabled = 18;
+    reserved 19, 20;
+    SharedFromTeam shared_from_team = 21;
+    // Set when this app instance cannot be duplicated to another team.
+    // Absence means duplication is allowed.
+    optional DuplicationRestriction duplication_restriction = 22;
+    // IDs of the app-instance-scoped tags currently attached.
+    repeated string tag_ids = 23;
+    // When true, integration requests for this connection are routed directly
+    // from a self-hosted worker instead of the central svflow proxy. Only
+    // honored for self-hosted workers.
+    bool route_direct_from_worker = 24;
+    // Tri-state form of the "restrict to one role per user" setting. OFF mirrors
+    // exclusive_app_access_enabled=false; BLOCK / AUTO_REMOVE both imply enabled
+    // and choose how a request for a second role is handled.
+    // exclusive_app_access_enabled is retained as the backwards-compatible gate
+    // for older clients/workers.
+    ExclusiveAppAccessMode exclusive_app_access_mode = 25;
+    // Aggregated sync + health-check health, derived on read from the sync
+    // result and health-check run history. Unset on responses from backends
+    // (or endpoints) that don't hydrate it.
+    IntegrationHealth integration_health = 26;
+    // User setting gating integration-health error surfacing (icons) and
+    // scheduled health-check execution. When false, integration_health is
+    // left unset on reads and the health-check cron skips this instance;
+    // manual runs from the health-check panel still work.
+    bool scheduled_health_check_runs_enabled = 27;
+    // For A2A-connected custom apps: the agent card captured by the last
+    // discovery sync. Only populated on surfaces that opt in (currently the
+    // public ListAppInstances).
+    A2AAgentCard a2a_agent_card = 28;
+    // Whether this connection's resource (group) sync may create Serval users
+    // for members it does not recognize. Grouped rather than flat because the
+    // two fields are only meaningful together — see the message doc.
+    ResourceUserCreationPolicy resource_user_creation_policy = 29;
+    bool last_login_sync_enabled = 30;
+    // When true this connection is out of auto-pick: it is reachable only from
+    // the packages that link it.
+    bool is_restricted = 31;
+    // Jira Data Center only: the URL people open Jira at in a browser when it
+    // differs from the API host in instance_id. Empty means use instance_id.
+    string browse_url = 32;
+    // User-owned presentation metadata. Empty on legacy and first-connect rows;
+    // display_name retains its existing computed fallback in that case.
+    string connection_name = 33;
+    string connection_description = 34;
+    InheritedOIDCConnection inherited_oidc_connection = 35;
+    // Teams this instance is actively shared INTO (outbound; revoked shares
+    // excluded) — the inverse of shared_from_team. IDs only: svflow has no
+    // team names, callers resolve them via svauth's team list. Hydrated only
+    // by endpoints that opt in (currently SearchAppInstancesForOrg).
+    repeated string shared_with_team_ids = 36;
+    // Whether this instance is connected per the REGISTERED × CONNECTED model
+    // documented on AggregateConnectorUsage (db/queries/appmgmt.sql): a
+    // service-account credential exists, or the mechanism is credential-less
+    // (delegated OIDC / MCP / A2A). Credentialed ≠ working — no health claim.
+    // Unset on responses from endpoints that don't hydrate it.
+    optional bool connected = 37;
+    // Branch teams whose copy of this connection borrows its credential (a
+    // branch overlay). Listed here instead of in shared_with_team_ids so an
+    // org-wide inventory shows each connection once. Hydrated only by
+    // endpoints that opt in (currently SearchAppInstancesForOrg).
+    repeated string branch_team_ids = 38;
+    // When the connection last changed state as far as its synced groups are
+    // concerned: deleted_at once deleted, else the resource-sync config's
+    // updated_at, else created_at. Opaque and monotonic; only ever compared
+    // against other values of this field. svauth fences a stale connection's
+    // groups at the generation it observed, and group writes carry it on
+    // SetGroupMembersFromExternalSourceRequest.source_generation.
+    google.protobuf.Timestamp group_sync_generation = 39;
+    // Slack app this connection speaks as; empty when unknown, which matches
+    // no Slack event or click.
+    string slack_app_id = 40;
+    // Microsoft Teams only: the Personal Agent answers this bot's 1:1 chats
+    // instead of the help desk, where the workspace holding the connection
+    // has the Personal Agent in Teams.
+    bool personal_agent_chats = 41;
+}
+
+// The source of a branch's sign-in configuration. No credentials are copied.
+message InheritedOIDCConnection {
+    string app_instance_id = 1;
+    string team_id = 2;
+}
+
+// The per-install "may resource sync mint net-new Serval users?" policy.
+// Two fields because "off" has two causes the UI must not render alike:
+// the customer chose it, or the integration forbids it outright.
+message ResourceUserCreationPolicy {
+    // The customer's stored choice (an opt-in: FALSE when never set);
+    // meaningless when forced_off_by_integration is true.
+    bool allow_create_new_users = 1;
+    // True when no resource config on this integration permits user creation
+    // (github/jira/buildkite -- unreliable member emails). A ceiling the
+    // customer cannot raise: render the control disabled, with the reason.
+    bool forced_off_by_integration = 2;
+}
+
+// Aggregated health of an app instance's syncs and integration health checks.
+message IntegrationHealth {
+    IntegrationHealthStatus status = 1;
+    // Superseded by failing_syncs + failing_health_checks, which let the UI
+    // link sync failures and health-check failures to their own surfaces.
+    // Still populated with the combined list so frontend bundles from before
+    // the split keep working during deploy windows; new code should only read
+    // it as that fallback. Deliberately not marked with the deprecated field
+    // option: the generated deprecation JSDoc tag would force a lint
+    // suppression at the one legitimate fallback read site.
+    repeated string failing_checks = 2;
+    // Human-readable names of the syncs currently failing (e.g. "User sync").
+    // Empty unless status is UNHEALTHY.
+    repeated string failing_syncs = 3;
+    // Names of the health-check workflows currently failing. Empty unless
+    // status is UNHEALTHY.
+    repeated string failing_health_checks = 4;
+}
+
+enum IntegrationHealthStatus {
+    INTEGRATION_HEALTH_STATUS_UNSPECIFIED = 0;
+    // No finished sync or health-check run exists yet for the instance.
+    INTEGRATION_HEALTH_STATUS_UNKNOWN = 1;
+    INTEGRATION_HEALTH_STATUS_HEALTHY = 2;
+    INTEGRATION_HEALTH_STATUS_UNHEALTHY = 3;
+}
+
+// How an app that restricts users to one role at a time handles a request for a
+// second role.
+enum ExclusiveAppAccessMode {
+    EXCLUSIVE_APP_ACCESS_MODE_UNSPECIFIED = 0;
+    // No restriction: users may hold multiple roles.
+    EXCLUSIVE_APP_ACCESS_MODE_OFF = 1;
+    // Reject the new request while the user holds (or is requesting) a role.
+    EXCLUSIVE_APP_ACCESS_MODE_BLOCK = 2;
+    // Grant the new role and deprovision the user's prior role(s), including
+    // removal from any linked groups.
+    EXCLUSIVE_APP_ACCESS_MODE_AUTO_REMOVE = 3;
+}
+
+enum DuplicationBlockedReason {
+    DUPLICATION_BLOCKED_REASON_UNSPECIFIED = 0;
+    // The integration uses a rotating OAuth refresh token. Copying such
+    // credentials across teams causes one holder to silently invalidate the
+    // other on the next refresh. Users should use App Sharing instead.
+    DUPLICATION_BLOCKED_REASON_OAUTH_REFRESH_TOKEN = 1;
+}
+
+message DuplicationRestriction {
+    DuplicationBlockedReason reason = 1;
+}
+
+message SharedFromTeam {
+    string team_id = 1;
+    // Display name of the owning (source) team. Populated by the API layer
+    // via svauth when serving list/get endpoints so recipient-team viewers who
+    // aren't members of the source team still see "Shared from <team>" in the UI.
+    string team_name = 2;
+}
+
+// DEPRECATED: superseded by AccessRelationshipType. Retained so the deprecated
+// /v2/app-relationships endpoints keep their original JSON enum names. Values
+// mirror AccessRelationshipType 1:1, so the shim handlers convert by numeric cast.
+enum AppRelationshipType {
+    option deprecated = true;
+    APP_RELATIONSHIP_TYPE_UNSPECIFIED = 0;
+    APP_RELATIONSHIP_TYPE_OWNER = 1;
+}
+
+// DEPRECATED: superseded by AccessRelationshipTargetType (see AppRelationshipType).
+enum AppRelationshipTargetType {
+    option deprecated = true;
+    APP_RELATIONSHIP_TARGET_TYPE_UNSPECIFIED = 0;
+    APP_RELATIONSHIP_TARGET_TYPE_USER = 1;
+    APP_RELATIONSHIP_TARGET_TYPE_GROUP = 2;
+}
+
+enum AccessRelationshipType {
+    ACCESS_RELATIONSHIP_TYPE_UNSPECIFIED = 0;
+    ACCESS_RELATIONSHIP_TYPE_OWNER = 1;
+}
+
+enum AccessRelationshipTargetType {
+    ACCESS_RELATIONSHIP_TARGET_TYPE_UNSPECIFIED = 0;
+    ACCESS_RELATIONSHIP_TARGET_TYPE_USER = 1;
+    ACCESS_RELATIONSHIP_TARGET_TYPE_GROUP = 2;
+}
+
+// The kind of entity a relationship is on. Generalizes the former
+// app_relationships model (app_instance subjects only) so resources, roles
+// (entitlements), and teams can have owners too.
+enum AccessRelationshipSubjectType {
+    ACCESS_RELATIONSHIP_SUBJECT_TYPE_UNSPECIFIED = 0;
+    ACCESS_RELATIONSHIP_SUBJECT_TYPE_APP_INSTANCE = 1;
+    ACCESS_RELATIONSHIP_SUBJECT_TYPE_RESOURCE = 2;
+    ACCESS_RELATIONSHIP_SUBJECT_TYPE_ENTITLEMENT = 3;
+    ACCESS_RELATIONSHIP_SUBJECT_TYPE_TEAM = 4;
+    // A native knowledge node: a knowledge base, a folder, or an article. All
+    // three are rows in knowledge_items (the model unification dropped the
+    // separate knowledge_bases / knowledge_documents tables), so one subject
+    // type carries owners for a whole knowledge base and for a single article.
+    ACCESS_RELATIONSHIP_SUBJECT_TYPE_KNOWLEDGE_ITEM = 5;
+}
+
+message AccessRelationship {
+    string id = 1;
+    AccessRelationshipType relationship_type = 2;
+    string target_id = 3;
+    AccessRelationshipTargetType target_type = 4;
+    google.protobuf.Timestamp created_at = 5;
+    // Polymorphic subject: subject_id holds the app_instance_id | resource_id |
+    // entitlement_id | team_id, disambiguated by subject_type.
+    AccessRelationshipSubjectType subject_type = 6;
+    string subject_id = 7;
+}
+
+
+message ApprovalProcedure {
+    string id = 1;
+    repeated ApprovalStep steps = 2;
+    // How long each step waits for a human decision before timing out
+    // (in seconds). Server clamps to [5 minutes, 90 days]; zero on a
+    // SetApprovalProcedureRequest means "keep the existing value if any,
+    // otherwise apply the 30-day default". The field is always populated
+    // on responses.
+    int32 timeout_seconds = 3;
+    // Set only for a named procedure from the workspace's approval procedure library.
+    optional NamedApprovalProcedure named = 4;
+}
+
+message NamedApprovalProcedure {
+    string scoped_id = 1;
+    // Name of the procedure's current version.
+    string name = 2;
+}
+
+enum ManagerApprovalType {
+    MANAGER_APPROVAL_TYPE_UNSPECIFIED = 0;
+    ALLOW_AS_PRIMARY = 1;
+    ALLOW_AS_SECONDARY = 2;
+}
+
+// OwnerApprovalType configures an owner approver source on an approval step.
+// Shared by all four owner sources (app / team / resource / role), each
+// resolved at its own level of the access request's hierarchy (entitlement ->
+// resource -> app instance -> team). Only valid for access policy approval
+// procedures.
+enum OwnerApprovalType {
+    OWNER_APPROVAL_TYPE_UNSPECIFIED = 0;
+    OWNER_ALLOW_AS_PRIMARY = 1;
+    OWNER_ALLOW_AS_SECONDARY = 2;
+}
+
+message ApprovalGroupRequirement {
+    string group_id = 1;
+    int32 min_approvals = 2;
+}
+
+message ApprovalChannelRequirement {
+    string slack_channel_id = 1;
+    int32 min_approvals = 2;
+}
+
+message ApprovalStep {
+    string id = 1;
+    reserved 2;
+
+    bool allow_self_approval = 5;
+
+    // Specific users
+    repeated string specific_user_ids = 3;
+    repeated string secondary_specific_user_ids = 6;
+
+    // Serval groups
+    repeated string serval_group_ids = 4;
+    repeated string secondary_serval_group_ids = 7;
+
+    // Manager approval
+    ManagerApprovalType manager_approval = 8;
+
+    // If step_type is CUSTOM_WORKFLOW, this is the workflow ID to execute
+    string custom_workflow_id = 9;
+
+    // App owner approval (owners of the requested role's app instance).
+    OwnerApprovalType app_owner_approval = 10;
+
+    // Controls whether approvers are asked for a justification when deciding this step.
+    // Valid values: "not_requested", "optional", "required".
+    string approver_justification_mode = 11;
+
+    // Owner approver sources at the other access-hierarchy levels (see
+    // OwnerApprovalType).
+    OwnerApprovalType team_owner_approval = 12;
+    OwnerApprovalType resource_owner_approval = 13;
+    OwnerApprovalType role_owner_approval = 14;
+    optional int32 stage_number = 15;
+    repeated ApprovalGroupRequirement group_requirements = 16;
+    bool suppress_notifications = 17;
+    // Whether an approver whose approval would otherwise be assumed (they are
+    // the request's target, or its ticket's creator) has it resolved for them
+    // on render. Optional so a client that omits it leaves the stored value
+    // alone instead of resetting it to the proto3 bool default.
+    optional bool auto_approve_self = 18;
+    repeated ApprovalChannelRequirement channel_requirements = 19;
+}
+
+message OnBehalfOfConfirmationProcedure {
+    string id = 1;
+    bool bypass_for_team_members = 2;
+}
+
+// Approval Delegation
+
+enum ApprovalDelegateType {
+    APPROVAL_DELEGATE_TYPE_UNSPECIFIED = 0;
+    APPROVAL_DELEGATE_TYPE_USER = 1;
+    APPROVAL_DELEGATE_TYPE_GROUP = 2;
+}
+
+message ApprovalDelegate {
+    // The type of delegate (user or group).
+    ApprovalDelegateType type = 1;
+    // The ID of the delegate (user ID or group ID, depending on type).
+    string id = 2;
+}
+
+message ApprovalDelegation {
+    // 6 and 7 carried the pre-restructure single-delegate columns and must
+    // not be reused by old readers' ghosts.
+    reserved 6, 7;
+
+    string id = 1;
+    google.protobuf.Timestamp created_at = 2;
+
+    string delegator_user_id = 3;
+    string organization_id = 4;
+
+    // The delegates who can approve on behalf of the delegator.
+    repeated ApprovalDelegate delegates = 5;
+
+    int32 priority = 8;
+    string description = 9;
+
+    // Active window, half-open [active_from, active_until). An absent edge is
+    // unbounded on that side; both absent = permanent rule. Consulted only
+    // when routing new approvals/ticket assignments — expiry never re-routes
+    // in-flight work.
+    optional google.protobuf.Timestamp active_from = 10;
+    optional google.protobuf.Timestamp active_until = 11;
+}
+
+message Integration {
+    string id = 1;
+    oneof integration_auth {
+        RedactedApiKeyIntegration api_key = 3;
+        RedactedClientCredentialsIntegration client_credentials = 4;
+        RedactedOAuthTokenIntegration oauth_token = 5;
+        RedactedCustomDataIntegration custom_data = 6;
+    }
+    string api_domain = 7;
+    // When the integration was created
+    google.protobuf.Timestamp created_at = 8;
+    // When the integration was last updated (e.g., reconnected)
+    google.protobuf.Timestamp last_updated_at = 9;
+    // User who created this integration (if known)
+    string created_by_user_id = 10;
+    // User who last updated this integration (if known)
+    string updated_by_user_id = 11;
+    bool is_shared = 12;
+    SlackInstallationIdentity slack_installation = 13;
+}
+
+message SlackInstallationIdentity {
+    string app_id = 1;
+    oneof scope {
+        string workspace_id = 2;
+        string enterprise_id = 3;
+    }
+}
+
+message RedactedApiKeyIntegration {
+    string api_key_id = 1;
+    int32 api_key_length = 2;
+    string api_key_last_four = 3;
+    // Hint for the frontend to render the correct auth-type card (Basic vs
+    // Bearer) when this integration falls back to the legacy single-key path
+    // and there are no `custom_integration_auth_headers` rows to read the
+    // user's chosen scheme from. Populated by the backend by peeking at the
+    // decrypted plaintext prefix (`Basic ` / `Bearer `). Empty string means
+    // no scheme prefix detected — the frontend should fall back to its
+    // header-name heuristic.
+    string auth_scheme = 4;
+}
+
+message RedactedClientCredentialsIntegration {
+    string client_id = 1;
+    repeated string scopes = 2;
+    int32 client_secret_length = 3;
+    string client_secret_last_four = 4;
+    // True when client_id is a customer-provided app registration rather than
+    // the platform's own app. Computed for microsoft-teams only today; false
+    // for every other service.
+    bool uses_custom_app = 5;
+}
+
+message RedactedOAuthTokenIntegration {
+    string client_id = 1;
+    repeated string scopes = 2;
+}
+
+message RedactedCustomDataIntegration {
+    string data_format = 1;
+    string data = 2;
+}
+
+// Error information returned when an external API call fails during 
+// ticket source configuration loading. This allows the UI to show 
+// helpful error messages instead of crashing the entire page.
+message TicketSourceError {
+    // A user-friendly message explaining what went wrong
+    string message = 1;
+    // The section/field that failed to load (e.g., "team_options", "status_options")
+    string section = 2;
+    // Whether this error is likely due to a permission/configuration issue
+    // that the user needs to fix in their external system
+    bool is_permission_error = 3;
+}
+
+message TicketSource {
+    string id = 1;
+    TicketSourceType type = 2;
+    string team_id = 3;
+    string app_instance_id = 4;
+    string service_instance_id = 5;
+    string service_instance_name = 6;
+    string api_domain = 23;
+    
+    // Legacy field - will be deprecated after migration
+    TicketSyncStrategyType sync_strategy = 7;
+    
+    // New separate sync strategy fields
+    optional TicketSyncOutStrategy sync_out_strategy = 18;
+    optional TicketSyncInStrategy sync_in_strategy = 19;
+    
+    google.protobuf.Timestamp last_synced_at = 8;
+    // The source's primary external container, and the one Serval CREATES in.
+    string external_team_id = 9;
+
+    // Extra containers this source ingests from. ADDITIVE, not the full list:
+    // the effective set is the union with external_team_id, so empty means
+    // "just external_team_id".
+    repeated string additional_external_team_ids = 47;
+    repeated TicketSourceTeamOption team_options = 10;
+    repeated TicketSourceStatusMapping status_mappings = 11;
+    repeated TicketSourcePriorityMapping priority_mappings = 21;
+    repeated TicketSourceStatusOption status_options = 12;
+    repeated TicketSourcePriorityOption priority_options = 22;
+
+    // Jira-specific field
+    bool is_jira_connect_installed = 13;
+    // True when this Jira connection's base credential is a customer-provided
+    // (bring-your-own) OAuth app rather than standard Serval OAuth. The setup
+    // wizard soft-gates the Forge app for BYO (warn but still allow setup),
+    // while standard OAuth stays hard-gated on Forge. Numbered 44 (next free) to
+    // preserve existing wire numbers.
+    bool is_jira_custom_oauth = 44;
+    // True when this Jira connection is a self-hosted Data Center instance
+    // rather than Cloud. Consumers must not infer the deployment from the shape
+    // of service_instance_id: a single-label Data Center host is
+    // indistinguishable from a Cloud Connect site subdomain.
+    bool is_jira_data_center = 46;
+    // Jira Data Center only: normalized origin (plus optional context path)
+    // for user-facing ticket links. Empty means build links from
+    // service_instance_id, which is the API host and may be a private endpoint.
+    string browse_url = 53;
+    optional string jira_connect_app_url = 14;
+    repeated TicketSourceRequestTypeOption request_type_options = 15;
+    // Jira project metadata determines whether this is a JSM request type or PM issue type.
+    string request_type_id = 16;
+    repeated TicketSourceAdditionalField additional_fields = 17;
+    
+    // Controls whether this ticket source is enabled for syncing
+    bool enabled = 20;
+    
+    // Errors encountered when loading data from external APIs.
+    // When populated, the corresponding options/fields may be empty or stale,
+    // but the user can still interact with other sections of the form.
+    repeated TicketSourceError errors = 24;
+
+    // Freshservice and Zendesk: only import tickets assigned to this agent
+    // group. Empty means every group.
+    string external_group_id = 25;
+    repeated TicketSourceGroupOption group_options = 26;
+    
+    // When true, ticket updates come via webhooks. Polling is disabled for this source.
+    bool webhook_enabled = 27;
+
+    // Freshservice-specific: webhook secret for validating incoming webhooks.
+    // Only populated for Freshservice ticket sources. If none exists, one is
+    // auto-generated on first GetTicketSource call.
+    string webhook_secret = 28;
+
+    // When true, Serval will automatically respond to new tickets ingressed from this source.
+    bool ai_response_on_ingress = 29;
+
+    // Controls whether comments/messages are synced bidirectionally for this source.
+    bool sync_comments_enabled = 30;
+    // Master gate for ticket field changes. When false, no attributes sync.
+    // When true, attribute_sync (unset = every field enabled) selects which.
+    bool sync_attributes_enabled = 31;
+    // Unset means every attribute is enabled — older clients that omit this
+    // field, and Temporal replays of ChannelConfig from before it existed,
+    // must keep observing that default. Only read when the master is true.
+    optional TicketAttributeSyncSettings attribute_sync = 48;
+
+    // ServiceNow-specific: controls which ticket types are synced.
+    // All default to true for backward compatibility.
+    bool sync_incidents_enabled = 32;
+    bool sync_request_items_enabled = 33;
+    bool sync_hr_cases_enabled = 34;
+
+    // When true, this ticket source is opted into the live-agent chat
+    // handoff surface (UI affordances on the ticket view and Slack mirror).
+    // Only meaningful for channels whose svhelp implementation satisfies
+    // the LiveAgentCapableChannel capability (today: ServiceNow). Off by
+    // default so existing sources don't suddenly show live-agent UI.
+    bool live_agent_enabled = 35;
+
+    // Hides idle Start chat prompts; workflow starts and active-session controls remain available.
+    bool live_agent_start_button_hidden = 54;
+
+    // Optional team workflow overrides for live-agent operations. Empty
+    // when unset — svhelp resolves the installed default installable by slug.
+    optional string live_agent_check_availability_workflow_id = 36;
+    optional string live_agent_start_session_workflow_id = 37;
+    optional string live_agent_end_session_workflow_id = 38;
+
+    // Computed from the selected Jira project when loading its settings.
+    // Unspecified when no Jira project is selected or classification fails.
+    JiraProjectMode jira_project_mode = 39;
+
+    // Historical backfill floor. When set, the initial historical ticket
+    // import only pulls tickets updated on or after this timestamp (e.g. "the
+    // last 90 days"). Unset means backfill from the earliest ticket (all
+    // history). Only consulted at bootstrap, while last_synced_at is NULL;
+    // once a source has synced, changing it has no effect.
+    optional google.protobuf.Timestamp historical_sync_after = 40;
+
+    // ServiceNow-specific: optional per-ticket-type ServiceNow encoded queries
+    // appended to that type's ingress query so customers can exclude unwanted
+    // tickets (e.g. monitoring / system-generated noise). Each filter is
+    // applied ONLY to its own table, so an incident-specific field (e.g.
+    // category) never reaches request items or HR cases. Empty means no extra
+    // filtering for that type. Configured alongside the historical sync
+    // strategy in the UI.
+    string incident_ingress_filter = 41;
+    string request_item_ingress_filter = 42;
+    string hr_case_ingress_filter = 43;
+
+    // When true, AI-owned ("assigned to Serval") tickets egressed to the
+    // external system are NOT auto-assigned to the Serval app account — they
+    // follow the external project's default assignment instead (typically
+    // Unassigned). Default false preserves the historical behavior of mirroring
+    // "Serval owns this" onto the external ticket. Honored by Jira egress today.
+    bool leave_ai_tickets_unassigned = 45;
+
+    // Requester-facing name used for live-agent messages. Empty uses the
+    // human agent's first name.
+    string live_agent_display_name = 49;
+
+    // Optional deployed workflow that selects the Jira destination for initial
+    // issue creation. Empty means the configured default is always used.
+    optional string jira_ticket_routing_workflow_id = 50;
+    reserved 51, 52;
+    reserved "jira_issue_type_id", "jira_issue_type_options";
+}
+
+// Serializers must always populate this from the DB. Proto3 bool zeros read
+// as false, so an empty message would disable every field.
+message TicketAttributeSyncSettings {
+    bool status_enabled = 1;
+    bool priority_enabled = 2;
+    bool assignment_enabled = 3;
+    bool name_enabled = 4;
+    bool description_enabled = 5;
+}
+
+enum JiraProjectMode {
+    JIRA_PROJECT_MODE_UNSPECIFIED = 0;
+    JIRA_PROJECT_MODE_JSM = 1;
+    JIRA_PROJECT_MODE_PROJECT_MANAGEMENT = 2;
+}
+
+enum TicketSourceType {
+    TICKET_SOURCE_TYPE_UNSPECIFIED = 0;
+    LINEAR = 1;
+    JIRA = 2;
+    FRESHSERVICE = 3;
+    SLACK = 4;
+    ZENDESK = 5;
+    SERVICENOW = 6;
+    MICROSOFT = 7;
+    SALESFORCE = 8;
+    GOOGLE_CHAT = 9;
+}
+
+enum TicketSyncStrategyType {
+    TICKET_SYNC_STRATEGY_TYPE_UNSPECIFIED = 0;
+    
+    // Legacy types - will be deprecated after migration
+    SELECTIVE_DEPRECATED = 1;
+    INGEST_DEPRECATED = 2;
+    FULL_TWO_WAY_DEPRECATED = 3;
+    SYNC_ON_ESCALATION_DEPRECATED = 4;
+}
+
+enum TicketSyncOutStrategy {
+    TICKET_SYNC_OUT_STRATEGY_UNSPECIFIED = 0;
+    AUTOMATIC = 1;       // Send new tickets immediately
+    ON_ESCALATION = 2;   // Send new tickets on escalation
+    SELECTIVE = 3;       // Send specific tickets manually
+    ON_ESCALATION_CONDENSED = 4;  // Send new tickets on escalation, skip historical messages
+    SELECTIVE_CONDENSED = 5;      // Like SELECTIVE but only sync messages after escalation
+}
+
+enum TicketSyncInStrategy {
+    TICKET_SYNC_IN_STRATEGY_UNSPECIFIED = 0;
+    NEW_ONLY = 1;         // Import new tickets only  
+    HISTORICAL_AND_NEW = 2;             // Import existing + new tickets
+}
+
+message TicketSourceRequestTypeOption {
+    string id = 1;
+    string name = 2;
+}
+
+enum TicketStatusMappingDirection {
+    // INGRESS is the zero value on purpose: a mapping with the field unset — an
+    // old client that predates it, or old serialized ChannelConfig in Temporal
+    // egress history — reads as an external->Serval (ingress) mapping, preserving
+    // current behavior for replay/back-compat.
+    TICKET_STATUS_MAPPING_DIRECTION_INGRESS = 0;  // external -> Serval
+    TICKET_STATUS_MAPPING_DIRECTION_EGRESS = 1;   // Serval -> external
+}
+
+message TicketSourceStatusMapping {
+    string status_option_id = 1;
+    string external_status_id = 2;
+    string external_team_id = 3;
+    // Optional: Specifies which external ticket subtype this mapping applies to.
+    // For ServiceNow, this can be "incident", "requested_item", or "hr_case".
+    // If empty, the mapping applies to the default type (e.g., "incident" for ServiceNow).
+    string external_ticket_subtype = 4;
+    // Jira only: the individual external status id within the category in
+    // external_status_id. Empty means this is a category-level (bucket) mapping;
+    // a non-empty value is a precise substatus mapping that takes precedence over
+    // the category mapping on ingress/egress.
+    string external_substatus_id = 5;
+    // Sync direction this row configures; defaults to INGRESS (the zero value) so
+    // existing rows and old Temporal history keep their current behavior. Egress
+    // resolution prefers EGRESS rows for a Serval status and falls back to
+    // reverse-looking-up INGRESS rows when it has none.
+    TicketStatusMappingDirection direction = 6;
+}
+
+message TicketSourcePriorityMapping {
+    string priority_option_id = 1;
+    string external_priority_id = 2;
+    string external_team_id = 3;
+}
+
+message TicketSourceTeamOption {
+    string id = 1;
+    string name = 2;
+    JiraProjectMode jira_project_mode = 3;
+}
+
+message TicketSourceGroupOption {
+    string id = 1;
+    string name = 2;
+}
+
+message TicketSourceStatusOption {
+    string id = 1;
+    string name = 2;
+    string team_id = 3;
+    // Optional: Specifies which external ticket subtype this status option belongs to.
+    // For ServiceNow, this can be "incident", "requested_item", or "hr_case".
+    // If empty, the status belongs to the default type (e.g., "incident" for ServiceNow).
+    string external_ticket_subtype = 4;
+    // Jira only: the status category this individual status rolls up to (e.g. "4"
+    // / "In Progress"). Lets the frontend group statuses under their category and
+    // write category-level (bucket) mappings. Empty for integrations without a
+    // category concept (Linear, Zendesk, etc.).
+    string status_category_id = 5;
+    string status_category_name = 6;
+}
+
+message TicketSourcePriorityOption {
+    string id = 1;
+    string name = 2;
+    string team_id = 3;
+}
+
+enum TicketSourceFieldType {
+    TICKET_SOURCE_FIELD_TYPE_UNSPECIFIED = 0;
+    STRING = 1;
+    NUMBER = 2;
+    BOOLEAN = 3;
+    SELECT = 4;
+    MULTI_SELECT = 5;
+    DATE = 6;
+}
+
+message TicketSourceAdditionalField {
+    string id = 1;
+
+    // Fields derived from the external system
+    string field_name = 2;
+    TicketSourceFieldType field_type = 3;
+    repeated TicketSourceAdditionalFieldOption field_options = 4;
+    bool required = 5; // Whether this field is required for ticket creation in the external system
+    bool is_default_field = 6; // Whether this field is a default field for the external system
+
+    // Fields that are set by Serval users
+    TicketSourceAdditionalFieldValue default_value = 7;
+    bool ai_enabled = 8; // Whether AI should try to set this field
+}
+
+message TicketSourceAdditionalFieldOption {
+    string id = 1;
+    string name = 2;
+    repeated TicketSourceAdditionalFieldOption child_options = 3;
+}
+
+message TicketSourceAdditionalFieldValue {
+    TicketSourceFieldType field_type = 1;
+    string str_value = 2;
+    double number_value = 3;
+    bool bool_value = 4;
+    repeated string str_array_value = 5;
+    google.protobuf.Timestamp date_value = 6;
+}
+
+message KnowledgeSource {
+    string id = 1;
+    google.protobuf.Timestamp last_sync_started_at = 2;
+    google.protobuf.Timestamp last_sync_completed_at = 3;
+    bool last_sync_succeeded = 4;
+    // TRUE when the last sync completed but did NOT see the whole source (its
+    // discovery run ended with errored containers — failed or throttled out).
+    // Distinct from last_sync_succeeded rather than a third value of it: such a
+    // run genuinely did complete, and older clients that only read
+    // last_sync_succeeded must keep rendering it as a success during the
+    // backend->frontend deploy gap. New clients show "synced, incomplete".
+    bool last_sync_partial = 18;
+    // The connector's Temporal error type for a sync failure that cannot clear on
+    // its own — today only a revoked credential ("NotionTokenRevoked"). Empty
+    // means no such condition.
+    //
+    // A third state alongside last_sync_succeeded / last_sync_partial rather than
+    // a value on either: both of those are consumed by older frontend bundles
+    // during the backend->frontend deploy gap, and a terminal failure is neither
+    // a success nor an incomplete one. An old bundle ignores this field and keeps
+    // rendering exactly what it renders today.
+    string terminal_sync_failure_type = 19;
+    reserved 5;
+    bool searching_enabled = 6;
+    bool syncing_enabled = 7;
+    bool permissions_sync_enabled = 8; // Always sync permissions during knowledge ingestion (for supported sources)
+    bool enforce_ingested_permissions = 9; // Whether to enforce permissions when surfacing knowledge items
+    bool cite_knowledge_item_urls = 10; // Whether to include document links in knowledge retrieval and force the help agent to cite them
+    bool public_channel_links_only = 11; // When permissions enforced: if true, only send links (not content) in public channels even when user has access
+    bool knowledge_creation_enabled = 12; // When true, this source is treated as a write target for new knowledge suggestions; gates the suggester's knowledge-creation tool + prompt for the team
+    optional string doc_creation_destination_id = 13; // External ID of the parent page/folder in the source where new knowledge documents will be written (e.g. a Notion page ID)
+    // When TRUE, downloaded connector pages are also imported into the
+    // team's native knowledge base in place (browsable, read-only copies).
+    // Turning it off stops the copy refresh; taking editable ownership is done
+    // via Duplicate to Workspace (the in-place cutover concept is retired —
+    // 16 = cutover_at stays reserved).
+    bool import_to_native_knowledge_base = 14;
+    reserved 15, 16;
+    reserved "cutover_at";
+    // Backend-set. Enabled only when the user manually supplies the SharePoint
+    // sites to crawl (the flow for an integration whose Sites.Selected Graph
+    // scope 403s tenant-wide site enumeration). Once set, the sync orchestrator
+    // runs a scoped crawl of the selected sites instead of enumerating the
+    // tenant; if a skip_discovery source has no stored sites, the orchestrator
+    // resets this back to false so normal discovery is re-attempted.
+    bool skip_discovery = 17;
+    // How the help desk agent discloses a knowledge item that matched a
+    // question but that the requester cannot read. Only meaningful when
+    // enforce_ingested_permissions is TRUE. UNSPECIFIED behaves as SILENT.
+    RestrictedMatchDisclosure restricted_match_disclosure = 20;
+    // Backend-set, ServiceNow only. Which evaluation path answered which user
+    // criteria on the most recent match sweep, and how the fast path's
+    // answers have compared with ServiceNow's over time. Unset until a sweep
+    // has recorded it.
+    optional UserCriteriaSyncPaths user_criteria_sync_paths = 21;
+}
+
+// UserCriteriaSyncPaths is the per-sweep split between the two ways Serval
+// keeps ServiceNow user criteria in sync. Fast: Serval evaluated the criteria
+// itself from a read-only snapshot of the instance. Standard: ServiceNow
+// evaluated it per user through the Scripted REST endpoint. Refused: neither
+// path could, so the criteria failed closed. Every criteria the fast path
+// cannot answer for lack of read access is listed in fast_sync_blockers by the
+// table or table.column to grant, so the split moves when the grant lands.
+message UserCriteriaSyncPaths {
+    // True when the fast path ran on this sweep at all. False means every
+    // criteria went through the endpoint because fast sync is not enabled for
+    // the organization, not because of missing read access.
+    bool fast_sync_attempted = 1;
+    int32 fast_path_criteria = 2;
+    int32 standard_path_criteria = 3;
+    int32 refused_criteria = 4;
+    // Wall-clock seconds of each pass on this sweep; the standard figure sums
+    // every per-user page.
+    int32 fast_path_seconds = 5;
+    int32 standard_path_seconds = 6;
+    repeated string fast_sync_blockers = 7;
+    google.protobuf.Timestamp recorded_at = 8;
+    // Cumulative (user, criteria) pairs the endpoint re-checked against the
+    // fast path's answers, and how many disagreed.
+    int64 validation_pairs = 9;
+    int64 validation_disagreements = 10;
+    optional google.protobuf.Timestamp validation_last_at = 11;
+}
+
+// RestrictedMatchDisclosure is the per-source rule for a knowledge item that
+// matched a question but that the requester cannot read. Without it, a
+// permission-filtered miss and a genuine absence look identical to the agent
+// (both are zero results), so the agent cannot say "this exists but you do not
+// have access" and instead searches, fails, and improvises (DLB-609, DLB-592).
+enum RestrictedMatchDisclosure {
+    RESTRICTED_MATCH_DISCLOSURE_UNSPECIFIED = 0;
+    // Treat restricted items as if they do not exist. The agent answers only
+    // from what the requester can read. Today's behaviour and the org default.
+    RESTRICTED_MATCH_DISCLOSURE_SILENT = 1;
+    // Tell the requester that restricted content matched, without titles or
+    // links, and offer an access request.
+    RESTRICTED_MATCH_DISCLOSURE_ACKNOWLEDGE = 2;
+    // Show the item title and the source link; the source enforces access on
+    // click. Content is never quoted. In a non-DM channel svflow degrades this
+    // to ACKNOWLEDGE as a rule, not a setting.
+    RESTRICTED_MATCH_DISCLOSURE_NAME_AND_LINK = 3;
+}
+
+message KnowledgeSourceSyncRun {
+    string id = 1;
+    string knowledge_source_id = 2;
+    string run_type = 3;
+    google.protobuf.Timestamp started_at = 4;
+    optional google.protobuf.Timestamp completed_at = 5;
+    optional google.protobuf.Timestamp failed_at = 6;
+    optional string failure_message = 7;
+    int32 items_added_count = 8;
+    int32 items_updated_count = 9;
+    int32 items_deleted_count = 10;
+    int32 items_unchanged_count = 11;
+    int32 items_errored_count = 12;
+    optional string parent_run_id = 13;
+}
+
+// Aggregate changed fields. Missing details mean the comparison is unavailable,
+// including update retries that may have already written data.
+message SyncUpdateDetails {
+    enum Field {
+        UNSPECIFIED = 0;
+        NAME = 1;
+        DESCRIPTION = 2;
+        INPUTS = 3;
+        GENERATED_CODE = 4;
+        CONFIRMATION = 5;
+        RESTORED = 6;
+    }
+    repeated Field changed_fields = 1;
+}
+
+message SyncWorkflowNameConflict {
+    string external_id = 1;
+    string requested_workflow_name = 2;
+    string conflicting_workflow_id = 3;
+}
+
+// Recorded import failures, not the conflicting workflows' current state.
+message SyncWorkflowNameConflicts {
+    repeated SyncWorkflowNameConflict conflicts = 1;
+    bool has_more_conflicts = 2;
+    bool has_other_errors = 3;
+}
+
+enum SyncStatus {
+    SYNC_STATUS_UNSPECIFIED = 0;
+    SYNC_STATUS_NOT_STARTED = 1;
+    SYNC_STATUS_RUNNING = 2;
+    SYNC_STATUS_COMPLETED = 3;
+    SYNC_STATUS_FAILED = 4;
+}
+
+message GuidanceMetadata {
+    string guidance_doc_id = 1;
+    string guidance_doc_name = 2;
+    string latest_version_update_by_user_id = 3;
+    google.protobuf.Timestamp latest_version_last_updated_at = 4;
+    bool never_published = 5;
+    google.protobuf.Timestamp disabled_at = 6;
+    string guidance_file_id = 7;
+    repeated string guidance_associated_tag_ids = 8;
+    string guidance_doc_description = 9;
+    bool should_always_use = 10;
+    string guidance_doc_content = 11;
+    bool has_unpublished_edits = 12;
+    // Folder the skill lives in. Unset means the skill lives at the root.
+    optional string folder_id = 13;
+    // The copy-invariant scoped ID of the guidance (e.g. "skill_...").
+    string scoped_id = 14;
+    // Discriminates help-desk vs catalyst skills (both are rows in the same
+    // guidances table). The frontend re-reads this on every render to route the
+    // mention chip, so routing survives markdown round-trips that carry only
+    // type + id.
+    SkillType skill_type = 15;
+    // Creator of the first version and editor of the latest version. Kept
+    // separate because an unpublished draft can be edited in place by someone
+    // other than its creator.
+    string created_by_user_id = 16;
+    string latest_version_updated_by_user_id = 17;
+    serval.resources.v1.agentchannels.AgentChannelFilter channel_filter = 18;
+}
+
+// SkillType discriminates the two skill kinds that share the guidances table.
+// It lives here (not in svflow.user) so both the shared metadata messages here
+// and the user-facing Skill message can reference it — svflow.user imports
+// svflow.common.models, so defining it there would create a package cycle.
+enum SkillType {
+    SKILL_TYPE_UNSPECIFIED = 0;
+    SKILL_TYPE_HELP_DESK = 1;
+    SKILL_TYPE_CATALYST = 2;
+}
+
+// SkillMetadata mirrors GuidanceMetadata field-for-field with skill-named
+// fields; the underlying data model is unchanged.
+message SkillMetadata {
+    string skill_doc_id = 1;
+    string skill_doc_name = 2;
+    string latest_version_update_by_user_id = 3;
+    google.protobuf.Timestamp latest_version_last_updated_at = 4;
+    bool never_published = 5;
+    google.protobuf.Timestamp disabled_at = 6;
+    string skill_file_id = 7;
+    repeated string skill_associated_tag_ids = 8;
+    string skill_doc_description = 9;
+    bool should_always_use = 10;
+    string skill_doc_content = 11;
+    bool has_unpublished_edits = 12;
+    // Folder the skill lives in. Unset means the skill lives at the root.
+    optional string folder_id = 13;
+    // The copy-invariant scoped ID of the skill (e.g. "gd_...").
+    string scoped_id = 14;
+    // Discriminates help-desk vs catalyst skills. See GuidanceMetadata.skill_type.
+    SkillType skill_type = 15;
+    string created_by_user_id = 16;
+    string latest_version_updated_by_user_id = 17;
+    serval.resources.v1.agentchannels.AgentChannelFilter channel_filter = 18;
+}
+
+enum GroupMatchType {
+    GROUP_MATCH_TYPE_ANY = 0;
+    GROUP_MATCH_TYPE_ALL = 1;
+}
+
+enum AccessProfileUnmatchAction {
+    ACCESS_PROFILE_UNMATCH_ACTION_REVOKE = 0;
+    // Drop the profile's pointer and leave the grant as observed access.
+    ACCESS_PROFILE_UNMATCH_ACTION_KEEP = 1;
+}
+
+message AccessProfile {
+    string id = 1;
+    string team_id = 2;
+    string name = 3;
+    string description = 4;
+    google.protobuf.Timestamp created_at = 5;
+    GroupMatchType group_match_type = 6;
+    optional AccessProfileExternalSource external_source = 7;
+    bool is_team_default = 8;
+    AccessProfileBuiltinProfileType builtin_profile_type = 9;
+    reserved 10;
+    bool birthright_enabled = 14;
+    GroupMatchType birthright_group_match_type = 15;
+    AccessProfileUnmatchAction unmatch_action = 11;
+    reserved 12, 13;
+    reserved "held_revokes", "held_since";
+}
+
+enum AccessProfileExceptionReason {
+    ACCESS_PROFILE_EXCEPTION_REASON_UNSPECIFIED = 0;
+    ACCESS_PROFILE_EXCEPTION_REASON_REVIEW = 1;
+    ACCESS_PROFILE_EXCEPTION_REASON_ADMIN = 2;
+}
+
+// A grant the birthright reconciler must not restore. Keyed on the grant
+// (user, entitlement) so no profile re-provisions it; a profile's Exceptions
+// tab lists the ones on the entitlements it grants.
+message AccessProfileException {
+    string id = 1;
+    string user_id = 2;
+    string entitlement_id = 3;
+    AccessProfileExceptionReason reason = 4;
+    // Absent when a review remediation wrote the exception.
+    optional string created_by_user_id = 5;
+    google.protobuf.Timestamp created_at = 6;
+}
+
+message AccessProfileExternalSource {
+    string app_instance_id = 1;
+    string service_slug = 2;
+    string external_id = 3;
+    string external_name = 4;
+}
+
+message AccessProfileEntitlement {
+    string id = 1;
+    string access_profile_id = 2;
+    string entitlement_id = 3;
+    Entitlement entitlement = 4;
+    bool is_tracking_team_default = 5;
+}
+
+// AccessProfileBuiltinProfileType marks access profiles that ship with the
+// product (built-in) rather than being user-created. Built-in profiles have
+// locked identity/criteria but editable grants.
+enum AccessProfileBuiltinProfileType {
+    ACCESS_PROFILE_BUILTIN_PROFILE_TYPE_UNSPECIFIED = 0;
+    ACCESS_PROFILE_BUILTIN_PROFILE_TYPE_TEAM_MEMBERS = 1;
+}
+
+message AccessProfileGroup {
+    string id = 1;
+    string access_profile_id = 2;
+    string group_id = 3;
+    bool is_excluded = 4;
+    reserved 5, 6;
+}
+
+message AccessProfileTeamRoles {
+    string id = 1;
+    string access_profile_id = 2;
+    // Built-in team roles. Together with custom_role_ids: both empty means
+    // any role on the team matches; otherwise a member matches by holding
+    // any listed built-in role OR any listed custom role.
+    repeated svauth.models.TeamRole team_roles = 3;
+    // svauth custom-role IDs (user-defined roles from team settings).
+    repeated string custom_role_ids = 4;
+}
+
+// AccessProfileAttributeCriterion matches displayed user-profile values. Custom
+// fields use their svstore key; svauth built-ins use the reserved prefix. Enum
+// and multiselect values are display names, not option IDs.
+message AccessProfileAttributeCriterion {
+    string id = 1;
+    string access_profile_id = 2;
+    string attribute_key = 3;
+    repeated string match_values = 4;
+    // "is none of": the row holds when the user has none of match_values.
+    bool is_excluded = 5;
+    // Rows sharing a condition group must all hold; groups OR together.
+    int32 condition_group = 6;
+}
+
+message AccessProfileWorkflow {
+    string id = 1;
+    string access_profile_id = 2;
+    string workflow_id = 3;
+    string workflow_name = 4;
+    string workflow_description = 5;
+}
+
+// A form whose audience this access profile is part of. Unlike the workflow
+// twin, the name comes from the form's LATEST version rather than its deployed
+// one: a form is gateable from its first draft save, so a never-published form
+// must still render with a name.
+message AccessProfileForm {
+    string id = 1;
+    string access_profile_id = 2;
+    string form_id = 3;
+    string form_name = 4;
+    string form_description = 5;
+}
+
+// A skill (help-desk runbook) whose audience this access profile is part of.
+// Like the form twin this restricts rather than grants: a skill with no
+// profiles linked can be loaded into the agent's context for anyone in the
+// org, and each linked profile narrows who that is. The name comes from the
+// skill's LATEST version, so a never-published draft still renders with one.
+message AccessProfileSkill {
+    string id = 1;
+    string access_profile_id = 2;
+    string skill_id = 3;
+    string skill_name = 4;
+    string skill_description = 5;
+}
+
+// A knowledge base a profile grants its members access to. knowledge_base_id is
+// the base root's knowledge_items.id (the public KB id from ListKnowledgeBases).
+// Mirrors AccessProfileWorkflow.
+message AccessProfileKnowledgeBase {
+    string id = 1;
+    string access_profile_id = 2;
+    string knowledge_base_id = 3;
+    string knowledge_base_name = 4;
+    string knowledge_base_icon = 5;
+}
+
+message Tag {
+    string id = 1;
+    google.protobuf.Timestamp created_at = 2;
+    optional google.protobuf.Timestamp deleted_at = 3;
+    string name = 4;
+    optional string color = 5;
+    optional string icon_slug = 6;
+    string description = 7;
+}
+
+// TagSubjectType is the kind of entity a tag is attached to. Mirrors the DB
+// tag_subject_type enum and keys the polymorphic tag-subject RPCs that replace
+// the per-subject tag-attach RPCs.
+//
+// Deliberately distinct from AccessRelationshipSubjectType: the two overlap
+// but diverge (tags add workflow/guidance; owners add team) and back separate
+// DB enums. Unifying them would trade enum type-safety for runtime subset
+// validation.
+enum TagSubjectType {
+    TAG_SUBJECT_TYPE_UNSPECIFIED = 0;
+    TAG_SUBJECT_TYPE_WORKFLOW = 1;
+    TAG_SUBJECT_TYPE_GUIDANCE = 2;
+    TAG_SUBJECT_TYPE_APP_INSTANCE = 3;
+    TAG_SUBJECT_TYPE_RESOURCE = 4;
+    TAG_SUBJECT_TYPE_ENTITLEMENT = 5;
+    // Forms are file-backed like workflow/guidance: subject_id is the form's
+    // FILE id on the user surface (the public surface accepts the form
+    // definition id and translates).
+    TAG_SUBJECT_TYPE_FORM = 6;
+    // Form Blocks use their own subject kind so a Block and a Form can never
+    // share associations accidentally. subject_id is the backing file id.
+    TAG_SUBJECT_TYPE_FORM_BLOCK = 7;
+}
+
+// SubjectTags is one subject's resolved tag set, for batch list responses.
+message SubjectTags {
+    string subject_id = 1;
+    repeated Tag tags = 2;
+}
+
+// Which surface a folder belongs to. Folders are scoped per folder_type so the
+// Workflows, Skills, and Forms surfaces never see each other's folders.
+// GUIDANCE folders hold guidance docs (a.k.a. Skills).
+enum FolderType {
+    FOLDER_TYPE_UNSPECIFIED = 0;
+    FOLDER_TYPE_WORKFLOW = 1;
+    FOLDER_TYPE_GUIDANCE = 2;
+    FOLDER_TYPE_FORM = 3;
+    FOLDER_TYPE_FORM_BLOCK = 4;
+}
+
+message Folder {
+    string id = 1;
+    google.protobuf.Timestamp created_at = 2;
+    google.protobuf.Timestamp updated_at = 3;
+    string team_id = 4;
+    string name = 5;
+    // Unset when the folder is at the root of the team's folder tree.
+    optional string parent_folder_id = 6;
+    string created_by_user_id = 7;
+    FolderType folder_type = 8;
+    // Copy-invariant team-scoped identity. Use this instead of id in portable
+    // configuration; id remains the deployment-local database key.
+    string scoped_id = 9;
+}
+
+// A personal saved view of the workflow list. `data` is an opaque
+// frontend-owned JSON string (filters, sort, columns); the backend stores it
+// without interpreting it beyond well-formedness.
+message WorkflowView {
+    string id = 1;
+    string name = 2;
+    string data = 3;
+    google.protobuf.Timestamp created_at = 4;
+    string created_by_user_id = 5;
+    int32 display_order = 6;
+    // The team the view was saved in. View data embeds team-scoped ids
+    // (tags, app instances), so a view is only meaningful within its team.
+    string team_id = 7;
+}
+
+message KnowledgeIngestionConfig {
+    string id = 1;
+    reserved 2; reserved "app_instance_id"; // custom ingestion has no app association
+    string team_id = 3; // Derived from knowledge_sources.team_id
+    string knowledge_source_id = 4;
+    string workflow_id = 5;
+    reserved 6; // was service_name (now derived from app_instances.service)
+    reserved 7; // was enabled (soft delete replaces disable)
+    reserved 8; // was sync_interval_minutes (no longer customer-configurable)
+    google.protobuf.Timestamp last_sync_started_at = 9; // Derived from latest knowledge_sync_results
+    google.protobuf.Timestamp last_sync_completed_at = 10; // Derived from latest knowledge_sync_results
+    bool last_sync_succeeded = 11; // Derived from latest knowledge_sync_results
+    optional string last_sync_error = 12; // Derived from latest knowledge_sync_results
+    bool searching_enabled = 13;
+    bool cite_urls = 14;
+    google.protobuf.Timestamp created_at = 15;
+    google.protobuf.Timestamp updated_at = 16;
+    reserved 17; // was delete_missing_data (always true)
+    // Display name of the source, mirrored from its native knowledge base's
+    // name. Editable; defaults to the ingestion workflow's name.
+    string name = 18;
+    // Whether the mirror knowledge base is AI-context only (indexed for
+    // retrieval but hidden from human-facing surfaces). Editable after creation.
+    bool ai_context_only = 19;
+    // Optional Brandfetch domain (bare hostname, e.g. "apple.com") for the
+    // source's logo. Empty = no custom logo. Canonical home for the logo; the
+    // manage-sources card and knowledge-item rows read it.
+    string logo_brand_domain = 20;
+}
+
+// WorkflowBuilderThread represents a conversation thread from the workflow builder.
+// Shared between the user and private APIs. Field numbers match the original
+// user proto Thread types for wire compatibility.
+message WorkflowBuilderThread {
+    string id = 1;
+    string workflow_id = 2;
+    bool ai_in_progress = 3;
+    repeated WorkflowBuilderThreadPart parts = 4;
+    bool has_error = 5;
+    repeated WorkflowBuilderThreadPendingMessage pending_messages = 6;
+}
+
+message WorkflowBuilderThreadPendingMessage {
+    string id = 1;
+    string thread_id = 2;
+    string author_id = 3;
+    string content = 4;
+    google.protobuf.Timestamp created_at = 5;
+    bool send_requested = 6;
+}
+
+message WorkflowBuilderThreadPart {
+    string id = 1;
+    string role = 2;
+    string author_id = 3;
+    oneof type {
+        WorkflowBuilderThreadRunRequestMessage workflow_run_request = 4;
+        WorkflowBuilderThreadMessage std_message = 5;
+        WorkflowBuilderThreadWebSearchResults web_search_results = 6;
+    }
+    google.protobuf.Timestamp created_at = 7;
+    optional google.protobuf.Timestamp finalized_at = 8;
+}
+
+message WorkflowBuilderThreadRunRequestMessage {}
+
+message WorkflowBuilderThreadWebSearchResults {
+    repeated WorkflowBuilderThreadWebSearchResult results = 1;
+}
+
+message WorkflowBuilderThreadWebSearchResult {
+    string id = 1;
+    string title = 2;
+    string url = 3;
+}
+
+message WorkflowBuilderThreadMessage {
+    string id = 1;
+    string content = 2;
+    bool generation_finished = 3;
+    repeated WorkflowBuilderThreadFunctionCallWithEvaluations function_calls_with_evals = 4;
+    WorkflowBuilderThreadWebSearchResults web_search_results = 5;
+    google.protobuf.Timestamp created_at = 6;
+    optional google.protobuf.Timestamp finalized_at = 7;
+}
+
+message WorkflowBuilderThreadFunctionCallWithEvaluations {
+    WorkflowBuilderThreadFunctionCall function_call = 1;
+    repeated WorkflowBuilderThreadEvaluation evaluations = 2;
+    optional WorkflowRunMeta linked_workflow_run_meta = 3;
+    optional WorkflowBuilderThreadCreatedTemporaryWorkflow created_temporary_workflow = 4;
+}
+
+message WorkflowBuilderThreadCreatedTemporaryWorkflow {
+    string id = 1;
+    string name = 2;
+    bool is_finished_iterating = 3;
+}
+
+message WorkflowBuilderThreadFunctionCall {
+    string id = 1;
+    string name = 2;
+    bool generation_finished = 3;
+    google.protobuf.Timestamp created_at = 4;
+    optional google.protobuf.Timestamp finished_at = 5;
+}
+
+enum WorkflowBuilderThreadEvaluationType {
+    WORKFLOW_BUILDER_THREAD_EVALUATION_TYPE_UNSPECIFIED = 0;
+    WORKFLOW_BUILDER_THREAD_TYPECHECK = 1;
+    WORKFLOW_BUILDER_THREAD_LLM_REVIEW = 2;
+}
+
+enum WorkflowBuilderThreadEvaluationResultType {
+    WORKFLOW_BUILDER_THREAD_EVALUATION_RESULT_TYPE_UNSPECIFIED = 0;
+    WORKFLOW_BUILDER_THREAD_OK = 1;
+    WORKFLOW_BUILDER_THREAD_ERROR = 2;
+}
+
+message WorkflowBuilderThreadEvaluation {
+    string id = 1;
+    WorkflowBuilderThreadEvaluationType type = 2;
+    string result = 3;
+    optional WorkflowBuilderThreadEvaluationResultType result_type = 4;
+}
+
+// AccessGrantRemediation is svflow's view of a UAR remediation row, used by
+// svhelp's GetTicket enrichment + dashboard list view to surface live deprov
+// state without coupling to svflow's DB schema.
+message AccessGrantRemediation {
+  string ticket_id = 1;
+  string entitlement_id = 2;
+  string user_id = 3;
+  optional google.protobuf.Timestamp deprovision_run_started_at = 4;
+  optional google.protobuf.Timestamp concluded_at = 5;
+  // conclusion_reason is the access_request_conclusion_reason enum string
+  // (e.g. "revoked", "deprovision-failed"). Set only when concluded_at is set.
+  optional string conclusion_reason = 6;
+  // What asked for the deprovision, as the access_grant_remediation_source
+  // enum string: "access_review", "reclamation" or "revoke" (an ad-hoc revoke
+  // from the roster). Unset on rows older than the column.
+  optional string source = 7;
+}
+
+// =============================================================================
+// Native Knowledge Base (svflow-owned Outline-like wiki). Distinct from
+// the external KnowledgeSource / KnowledgeItem messages above which model
+// the third-party ingestion pipeline.
+// =============================================================================
+
+// KnowledgeBase is the top-level container (Outline-style "Collection").
+// Bases live per-team. content_json is schema-versioned editor JSON
+// (v2: BlockNote blocks) and content_markdown is the derived text
+// view for search/export.
+message KnowledgeBase {
+    string id = 1;
+    string team_id = 2;
+    string url_id = 3;
+    string name = 4;
+    string description = 5;
+    optional string icon = 6;
+    optional string color = 7;
+    string sort_index = 8;
+    bool commenting_enabled = 9;
+    reserved 10; reserved "content_schema_version";
+    reserved 11; reserved "editor_version";
+    reserved 12; reserved "content_json";
+    reserved 13; reserved "content_markdown";
+    string created_by_user_id = 14;
+    string last_modified_by_user_id = 15;
+    optional google.protobuf.Timestamp archived_at = 16;
+    optional string archived_by_user_id = 17;
+    google.protobuf.Timestamp created_at = 18;
+    google.protobuf.Timestamp updated_at = 19;
+    // 20 was source_knowledge_item_id — the legacy native-mirror back-pointer,
+    // retired with the mirror model. Reserved so the number/name never reuse.
+    reserved 20;
+    reserved "source_knowledge_item_id";
+    // Set when this base is the native mirror of a custom knowledge
+    // ingestion config. Like source_knowledge_item_id, its presence marks
+    // the base as sync-managed (its documents are read-only), so the
+    // frontend groups it under "External Connections" too.
+    optional string source_ingestion_config_id = 21;
+    // When true, this base is AI-context only: indexed for agent retrieval
+    // but hidden from human-facing surfaces. The frontend groups it under a
+    // separate "AI Context" section, collapses document bodies behind a
+    // warning, and excludes it from the service catalog.
+    bool ai_context_only = 22;
+    // True when this base is a hand-authored native base
+    // (knowledge_items.type = 'native_base'); false when it is an external
+    // connector container promoted in place (e.g. a Confluence space or
+    // ServiceNow knowledge base). The frontend groups non-native bases under
+    // "External Connections". A config-mirror base is native but still external
+    // (see source_ingestion_config_id).
+    bool is_native_base = 23;
+    // Server-computed: true when this base's PERMISSIONS are synced from its
+    // connector (the base-root twin of KnowledgeDocument.permissions_sync_locked).
+    // Its access-profile gating is read-only in Serval, so
+    // AddKnowledgeBasesToAccessProfile refuses it and the access-profile picker
+    // does not offer it.
+    bool permissions_sync_locked = 24;
+}
+
+// One cross-team grant on a knowledge base. Exactly one target is set: a named
+// team, or the owner's whole organization.
+message KnowledgeBaseShare {
+    string id = 1;
+    string knowledge_base_id = 2;
+    optional string target_team_id = 3;
+    optional string target_organization_id = 4;
+    string shared_by_user_id = 5;
+    google.protobuf.Timestamp created_at = 6;
+}
+
+// A knowledge base another team shared with the reader's team. Deliberately not
+// a KnowledgeBase: the reader gets identity and provenance, never the owner's
+// editing state, because a share grants no write of any kind.
+message SharedKnowledgeBase {
+    string id = 1;
+    string name = 2;
+    optional string icon = 3;
+    optional string color = 4;
+    optional string url_id = 5;
+    string owner_team_id = 6;
+    google.protobuf.Timestamp shared_at = 7;
+    // True when the reader sees this base through an organization-wide grant
+    // rather than one aimed at its team. The frontend labels the two
+    // differently, and only the owner can tell them apart otherwise.
+    bool shared_org_wide = 8;
+}
+
+message KnowledgeDocumentBlock {
+    string id = 1;
+    string document_id = 2;
+    reserved 3; reserved "client_block_id";
+    reserved 4; reserved "parent_client_block_id";
+    string block_type = 5;
+    string props_json = 6;
+    string content_json = 7;
+    string plain_text = 8;
+    string sort_index = 9;
+    repeated KnowledgeDocumentBlock children = 10;
+    google.protobuf.Timestamp created_at = 11;
+    google.protobuf.Timestamp updated_at = 12;
+    optional string parent_block_id = 13;
+}
+
+message KnowledgeDocumentBlockWrite {
+    reserved 1; reserved "client_block_id";
+    reserved 2; reserved "parent_client_block_id";
+    string block_type = 3;
+    string props_json = 4;
+    string content_json = 5;
+    string plain_text = 6;
+    string sort_index = 7;
+    repeated KnowledgeDocumentBlockWrite children = 8;
+    string id = 9;
+}
+
+// KnowledgeDocument is the canonical (live) document row. The body source of
+// truth is the blocks field; content_json/content_markdown are materialized
+// projections retained for export/search/debug paths.
+// KnowledgeDocumentKind separates content-bearing pages from pure
+// organizational folders in the workspace tree. Folders mirror the
+// Notion / Outline pattern: they hold no body content, only children.
+enum KnowledgeDocumentKind {
+    KNOWLEDGE_DOCUMENT_KIND_UNSPECIFIED = 0;
+    KNOWLEDGE_DOCUMENT_KIND_PAGE = 1;
+    KNOWLEDGE_DOCUMENT_KIND_FOLDER = 2;
+}
+
+message KnowledgeDocument {
+    string id = 1;
+    string team_id = 2;
+    string knowledge_base_id = 3;
+    optional string parent_document_id = 4;
+    string url_id = 5;
+    string title = 6;
+    string summary = 7;
+    optional string icon = 8;
+    optional string color = 9;
+    reserved 10; reserved "language";
+    string sort_index = 11;
+    reserved 12; reserved "content_schema_version";
+    reserved 13; reserved "editor_version";
+    reserved 14; reserved "content_json";
+    reserved 15; reserved "content_markdown";
+    int64 current_version_number = 16;
+    // Publish model. published_version_number is unset until the doc has been
+    // published at least once. Readers/agent see the published version;
+    // editors edit the draft (current_version_number).
+    optional google.protobuf.Timestamp published_at = 17;
+    optional int64 published_version_number = 28;
+    optional string published_by_user_id = 29;
+    // True when there is an unpublished draft (current_version_number is ahead
+    // of the published version, or the doc has never been published).
+    bool has_unpublished_changes = 30;
+    // Agent-retrieval indexing status of the published version.
+    KnowledgeIndexStatus index_status = 31;
+    optional google.protobuf.Timestamp archived_at = 18;
+    optional string archived_by_user_id = 19;
+    string created_by_user_id = 20;
+    string last_modified_by_user_id = 21;
+    google.protobuf.Timestamp created_at = 22;
+    google.protobuf.Timestamp updated_at = 23;
+    repeated KnowledgeDocumentBlock blocks = 24;
+    KnowledgeDocumentKind kind = 25;
+    // 26 was source_knowledge_item_id (legacy native-mirror back-pointer, retired).
+    reserved 26;
+    reserved "source_knowledge_item_id";
+    // Server-computed from IsDocumentSyncLocked — true only while the
+    // source still has import enabled and has not cut over.
+    bool sync_locked = 27;
+    // Server-computed: true when this item's PERMISSIONS are synced from its
+    // source (external connector source with permissions_sync_enabled). The
+    // connector is the source of truth for such an item's audience, so its
+    // access-profile gating is READ-ONLY in Serval — the Visibility/Share
+    // control is hidden. Narrower than sync_locked (which is content-lock): a
+    // hand-authored native page under a connector-managed base is content-locked
+    // but NOT permission-synced, so it stays manually gatable.
+    bool permissions_sync_locked = 32;
+    // Human-readable page number, unique inside the owning team's native
+    // knowledge. Clients show it as "KB" plus seven zero-padded digits
+    // (KB0000042). Set only on native pages; unset on folders and on items
+    // that a connector syncs.
+    optional int64 page_number = 33;
+}
+
+// Agent-retrieval indexing lifecycle for a published native document.
+// Mirrors knowledge_documents.index_status.
+enum KnowledgeIndexStatus {
+    KNOWLEDGE_INDEX_STATUS_UNSPECIFIED = 0;
+    // Not yet indexed (never published, or unpublished/archived).
+    KNOWLEDGE_INDEX_STATUS_UNINDEXED = 1;
+    // Indexing workflow in flight (chunking + embedding).
+    KNOWLEDGE_INDEX_STATUS_INDEXING = 2;
+    // Published version is chunked, embedded, and agent-retrievable.
+    KNOWLEDGE_INDEX_STATUS_INDEXED = 3;
+    // Indexing failed; retriable.
+    KNOWLEDGE_INDEX_STATUS_FAILED = 4;
+}
+
+// KnowledgeDocumentSummary is a lightweight projection used in tree /
+// list reads — drops content_json/content_markdown.
+message KnowledgeDocumentSummary {
+    string id = 1;
+    string team_id = 2;
+    string knowledge_base_id = 3;
+    optional string parent_document_id = 4;
+    string url_id = 5;
+    string title = 6;
+    string summary = 7;
+    optional string icon = 8;
+    optional string color = 9;
+    string sort_index = 10;
+    int64 current_version_number = 11;
+    optional google.protobuf.Timestamp published_at = 12;
+    optional google.protobuf.Timestamp archived_at = 13;
+    string created_by_user_id = 14;
+    string last_modified_by_user_id = 15;
+    google.protobuf.Timestamp created_at = 16;
+    google.protobuf.Timestamp updated_at = 17;
+    KnowledgeDocumentKind kind = 18;
+    // 19 was source_knowledge_item_id (legacy native-mirror back-pointer, retired).
+    reserved 19;
+    reserved "source_knowledge_item_id";
+    bool sync_locked = 20;
+    optional int64 published_version_number = 21;
+    bool has_unpublished_changes = 22;
+    KnowledgeIndexStatus index_status = 23;
+    // See KnowledgeDocument.page_number.
+    optional int64 page_number = 24;
+}
+
+message KnowledgeDocumentVersion {
+    string id = 1;
+    string document_id = 2;
+    int64 version_number = 3;
+    reserved 4; reserved "base_version_id";
+    reserved 5; reserved "name";
+    string title = 6;
+    optional string icon = 7;
+    optional string color = 8;
+    reserved 9; reserved "content_schema_version";
+    reserved 10; reserved "editor_version";
+    reserved 11; reserved "content_json";
+    reserved 12; reserved "content_markdown";
+    string created_by_user_id = 13;
+    reserved 14; reserved "collaborator_user_ids";
+    google.protobuf.Timestamp created_at = 15;
+    reserved 16; reserved "blocks";
+    string summary = 17;
+    string blocks_snapshot = 18;
+    string plain_text_snapshot = 19;
+    // Where this revision sits in the review lifecycle. An approver approves a
+    // revision, not a document, so the state lives here.
+    KnowledgeDocumentVersionState state = 20;
+    KnowledgeDocumentVersionOrigin origin = 21;
+    // For a synced revision, the upstream edit time it reflects. Unset for a
+    // revision a person published in Serval.
+    optional google.protobuf.Timestamp source_updated_at = 22;
+}
+
+// How a revision stands relative to the article's live content. A revision is
+// A PROPOSED change to an article is still a svmeta change set, and
+// change_set_status owns pending / accepted / rejected / applying / applied /
+// failed for the PROPOSAL. PENDING_APPROVAL and REJECTED below are a different
+// question: not "is this redline any good" but "may this revision go live",
+// and they exist only for a team that turned the publish gate on.
+enum KnowledgeDocumentVersionState {
+    KNOWLEDGE_DOCUMENT_VERSION_STATE_UNSPECIFIED = 0;
+    // Live. This is what the agent answers from.
+    KNOWLEDGE_DOCUMENT_VERSION_STATE_PUBLISHED = 1;
+    // A newer revision replaced it.
+    KNOWLEDGE_DOCUMENT_VERSION_STATE_SUPERSEDED = 2;
+    // Withdrawn by an unpublish. No newer revision replaced it.
+    KNOWLEDGE_DOCUMENT_VERSION_STATE_RETIRED = 3;
+    // Published while the team's approval gate was on. The snapshot exists but
+    // is NOT live: the publish pointer stayed on the previously published
+    // revision, so readers and the agent still see approved content.
+    KNOWLEDGE_DOCUMENT_VERSION_STATE_PENDING_APPROVAL = 4;
+    // An approver refused it. Terminal — nothing revives a rejected revision;
+    // the author edits the draft and publishes again, which mints a new one.
+    KNOWLEDGE_DOCUMENT_VERSION_STATE_REJECTED = 5;
+}
+
+// Who produced a revision. A connector sync records the user who connected the
+// application as the author, so the origin is what tells the two apart.
+enum KnowledgeDocumentVersionOrigin {
+    KNOWLEDGE_DOCUMENT_VERSION_ORIGIN_UNSPECIFIED = 0;
+    // A person published it in Serval.
+    KNOWLEDGE_DOCUMENT_VERSION_ORIGIN_NATIVE = 1;
+    // A connector sync wrote it from an external system.
+    KNOWLEDGE_DOCUMENT_VERSION_ORIGIN_SYNC = 2;
+}
+
+message KnowledgeStar {
+    string id = 1;
+    string user_id = 2;
+    string team_id = 3;
+    optional string knowledge_base_id = 4;
+    optional string document_id = 5;
+    string sort_index = 6;
+    google.protobuf.Timestamp created_at = 7;
+}
+
+message KnowledgeDocumentPin {
+    string id = 1;
+    string team_id = 2;
+    // Null knowledge_base_id means team-global pin.
+    optional string knowledge_base_id = 3;
+    string document_id = 4;
+    string sort_index = 5;
+    string created_by_user_id = 6;
+    google.protobuf.Timestamp created_at = 7;
+}
+
+message KnowledgeDocumentView {
+    string id = 1;
+    string user_id = 2;
+    string document_id = 3;
+    string team_id = 4;
+    int64 view_count = 5;
+    google.protobuf.Timestamp last_viewed_at = 6;
+    optional google.protobuf.Timestamp last_editing_at = 7;
+}
+
+message KnowledgeDocumentSearchHit {
+    KnowledgeDocumentSummary document = 1;
+    double rank = 2;
+    optional string block_client_id = 3;
+    optional string block_plain_text = 4;
+}
+message ApprovalReminderResult {
+    google.protobuf.Timestamp reminded_at = 1;
+    int32 recipient_count = 2;
+    int32 queued_event_count = 3;
+    int32 unconfirmed_event_count = 4;
+}
+
+message ConfirmationReminderResult {
+    google.protobuf.Timestamp reminded_at = 1;
+    int32 recipient_count = 2;
+    int32 queued_event_count = 3;
+    int32 unconfirmed_event_count = 4;
+}
+
+enum IntegrationAccessFindingKind {
+    INTEGRATION_ACCESS_FINDING_KIND_UNSPECIFIED = 0;
+    // The saved code names this restricted connection, but the version's
+    // package does not link it, so runs cannot reach it.
+    INTEGRATION_ACCESS_FINDING_KIND_RESTRICTED_NOT_LINKED = 1;
+    // The version's package links this connection, but the saved code
+    // never names its service.
+    INTEGRATION_ACCESS_FINDING_KIND_LINKED_NOT_REFERENCED = 2;
+}
+
+// One disagreement between a saved workflow version's integration references
+// and the connections its package links. Purely advisory: a save is
+// never refused because of a finding, and an extractor that cannot parse the
+// content yields none.
+message IntegrationAccessFinding {
+    IntegrationAccessFindingKind kind = 1;
+    string app_instance_id = 2;
+    string service = 3;
+    string instance_name = 4;
+}

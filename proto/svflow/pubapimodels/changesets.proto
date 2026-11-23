@@ -1,0 +1,323 @@
+syntax = "proto3";
+
+package svflow.pubapimodels;
+
+import "google/api/field_behavior.proto";
+import "svauth/shared_models/changesets.proto";
+
+// An approver source with notification preference.
+message Approver {
+    // Whether to notify this approver when the step is pending.
+    bool notify = 1;
+
+    oneof source {
+        // A specific user as an approver.
+        UserApprover user = 2;
+        // A Serval group as approvers.
+        GroupApprover group = 3;
+        // The requester's manager as an approver.
+        ManagerApprover manager = 4;
+        // App-instance owners as approvers. Only valid for access policy approval procedures.
+        AppOwnerApprover app_owner = 5;
+        // Workspace owners as approvers. Only valid for access policy approval procedures.
+        TeamOwnerApprover team_owner = 6;
+        // Resource owners as approvers. Only valid for access policy approval procedures.
+        ResourceOwnerApprover resource_owner = 7;
+        // Role (entitlement) owners as approvers. Only valid for access policy approval procedures.
+        RoleOwnerApprover role_owner = 8;
+        // Members of a Slack channel, checked live when they click.
+        ChannelApprover channel = 9;
+    }
+}
+
+// A specific user as an approver.
+message UserApprover {
+    // The ID of the user.
+    string user_id = 1;
+}
+
+// A Serval group as an approver.
+message GroupApprover {
+    // The ID of the Serval group.
+    string group_id = 1;
+    // The number of group members who must approve. Absent or 1 uses the default.
+    optional int32 min_approvals = 2;
+}
+
+// Members of a Slack channel as approvers. Membership is read from Slack when
+// someone clicks the card, so anyone who joins the channel later can approve.
+// Only valid in staged approval procedures.
+message ChannelApprover {
+    // The Slack conversation ID, e.g. C0123ABCD.
+    string slack_channel_id = 1;
+    // The number of channel members who must approve. Absent or 1 uses the default.
+    optional int32 min_approvals = 2;
+}
+
+// The requester's manager as an approver.
+message ManagerApprover {}
+
+// The owners of the app instance the requested role belongs to.
+// Only valid for access policy approval procedures.
+message AppOwnerApprover {}
+
+// The owners of the workspace that owns the requested role's app instance.
+// Only valid for access policy approval procedures.
+message TeamOwnerApprover {}
+
+// The owners of the resource the requested role belongs to.
+// Only valid for access policy approval procedures.
+message ResourceOwnerApprover {}
+
+// The owners of the requested role (entitlement) itself.
+// Only valid for access policy approval procedures.
+message RoleOwnerApprover {}
+
+// Configuration for a custom workflow that determines approvers or auto-approves.
+message CustomWorkflowConfig {
+    // The ID of the workflow to execute.
+    string workflow_id = 1;
+}
+
+// How a step of an approval procedure completes when it has more than one
+// approver.
+enum ApprovalProcedureStepRule {
+    APPROVAL_PROCEDURE_STEP_RULE_UNSPECIFIED = 0;
+    // One approval is enough.
+    APPROVAL_PROCEDURE_STEP_RULE_ANY = 1;
+    // Every approver (and the custom workflow, if set) must approve.
+    APPROVAL_PROCEDURE_STEP_RULE_ALL = 2;
+}
+
+// Whether approvers are asked for a justification when deciding a step.
+enum ApproverJustificationMode {
+    APPROVER_JUSTIFICATION_MODE_UNSPECIFIED = 0;
+    APPROVER_JUSTIFICATION_MODE_NOT_REQUESTED = 1;
+    APPROVER_JUSTIFICATION_MODE_OPTIONAL = 2;
+    APPROVER_JUSTIFICATION_MODE_REQUIRED = 3;
+    APPROVER_JUSTIFICATION_MODE_REQUIRED_FOR_APPROVAL = 4;
+    APPROVER_JUSTIFICATION_MODE_REQUIRED_FOR_DENIAL = 5;
+}
+
+// One step of an approval procedure: who can approve it and how it completes.
+// Steps run in order; a step starts once the previous one is approved.
+message ApprovalProcedureStep {
+    // How the step completes when it has more than one approver: ANY means
+    // one approval is enough, ALL means every approver (and the custom
+    // workflow, if set) must approve. Required with more than one approver;
+    // a single-approver step may leave it UNSPECIFIED and is returned as ANY.
+    ApprovalProcedureStepRule rule = 1;
+    // Who can approve this step. Under ANY, approvers with notify set are
+    // asked to approve and the others may approve without being asked. Under
+    // ALL every approver is required, so notify must be set on each.
+    repeated Approver approvers = 2;
+    // A workflow that decides the step. Under ANY it must be the step's
+    // only approver; under ALL it may be combined with approvers and must
+    // also approve.
+    optional CustomWorkflowConfig custom_workflow = 3;
+    // Whether the requester may approve this step themselves. Omitted means
+    // true.
+    optional bool allow_self_approval = 4;
+    // Whether approvers are asked for a justification when deciding this step.
+    // UNSPECIFIED means NOT_REQUESTED.
+    ApproverJustificationMode approver_justification_mode = 5;
+    // Whether notifications are suppressed while the step remains actionable.
+    bool suppress_notifications = 6;
+    // Whether an approver whose approval would otherwise be assumed (they are
+    // the request's target, or its ticket's creator) has it resolved for them
+    // on render. Set false with allow_self_approval true to show someone their
+    // own approval as a card they must click. Omitted means true.
+    optional bool auto_approve_self = 7;
+    // Who decides instead when this step is still undecided after a delay.
+    // Omitted means the step waits for its own approvers until the timeout.
+    optional ApprovalProcedureStepFallback fallback = 8;
+}
+
+// Replaces a step's approvers when the step is still undecided
+// escalate_after_seconds after it started. The original approvers can no
+// longer decide; the fallback step's outcome is the step's outcome.
+message ApprovalProcedureStepFallback {
+    // Seconds after the step starts before it escalates. At least 300 and
+    // less than the procedure's timeout_seconds.
+    int32 escalate_after_seconds = 1;
+    // The step that decides after escalation. Must not set its own fallback.
+    ApprovalProcedureStep step = 2;
+}
+
+// Owners are replaced as a set; an empty object clears all owners.
+message AppInstanceOwners {
+    // IDs of users in the app instance's organization.
+    repeated string user_ids = 1;
+    // IDs of groups available to the app instance's workspace.
+    repeated string group_ids = 2;
+}
+
+// Types of items that can appear in folder contents.
+enum FolderItemType {
+  FOLDER_ITEM_TYPE_UNSPECIFIED = 0;
+  FOLDER_ITEM_TYPE_FOLDER = 1;
+  FOLDER_ITEM_TYPE_WORKFLOW = 2;
+  FOLDER_ITEM_TYPE_GUIDANCE = 3;
+  FOLDER_ITEM_TYPE_FORM = 4;
+}
+
+// The type of an access review column.
+enum AccountFieldType {
+  ACCOUNT_FIELD_TYPE_UNSPECIFIED = 0;
+  ACCOUNT_FIELD_TYPE_TEXT = 1;
+  ACCOUNT_FIELD_TYPE_NUMBER = 2;
+  ACCOUNT_FIELD_TYPE_BOOLEAN = 3;
+  // RFC 3339, YYYY-MM-DD, or Unix seconds or milliseconds.
+  ACCOUNT_FIELD_TYPE_DATE = 4;
+}
+
+// A key reported about each account, shown in access reviews as a column.
+message AccountFieldMapping {
+  // The key in each account's reported data, e.g. "two_factor_enabled".
+  string key = 1;
+  // The column's name. The organization's column of this name is used, and
+  // one is created when it has none.
+  string column_name = 2;
+  // The column's type. An existing column keeps its type, so this must match
+  // it.
+  AccountFieldType column_type = 3;
+}
+
+// Rules that determine which users an access profile applies to.
+// Groups, current-workspace membership, and attribute condition groups combine with
+// OR. Excluded groups are hard-deny and short-circuit regardless.
+message AccessProfileMatchingCriteria {
+    // Group-based matching criteria.
+    AccessProfileGroupCriteria groups = 1;
+    // Current-workspace matching criteria.
+    AccessProfileCurrentTeamCriteria current_team = 2;
+    // Omitted on update preserves attribute rules; an empty message clears them.
+    AccessProfileAttributeCriteria attributes = 3;
+}
+
+// User-attribute conditions, grouped into OR alternatives containing AND rules.
+message AccessProfileAttributeCriteria {
+    repeated AccessProfileAttributeCriterion criteria = 1;
+}
+
+// A user-attribute comparison within one condition group.
+message AccessProfileAttributeCriterion {
+    // A matchable built-in key (for example __users_primitive_email), or a
+    // custom field key available in the destination workspace's Users schema.
+    string attribute_key = 1;
+    // A user's attribute matches when any value equals one of these values.
+    repeated string match_values = 2;
+    // True means the user's values must not match any listed value.
+    bool is_excluded = 3;
+    // Rules in one group combine with AND; different groups combine with OR.
+    int32 condition_group = 4;
+}
+
+// Criteria for matching users based on membership on the profile's workspace.
+message AccessProfileCurrentTeamCriteria {
+    // Built-in workspace roles to match. Together with custom_roles: both empty
+    // means any role on the workspace matches; otherwise a member matches by
+    // holding any listed built-in role OR any listed custom role.
+    repeated svauth.models.TeamRole team_roles = 1;
+    // Custom-role filter. A sub-message rather than a bare list so writes can
+    // tell "not provided" from "provided empty": on updates, omitting
+    // custom_roles preserves the profile's existing custom-role filter
+    // (callers predating this field can never silently wipe one), while
+    // providing it — even empty — replaces the filter exactly.
+    AccessProfileCustomRoleFilter custom_roles = 2;
+}
+
+// Custom roles from workspace settings matched by a current-workspace criterion.
+message AccessProfileCustomRoleFilter {
+    // svauth custom-role IDs.
+    repeated string custom_role_ids = 1;
+}
+
+// Criteria for matching users based on group membership.
+message AccessProfileGroupCriteria {
+    // The matching strategy (any = user in ANY group, all = user in ALL groups).
+    AccessProfileGroupMatchType match_type = 1;
+    // IDs of groups whose members are included in this profile.
+    repeated string included_group_ids = 2;
+    // IDs of groups whose members are excluded from this profile.
+    repeated string excluded_group_ids = 3;
+}
+
+// The group matching strategy for an access profile.
+enum AccessProfileGroupMatchType {
+    ACCESS_PROFILE_GROUP_MATCH_TYPE_UNSPECIFIED = 0;
+    // User must be in ANY of the profile's groups to gain access.
+    ACCESS_PROFILE_GROUP_MATCH_TYPE_ANY = 1;
+    // User must be in ALL of the profile's groups to gain access.
+    ACCESS_PROFILE_GROUP_MATCH_TYPE_ALL = 2;
+}
+
+// The grants (resources and workflows) provided by an access profile.
+message AccessProfileGrants {
+    // App resource roles granted by this profile.
+    repeated AccessProfileAppResourceRoleGrant app_resource_roles = 1;
+    // Workflows associated with this profile.
+    repeated AccessProfileWorkflowGrant workflows = 2;
+    // Forms associated with this profile.
+    repeated AccessProfileFormGrant forms = 3;
+    // Skills associated with this profile. Wrapped in a message rather than a
+    // bare repeated field so ABSENT is distinguishable from EMPTY: `grants` is
+    // a wholesale replacement, and a client written before skill gating
+    // existed sends it without this field. Treating that as "clear them" would
+    // let an unrelated workflow edit silently drop a profile's skill
+    // restrictions. Absent preserves; present — empty included — replaces.
+    AccessProfileSkillGrants skills = 4;
+}
+
+message AccessProfileSkillGrants {
+    repeated AccessProfileSkillGrant skills = 1;
+}
+
+// An app resource role granted by an access profile.
+message AccessProfileAppResourceRoleGrant {
+    // The ID of the app resource role.
+    string app_resource_role_id = 1;
+    // Whether this grant automatically uses the workspace's default access profile.
+    bool use_team_default_access_profile = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// A workflow granted by an access profile.
+message AccessProfileWorkflowGrant {
+    // The ID of the workflow.
+    string workflow_id = 1;
+}
+
+// A form whose audience this access profile is part of. Linking a profile
+// restricts the form: a form with no profiles linked is open to anyone in the
+// org, and each linked profile narrows who may open it.
+message AccessProfileFormGrant {
+    // The ID of the form.
+    string form_id = 1;
+}
+
+// A skill whose audience this access profile is part of. Linking a profile
+// restricts the skill: a skill with no profiles linked can be loaded into the
+// help-desk agent's context for anyone in the org, and each linked profile
+// narrows who that is.
+message AccessProfileSkillGrant {
+    // The ID of the skill.
+    string skill_id = 1;
+}
+
+// What a birthright profile does with a grant it no longer justifies.
+enum AccessProfileUnmatchAction {
+    ACCESS_PROFILE_UNMATCH_ACTION_UNSPECIFIED = 0;
+    // Revoke the grant, unless another profile or a live request justifies it.
+    ACCESS_PROFILE_UNMATCH_ACTION_REVOKE = 1;
+    // Keep the grant as synced access with nothing behind it.
+    ACCESS_PROFILE_UNMATCH_ACTION_KEEP = 2;
+}
+
+// An independent automatic-access policy. Request eligibility uses the profile's
+// top-level matching_criteria and grants, even when birthright is enabled.
+message AccessProfileBirthrightPolicy {
+    bool enabled = 1;
+    AccessProfileMatchingCriteria matching_criteria = 2;
+    repeated AccessProfileAppResourceRoleGrant app_resource_roles = 3;
+    AccessProfileUnmatchAction unmatch_action = 4;
+}

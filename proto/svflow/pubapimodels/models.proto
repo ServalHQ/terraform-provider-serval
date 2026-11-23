@@ -1,0 +1,1601 @@
+syntax = "proto3";
+
+package svflow.pubapimodels;
+
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "serval/resources/v1/agentchannels/channels.proto";
+import "svflow/common/models.proto";
+import "svflow/pubapimodels/changesets.proto";
+
+/////////////////////////////////////////////////////////
+// Public API / SDK models for access management
+
+message AccessPolicy {
+    // The ID of the access policy.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that the access policy belongs to.
+    string team_id = 7;
+    // The name of the access policy.
+    string name = 2;
+    // A description of the access policy.
+    optional string description = 3;
+    // The maximum number of minutes that access can be granted for.
+    optional int32 max_access_minutes = 4;
+    // Whether a business justification is required when requesting access.
+    optional bool require_business_justification = 5;
+    // The recommended duration in minutes for access requests (optional).
+    optional int32 recommended_access_minutes = 6;
+    // Whether requests made on behalf of others require the target user's
+    // confirmation.
+    optional bool require_on_behalf_of_confirmation = 8;
+    // Stable, workspace-scoped identity of the policy (apo_ + 22 chars).
+    // Minted at create when not supplied; preserved verbatim when the policy
+    // is copied to another workspace, so cross-workspace tooling can match copies to
+    // their origin. Settable on create and rekeyable via update, except for
+    // the workspace-default policy, whose sentinel scoped id is server-managed.
+    string scoped_id = 9;
+    // The ID of the named approval procedure that must approve requests for
+    // roles governed by the policy. Unset when the policy has no named
+    // approval procedure, including when it uses a per-policy approval
+    // procedure from ListAccessPolicyApprovalProcedures. Omitted from
+    // ListRequestableRoles responses.
+    optional string approval_procedure_id = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether access requests are collected with a form rather than chat.
+    optional bool require_form_confirmation = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message ApprovalStep {
+    // The ID of the approval step.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether the step can be approved by the requester themselves.
+    // optional so server can distinguish "not set" from "explicitly false"
+    // (DB defaults to TRUE; proto3 defaults bool to false)
+    optional bool allow_self_approval = 2;
+
+    // Exactly one of approvers or custom_workflow must be set.
+    // Mutual exclusivity validated server-side.
+    repeated Approver approvers = 3;
+    optional CustomWorkflowConfig custom_workflow = 4;
+    // Controls whether approvers are asked for a justification when deciding this step.
+    // Valid values: "not_requested", "optional", "required",
+    // "required_for_approval", "required_for_denial". Empty defaults to
+    // "not_requested". The "_for_approval" and "_for_denial" variants make the
+    // justification mandatory only when approving or denying, respectively.
+    string approver_justification_mode = 5;
+    // Whether notifications are suppressed while the step remains actionable.
+    bool suppress_notifications = 6;
+    // Whether an approver whose approval would otherwise be assumed (they are
+    // the request's target, or its ticket's creator) has it resolved for them
+    // on render. Set false with allow_self_approval true to show someone their
+    // own approval as a card they must click. Optional for the same reason as
+    // allow_self_approval: the DB default is TRUE.
+    optional bool auto_approve_self = 7;
+}
+
+message AccessPolicyApprovalProcedure {
+    // The ID of the access policy approval procedure.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the access policy this approval procedure belongs to.
+    string access_policy_id = 3;
+    // The steps in the approval procedure.
+    repeated ApprovalStep steps = 2;
+    // How long each step waits for a human decision before timing out
+    // (in seconds).
+    int32 timeout_seconds = 4;
+    // Stages are authoritative when present; steps remains a flattened
+    // compatibility projection.
+    repeated AccessPolicyApprovalStage stages = 5;
+}
+
+message AccessPolicyApprovalStage {
+    repeated ApprovalStep steps = 1;
+}
+
+message WorkflowApprovalProcedure {
+    // The ID of the workflow approval procedure.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workflow this approval procedure belongs to.
+    string workflow_id = 3;
+    // The steps in the approval procedure.
+    repeated ApprovalStep steps = 2;
+    // Stages are authoritative when present; steps remains a flattened
+    // compatibility projection.
+    repeated WorkflowApprovalStage stages = 4;
+}
+
+message WorkflowApprovalStage {
+    repeated ApprovalStep steps = 1;
+}
+
+// A first-class, workspace-scoped approval procedure: a library resource with no
+// parent workflow or access policy. Name, description, timeout and steps are
+// versioned together: any change creates a new immutable version.
+message ApprovalProcedure {
+    // The ID of the approval procedure.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Stable, workspace-scoped identity of the procedure (aproc_ + 22 chars).
+    // Minted at create when not supplied.
+    string scoped_id = 2;
+    // The ID of the workspace that owns the approval procedure.
+    string team_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The display name of the approval procedure. Not unique; scoped_id is
+    // the identity. Changing it creates a new version.
+    string name = 4;
+    // A description of the approval procedure.
+    string description = 5;
+    // How long each step waits for a human decision before timing out
+    // (in seconds).
+    int32 timeout_seconds = 6;
+    // When the current version was created.
+    google.protobuf.Timestamp updated_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The steps of the procedure, in order.
+    repeated ApprovalProcedureStep steps = 8;
+}
+
+// A workflow or access policy an approval procedure is attached to.
+message ApprovalProcedureConsumer {
+    // "workflow" or "access_policy".
+    string type = 1;
+    // The ID of the workflow or access policy.
+    string id = 2;
+}
+
+// What still points at a legacy approval.
+enum LegacyApprovalConsumerKind {
+    LEGACY_APPROVAL_CONSUMER_KIND_UNSPECIFIED = 0;
+    LEGACY_APPROVAL_CONSUMER_KIND_WORKFLOW = 1;
+    LEGACY_APPROVAL_CONSUMER_KIND_ACCESS_POLICY = 2;
+    // The workspace's Catalyst change review setting.
+    LEGACY_APPROVAL_CONSUMER_KIND_CATALYST_REVIEW = 3;
+    // The workspace's config push review setting.
+    LEGACY_APPROVAL_CONSUMER_KIND_CONFIG_PUSH_REVIEW = 4;
+}
+
+// Why the migration could not convert a legacy approval.
+enum LegacyApprovalMigrationFailureReason {
+    LEGACY_APPROVAL_MIGRATION_FAILURE_REASON_UNSPECIFIED = 0;
+    // The legacy approval has no steps, so it approves nothing.
+    LEGACY_APPROVAL_MIGRATION_FAILURE_REASON_NO_STEPS = 1;
+    // Some steps run in stages and others do not.
+    LEGACY_APPROVAL_MIGRATION_FAILURE_REASON_MIXED_STAGES = 2;
+    // The legacy definition breaks a rule named procedures enforce.
+    LEGACY_APPROVAL_MIGRATION_FAILURE_REASON_INVALID_DEFINITION = 3;
+    // The legacy definition has no named-procedure equivalent, such as two
+    // steps in parallel where a step has more or fewer than one approver.
+    LEGACY_APPROVAL_MIGRATION_FAILURE_REASON_UNREADABLE_DEFINITION = 4;
+    // The consumer refused the converted procedure.
+    LEGACY_APPROVAL_MIGRATION_FAILURE_REASON_ATTACH_REFUSED = 5;
+    // The consumer's approval changed while the migration ran.
+    LEGACY_APPROVAL_MIGRATION_FAILURE_REASON_CHANGED_DURING_MIGRATION = 6;
+    // The legacy procedure is deleted or belongs to another workspace. The gate
+    // may still be enforced; read legacy_definition before changing it.
+    LEGACY_APPROVAL_MIGRATION_FAILURE_REASON_LEGACY_PROCEDURE_MISSING = 7;
+    LEGACY_APPROVAL_MIGRATION_FAILURE_REASON_INTERNAL = 8;
+}
+
+// Whether the consumer's current legacy approval definition could be read.
+enum LegacyApprovalDefinitionStatus {
+    LEGACY_APPROVAL_DEFINITION_STATUS_UNSPECIFIED = 0;
+    // legacy_definition holds the definition the consumer points at.
+    LEGACY_APPROVAL_DEFINITION_STATUS_AVAILABLE = 1;
+    // The legacy procedure row is deleted or does not exist.
+    LEGACY_APPROVAL_DEFINITION_STATUS_MISSING = 2;
+    // The legacy procedure belongs to a workspace that could not be confirmed to
+    // be in this organization, so its definition is withheld.
+    LEGACY_APPROVAL_DEFINITION_STATUS_WITHHELD_OUTSIDE_ORGANIZATION = 3;
+}
+
+// A legacy approval definition. Stages run in order; every step in a stage
+// must approve, and within a step one approval is enough.
+message LegacyApprovalDefinition {
+    // The workspace that owns the legacy procedure. Differs from the consumer's
+    // workspace when the consumer was copied from another workspace.
+    string team_id = 1;
+    // How long each step waits for a decision before timing out (in seconds).
+    int32 timeout_seconds = 2;
+    // The steps in stored order.
+    repeated ApprovalStep steps = 3;
+    // The steps grouped by the stage they run in. Empty when steps mix
+    // staged and unstaged steps.
+    repeated LegacyApprovalStage stages = 4;
+}
+
+message LegacyApprovalStage {
+    repeated ApprovalStep steps = 1;
+}
+
+// A workflow, access policy or review setting the legacy approval migration
+// could not convert. It keeps its legacy approval until it is resolved.
+message LegacyApprovalMigrationFailure {
+    LegacyApprovalConsumerKind consumer_kind = 1;
+    // The workflow or access policy ID, or the workspace ID for a review setting.
+    string consumer_id = 2;
+    string consumer_name = 3;
+    LegacyApprovalMigrationFailureReason reason = 4;
+    // What the migration reported, for diagnosis.
+    string detail = 5;
+    google.protobuf.Timestamp failed_at = 6;
+    // The legacy procedure the consumer points at.
+    string legacy_approval_procedure_id = 7;
+    LegacyApprovalDefinitionStatus legacy_definition_status = 8;
+    // Set only when legacy_definition_status is AVAILABLE.
+    LegacyApprovalDefinition legacy_definition = 9;
+}
+
+message AppInstance {
+    // The ID of the app instance.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the Serval workspace that owns the app instance. For instances
+    // returned by ListAppInstances because they are shared with the requesting
+    // workspace, this is the owning workspace's ID and will differ from the request
+    // team_id.
+    string team_id = 2;
+    
+    // Either a built-in service or a custom service. Exactly one must be set.
+    oneof service_type {
+        // The service identifier (for built-in services like "github", "okta", "aws").
+        string service = 3;
+        // The ID of the custom service (for custom apps).
+        string custom_service_id = 8;
+    }
+    
+    // The external service instance ID (e.g., GitHub org name, Okta domain, AWS account ID).
+    string external_service_instance_id = 4;
+    // The name of the app instance.
+    string name = 5;
+    // Whether access requests are enabled for the app instance.
+    bool access_requests_enabled = 6;
+    // The default access policy for the app instance.
+    optional string default_access_policy_id = 7;
+    // The display name of the custom service (only set when service_type is custom_service_id).
+    string custom_service_name = 9;
+    // IDs of the tags currently attached to this app instance.
+    repeated string tag_ids = 10;
+    // IDs of the integrations configured for this app instance.
+    repeated string integration_ids = 11;
+    // The A2A agent card captured by the last discovery sync. Set only for
+    // custom apps connected as A2A agents whose card has been discovered —
+    // it describes the external agent's identity and advertised skills.
+    svflow.common.models.A2AAgentCard a2a_agent_card = 12;
+    // When true, workflows that use this app run on the self-hosted (hybrid)
+    // worker of the workspace running the workflow, and the app's requests egress
+    // from that worker inside the customer's network instead of Serval's
+    // cloud proxy. Set for apps that are only reachable on a private network.
+    bool route_direct_from_worker = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+    AppInstanceOwners owners = 14;
+}
+
+// DEPRECATED: app instance labels are unified into the polymorphic Tag model.
+// Retained so the deprecated /v2/app-instance-labels endpoints keep their
+// original response shape. New integrations should use Tag.
+message AppInstanceLabel {
+    option deprecated = true;
+    // The ID of the label.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that owns the label.
+    string team_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The name of the label.
+    string name = 3;
+    // Optional description of the label.
+    string description = 4;
+}
+
+// DEPRECATED: superseded by AccessRelationship. Retained so the deprecated
+// /v2/app-relationships endpoints keep their original response shape.
+message AppRelationship {
+    option deprecated = true;
+    // The ID of the app relationship.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the app instance.
+    string app_instance_id = 2;
+    // The type of the relationship.
+    svflow.common.models.AppRelationshipType relationship_type = 3;
+    // The ID of the target (user or group).
+    string target_id = 4;
+    // The type of the target.
+    svflow.common.models.AppRelationshipTargetType target_type = 5;
+    // The timestamp when the relationship was created.
+    google.protobuf.Timestamp created_at = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message AccessRelationship {
+    // The ID of the access relationship.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The type of the relationship.
+    svflow.common.models.AccessRelationshipType relationship_type = 2;
+    // The ID of the target (user or group).
+    string target_id = 3;
+    // The type of the target.
+    svflow.common.models.AccessRelationshipTargetType target_type = 4;
+    // The timestamp when the relationship was created.
+    google.protobuf.Timestamp created_at = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The kind of subject this relationship is on.
+    svflow.common.models.AccessRelationshipSubjectType subject_type = 6;
+    // The ID of the subject (app_instance_id | resource_id | entitlement_id |
+    // team_id), disambiguated by subject_type.
+    string subject_id = 7;
+}
+
+// An owner (user or group) to set on an access-hierarchy subject.
+message OwnerTarget {
+    // The ID of the owner (user or group).
+    string target_id = 1;
+    // The type of the owner.
+    svflow.common.models.AccessRelationshipTargetType target_type = 2;
+}
+
+// The complete owner set for a subject, replaced wholesale. Wrapping the list
+// in a message lets update requests distinguish "owners unchanged" (absent)
+// from "remove all owners" (present with an empty list).
+message OwnerTargetSet {
+    repeated OwnerTarget owners = 1;
+}
+
+message Resource {
+    // The ID of the resource.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the app instance that the resource belongs to.
+    string app_instance_id = 2;
+    // The type of the resource.
+    string resource_type = 3;
+    // The name of the resource.
+    string name = 4;
+    // A description of the resource.
+    optional string description = 5;
+    // The external ID of the resource.
+    optional string external_id = 6;
+    // IDs of the tags currently attached to this resource.
+    repeated string tag_ids = 7;
+    // The copy-invariant scoped ID of the resource (e.g. "ar_..."), stable
+    // across cross-workspace copies. Server-derived from the resource's external
+    // identity for ingested resources and the built-in access resource;
+    // settable on create and rekeyable via update only for custom resources.
+    // Empty for resources created before scoped ids existed, until backfilled.
+    string scoped_id = 8;
+}
+
+message Entitlement {
+    // The ID of the entitlement.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the resource that the entitlement belongs to.
+    string resource_id = 2;
+    // The name of the entitlement.
+    string name = 3;
+    // A description of the entitlement.
+    string description = 4;
+    reserved 5; // was: provisioning_method (deprecated)
+    // Whether requests are enabled for the entitlement.
+    bool requests_enabled = 6;
+    // The default access policy for the entitlement.
+    optional string access_policy_id = 7;
+    reserved 8; // was: linked_entitlement_ids (deprecated)
+    reserved 9; // was: manual_provisioning_assignees (deprecated)
+
+    // Provisioning configuration. **Exactly one method should be set.**
+    ProvisioningMethod provisioning_method = 10;
+
+    // The external ID of the entitlement in the external system (optional).
+    optional string external_id = 11;
+    // Data from the external system as a JSON string (computed by server).
+    optional string external_data = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The copy-invariant scoped ID of the entitlement (e.g. "ent_..."), stable across cross-workspace copies.
+    string scoped_id = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// Role represents a requestable role on an app resource.
+message Role {
+    // The ID of the role.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the resource that the role belongs to.
+    string resource_id = 2;
+    // The name of the role.
+    string name = 3;
+    // A description of the role.
+    string description = 4;
+    // Whether requests are enabled for the role.
+    bool requests_enabled = 5;
+    // The default access policy for the role.
+    optional string access_policy_id = 6;
+    // Provisioning configuration. **Exactly one method should be set.**
+    RoleProvisioningMethod provisioning_method = 7;
+    // The external ID of the role in the external system (optional).
+    optional string external_id = 8;
+    // Data from the external system as a JSON string (computed by server).
+    optional string external_data = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+    bool require_form_confirmation = 10;
+    // IDs of the tags currently attached to this role.
+    repeated string tag_ids = 11;
+    // Whether the role was ingested from an external system. Ingested roles'
+    // name, description, external_id, and external_data are owned by that
+    // system and cannot be edited here.
+    bool is_ingested = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The immutable scoped ID of the role (e.g. "role_..."), retained across
+    // copies and editable-role renames. Ingested roles and fixed connector
+    // defaults have deterministic IDs and protected names. Other roles get
+    // random IDs unless an ID is supplied on create. Existing IDs remain
+    // unchanged during updates.
+    string scoped_id = 13;
+}
+
+message TeamAccessRequestSettings {
+    string team_id = 1;
+    bool default_require_form_confirmation = 2;
+}
+
+// Provisioning configuration for a role.
+// Exactly one method should be set.
+message RoleProvisioningMethod {
+    oneof method {
+        BuiltinWorkflowProvisioning builtin_workflow = 1;
+        CustomWorkflowProvisioning custom_workflow = 2;
+        ManualProvisioning manual = 3;
+        LinkedRolesProvisioning linked_roles = 4;
+    }
+}
+
+// Provisioning depends on prerequisite roles being provisioned first.
+message LinkedRolesProvisioning {
+    repeated string linked_role_ids = 1;
+    // Locally managed Serval groups whose membership is manageable by the role's owning workspace.
+    // Omission preserves existing group links; a present empty wrapper clears them.
+    LinkedServalGroups linked_serval_groups = 2;
+}
+
+message LinkedServalGroups {
+    repeated string ids = 1;
+}
+
+// Provisioning configuration for an entitlement.
+// Exactly one method should be set.
+message ProvisioningMethod {
+    oneof method {
+        BuiltinWorkflowProvisioning builtin_workflow = 1;
+        CustomWorkflowProvisioning custom_workflow = 2;
+        ManualProvisioning manual = 3;
+        LinkedEntitlementsProvisioning linked_entitlements = 4;
+    }
+}
+
+// Provisioning is handled by the service's builtin workflow integration.
+message BuiltinWorkflowProvisioning {}
+
+// Provisioning is handled by custom workflows for provision + deprovision.
+message CustomWorkflowProvisioning {
+    // The workflow ID to provision access.
+    string provision_workflow_id = 1;
+    // The workflow ID to deprovision access.
+    string deprovision_workflow_id = 2;
+}
+
+// Provisioning is handled manually by assigned users/groups.
+message ManualProvisioning {
+    // Omit routing to leave the role unconfigured, as reported by
+    // entitlement_is_misconfigured. Named assignees must be nonempty.
+    oneof routing {
+        NamedAssignees named_assignees = 1;
+        TeamQueue team_queue = 2;
+    }
+}
+
+message NamedAssignees {
+    // Users and groups assigned/notified for manual provisioning. Must name at
+    // least one; to leave the task unassigned, use team_queue instead.
+    repeated ManualProvisioningAssignee assignees = 1;
+}
+
+// The provisioning task is created unassigned so the workspace's ticket assignment
+// rules route it. A message rather than a bool so it can carry fields later
+// without adding a routing variant.
+message TeamQueue {}
+
+// Provisioning depends on prerequisite entitlements being provisioned first.
+message LinkedEntitlementsProvisioning {
+    // The IDs of prerequisite entitlements.
+    repeated string linked_entitlement_ids = 1;
+}
+
+enum ManualProvisioningAssigneeType {
+    MANUAL_PROVISIONING_ASSIGNEE_TYPE_UNSPECIFIED = 0;
+    MANUAL_PROVISIONING_ASSIGNEE_TYPE_USER = 1;
+    MANUAL_PROVISIONING_ASSIGNEE_TYPE_GROUP = 2;
+}
+
+message ManualProvisioningAssignee {
+    // The ID of the user or group.
+    string assignee_id = 1;
+    // The type of assignee.
+    ManualProvisioningAssigneeType assignee_type = 2;
+}
+
+// A tag that can be associated with workflows.
+message Tag {
+    // The ID of the tag.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The name of the tag.
+    string name = 2;
+    // The color of the tag (CSS color string).
+    optional string color = 3;
+    // The icon slug for the tag.
+    optional string icon_slug = 4;
+    // The ID of the workspace that owns this tag.
+    string team_id = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // A description of the tag.
+    string description = 6;
+}
+
+message Workflow {
+    // The ID of the workflow.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that the workflow belongs to.
+    string team_id = 2;
+    // The name of the workflow.
+    string name = 3;
+    // A description of the workflow.
+    string description = 4;
+    reserved 5; // was: type
+    reserved 6; // was: execution_scope
+    // Whether the workflow requires form confirmation.
+    bool require_form_confirmation = 7;
+    reserved 8; // was: is_temporary
+    // The content/code of the workflow.
+    string content = 9;
+    reserved 10; // was: parameters
+    // Whether the workflow is published. Set to true to publish the workflow.
+    bool is_published = 11;
+    // Whether there are unpublished changes to the workflow (computed by server).
+    bool has_unpublished_changes = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // IDs of tags associated with this workflow.
+    repeated string tag_ids = 13;
+    // Whether this workflow is listed in the Service Catalog.
+    bool show_in_service_catalog = 14;
+    // Description shown at the top of the Service Catalog run form.
+    string service_catalog_description = 15;
+    // The copy-invariant scoped ID of the workflow (e.g. "wf_..."), stable across cross-workspace copies.
+    string scoped_id = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the folder the workflow lives in, if any. Populated on the
+    // single-workflow responses (Get/Create/Update and the folder-move
+    // endpoint); omitted from ListWorkflows responses — fetch the workflow to
+    // read its folder membership.
+    optional string folder_id = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the named approval procedure that must approve each run of the
+    // workflow; change it with UpdateWorkflow. Unset when the workflow has no
+    // named approval procedure, including when it uses a per-workflow approval
+    // procedure from ListWorkflowApprovalProcedures. Populated on the
+    // single-workflow responses (Get/Create/Update); omitted from ListWorkflows
+    // responses.
+    optional string approval_procedure_id = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The access package, by name, whose connections the workflow's runs use:
+    // the published version's package, or the only version's when never
+    // published. Empty for the workspace's default package. A move made with
+    // UpdateWorkflow shows here once it is published. Populated on the
+    // single-workflow responses (Get/Create/Update); omitted from ListWorkflows
+    // responses and when the workspace is off Integration Access.
+    optional string package = 19 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message WorkflowVersion {
+    // The ID of this workflow version. Pass to StartWorkflowRun as
+    // workflow_version_id to run this specific version (works for both
+    // published versions and unpublished drafts).
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workflow this version belongs to.
+    string workflow_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Workflow name at this version (can differ across versions).
+    string name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Workflow description at this version.
+    string description = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The TypeScript content of the workflow at this version.
+    string content = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // User who created this version.
+    string created_by_user_id = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When this version was first saved (always set).
+    google.protobuf.Timestamp created_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When this version was published. Unset for draft (unpublished) versions.
+    optional google.protobuf.Timestamp published_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether this version has ever been published.
+    bool is_published = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message Guidance {
+    // The ID of the guidance.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that the guidance belongs to.
+    string team_id = 2;
+    // The name of the guidance.
+    string name = 3;
+    // A description of the guidance.
+    string description = 4;
+    // The content of the guidance.
+    string content = 5;
+    // Whether this guidance should always be used (skipping LLM selection).
+    bool should_always_use = 6;
+    // Whether the guidance is published. Set to true to publish the guidance.
+    bool is_published = 7;
+    // Whether there are unpublished changes to the guidance (computed by server).
+    bool has_unpublished_changes = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The copy-invariant scoped ID of the guidance (e.g. "skill_..."), stable across cross-workspace copies.
+    string scoped_id = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the folder the guidance lives in, if any. Populated on the
+    // single-guidance responses (Get/Create/Update and the folder-move
+    // endpoint); omitted from ListGuidances responses — fetch the guidance to
+    // read its folder membership.
+    optional string folder_id = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+    serval.resources.v1.agentchannels.AgentChannelFilter channel_filter = 11;
+}
+
+// A help desk skill: instructions the help desk agent follows when a ticket
+// matches the skill's description.
+message Skill {
+    // The ID of the skill.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that the skill belongs to.
+    string team_id = 2;
+    // The name of the skill.
+    string name = 3;
+    // When the help desk agent should use the skill.
+    string description = 4;
+    // How the help desk agent should handle a ticket when it uses the skill.
+    string content = 5;
+    // Whether the help desk agent always uses this skill instead of selecting
+    // it by its description.
+    bool should_always_use = 6;
+    // Whether the skill has ever been published.
+    bool is_published = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether the skill has saved changes that are not yet published.
+    bool has_unpublished_changes = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The copy-invariant scoped ID of the skill (e.g. "skill_..."), stable
+    // across cross-workspace copies.
+    string scoped_id = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the folder the skill lives in, if any. Populated on the
+    // single-skill responses (Get/Create/Update); omitted from ListSkills
+    // responses — fetch the skill to read its folder membership.
+    optional string folder_id = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The channels where the help desk agent can use the skill. Empty means
+    // every channel, including channels added later.
+    serval.resources.v1.agentchannels.AgentChannelFilter channel_filter = 11;
+}
+
+message FolderItem {
+    FolderItemType item_type = 1;
+    string item_id = 2;
+}
+
+message FolderItemLocation {
+    FolderItem item = 1;
+    // Unset when the item is at the root.
+    optional string folder_id = 2;
+}
+
+// A folder organizing a specific type of item within a workspace.
+message Folder {
+    // The ID of the folder.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that the folder belongs to.
+    string team_id = 2;
+    // The name of the folder.
+    string name = 3;
+    // The non-folder item type this folder can contain.
+    FolderItemType item_type = 4;
+    // The ID of the parent folder. Unset when the folder is at the root of the
+    // workspace's folder tree.
+    optional string parent_folder_id = 5;
+    // Copy-invariant workspace-scoped identity used by SDLC and configuration
+    // pushes. The id field remains the deployment-local API identifier.
+    string scoped_id = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message GuidanceVersion {
+    // The ID of this guidance version.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the guidance this version belongs to.
+    string guidance_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Guidance name at this version (can differ across versions).
+    string name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // TRIGGER condition at this version — when the help desk agent should
+    // invoke this skill.
+    string description = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // BEHAVIOR instructions at this version — how the help desk agent should
+    // handle the situation when this skill fires.
+    string content = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // User who created this version.
+    string created_by_user_id = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When this version was first saved (always set).
+    google.protobuf.Timestamp created_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When this version was published. Unset for draft (unpublished) versions.
+    optional google.protobuf.Timestamp published_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether this version has ever been published.
+    bool is_published = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message SkillVersion {
+    // The ID of this skill version.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the skill this version belongs to.
+    string skill_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Skill name at this version (can differ across versions).
+    string name = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When the help desk agent should use the skill, at this version.
+    string description = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // How the help desk agent should handle a ticket, at this version.
+    string content = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // User who created this version.
+    string created_by_user_id = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When this version was first saved (always set).
+    google.protobuf.Timestamp created_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When this version was published. Unset for draft (unpublished) versions.
+    optional google.protobuf.Timestamp published_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether this version has ever been published.
+    bool is_published = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message FormBlockWorkflowReference {
+    // The query workflow's workspace-scoped identity.
+    string scoped_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message FormBlockVersion {
+    // Immutable version ID.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Monotonic display version within the Block.
+    int64 version = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whole-file TSX module source.
+    string module_source = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Form SDK version the source targets.
+    string author_sdk_version = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Server-computed canonical source and SDK digest.
+    string version_digest = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Server-derived render-time query workflow references.
+    repeated FormBlockWorkflowReference workflow_references = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+    google.protobuf.Timestamp created_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // This version is the one currently published.
+    bool is_deployed = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When this version was last published, from the deployment record.
+    // Absent if it never was, and on FormBlock.published_version and publish
+    // responses, which do not read the deployment record.
+    google.protobuf.Timestamp deployed_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Who last published this version. Present exactly when deployed_at is.
+    optional string deployed_by_user_id = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+    string created_by_user_id = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Last write to the version row. Publishing touches it too, so it only
+    // means "content changed" on a version that was never published.
+    google.protobuf.Timestamp updated_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Version this branched off. Empty for the initial version.
+    string branched_from_version_id = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Display metadata captured with this immutable published version.
+    string name = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+    string description = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message FormBlock {
+    // Internal database ID.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Owning workspace ID.
+    string team_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Canonical import identity (fblk_ + 22 alphanumerics).
+    string scoped_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Mutable display name.
+    string name = 4;
+    // Mutable human-readable description.
+    string description = 5;
+    // Whole-file TSX module source, default-exporting defineBlock(...).
+    string module_source = 6;
+    // Form SDK version the source targets.
+    string author_sdk_version = 7;
+    // Server-computed canonical source and SDK digest.
+    string version_digest = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Server-derived render-time query workflow references.
+    repeated FormBlockWorkflowReference workflow_references = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Latest immutable published version, absent before first publish.
+    optional FormBlockVersion published_version = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Archived Blocks reject new adoption while retained locks keep resolving.
+    bool archived = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+    google.protobuf.Timestamp created_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+    google.protobuf.Timestamp updated_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Every immutable version that has been published, oldest first.
+    repeated FormBlockVersion published_versions = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message Form {
+    // The ID of the form.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that the form belongs to.
+    string team_id = 2;
+    // The name of the form.
+    string name = 3;
+    // A description of the form.
+    string description = 4;
+    // The form module source: TSX importing "serval/forms", exporting
+    // `main = view({ fn })`. Compiled when the form is published.
+    string content = 5;
+    // Whether the form is published. Set to true to publish the form.
+    bool is_published = 6;
+    // Whether there are unpublished changes to the form (computed by server).
+    bool has_unpublished_changes = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether the form accepts new sessions. A form that is not enabled keeps
+    // its versions and its published state; it just stops being fillable.
+    bool is_enabled = 8;
+    // The copy-invariant scoped ID of the form (e.g. "form_..."), stable
+    // across cross-workspace copies. Set it explicitly at create time to push a
+    // form between teams or environments under one identity; resolve it back
+    // to a form id with ResolveScopedRefs.
+    string scoped_id = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the folder the form lives in, if any. Unset means the form
+    // lives at the workspace root.
+    optional string folder_id = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The IDs of the workflows this form's content references — the workflow
+    // its submit handler runs, plus any it queries for data. Extracted from
+    // the module source on every save, so they describe the same version of
+    // the form the other fields do.
+    repeated string workflow_ids = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// A published form the caller can fill in, with the workspace that owns it.
+message SubmittableForm {
+    // The ID of the form.
+    string id = 1;
+    // The name of the form.
+    string name = 2;
+    // A description of the form.
+    string description = 3;
+    // The ID of the workspace that owns the form.
+    string team_id = 4;
+    // The name of the workspace that owns the form.
+    string team_name = 5;
+}
+
+/////////////////////////////////////////////////////////
+// Public API / SDK models for the native knowledge base
+
+// A native knowledge base — a container that owns a tree of documents.
+message KnowledgeBase {
+    // The ID of the knowledge base.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that owns the knowledge base.
+    string team_id = 2;
+    // The display name of the knowledge base.
+    string name = 3;
+    // A description of the knowledge base.
+    string description = 4;
+    reserved 5, 6; // removed: icon, color (presentation-only, not in the API surface)
+    // When the knowledge base was created.
+    google.protobuf.Timestamp created_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When the knowledge base was last updated.
+    google.protobuf.Timestamp updated_at = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // What kind of source this is. Native bases are authored in Serval;
+    // connector and custom-ingestion sources are read-only synced mirrors.
+    KnowledgeBaseKind kind = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The external service a connector source syncs from (slack, notion,
+    // confluence, ...). Empty for native and custom-ingestion sources.
+    string service = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Sync state of the connector or custom-ingestion source this entry is
+    // indexed under. Unset for native bases, which have nothing to sync.
+    optional KnowledgeSourceSyncStatus sync = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Names of the source's top-level containers (Slack channels, Notion
+    // root pages, Drive folders), at most 25, alphabetical. Only populated
+    // when ListKnowledgeBases is called with include_external_sources.
+    repeated string containers = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The knowledge source this entry is indexed under. Equals
+    // KnowledgeSearchResultItem.knowledge_source_id for every result drawn
+    // from it, so it is the join key between search results and this list.
+    // It identifies where content is synced from, not which base a page is
+    // filed under: a connector source entry (kind CONNECTOR, id ==
+    // knowledge_source_id) and its containers promoted into the Knowledge Base
+    // share one value; native bases share the workspace's one native source, and
+    // so does a page hand-authored inside a promoted connector base, because
+    // that page is Serval-authored content with nothing to sync.
+    string knowledge_source_id = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+enum KnowledgeBaseKind {
+    KNOWLEDGE_BASE_KIND_UNSPECIFIED = 0;
+    // Authored in Serval (by people, Catalyst, or a workflow). Editable.
+    KNOWLEDGE_BASE_KIND_NATIVE = 1;
+    // Synced by a built-in integration (Slack, Notion, Confluence, ...). Read-only.
+    KNOWLEDGE_BASE_KIND_CONNECTOR = 2;
+    // Synced by a custom ingestion workflow. Read-only.
+    KNOWLEDGE_BASE_KIND_CUSTOM_INGESTION = 3;
+}
+
+// How much of a synced source is actually searchable right now. Derived from
+// the source's sync bookkeeping, never from counting its items.
+message KnowledgeSourceSyncStatus {
+    // A sync is running: items discovered or downloaded since the last
+    // completed sync are not all searchable yet.
+    bool sync_in_progress = 1;
+    // When the running or most recent sync started.
+    optional google.protobuf.Timestamp last_sync_started_at = 2;
+    // When a sync last ran to completion, meaning every item was attempted.
+    // Unset if no sync has ever completed.
+    optional google.protobuf.Timestamp last_sync_completed_at = 3;
+    // The last completed sync did not see the whole source: some containers
+    // failed or were throttled by the upstream service. Results are a subset
+    // until a later sync completes cleanly.
+    bool last_sync_partial = 4;
+    // The last completed sync reached every item it attempted.
+    bool last_sync_succeeded = 5;
+}
+
+// Whether a document holds content (a page) or only organizes children (a folder).
+enum KnowledgeDocumentKind {
+    KNOWLEDGE_DOCUMENT_KIND_UNSPECIFIED = 0;
+    // A content-bearing page. Only pages can be published / indexed.
+    KNOWLEDGE_DOCUMENT_KIND_PAGE = 1;
+    // An organizational folder. Has no body content and cannot be published.
+    KNOWLEDGE_DOCUMENT_KIND_FOLDER = 2;
+}
+
+// A native knowledge document (a page or folder) within a knowledge base.
+// The page body is exchanged as Markdown: it is converted to native blocks on
+// write, and rendered back as plain text on read.
+message KnowledgeDocument {
+    // The ID of the document.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that owns the document.
+    string team_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the knowledge base the document belongs to.
+    string knowledge_base_id = 3;
+    // The ID of the parent document (a folder or page). Unset for a
+    // top-level document.
+    optional string parent_document_id = 4;
+    // Whether this document is a page or a folder.
+    KnowledgeDocumentKind kind = 5;
+    // The document title.
+    string title = 6;
+    // The page body as Markdown, on write and on read. On write it is converted
+    // to native blocks; on read the current draft blocks are serialized back to
+    // Markdown, so headings, list nesting, check states, quotes, fenced code,
+    // tables, links and inline styles round-trip. Empty for folders.
+    //
+    // Two known limits: an ordered list is renumbered from 1 (an explicit start
+    // offset such as "5." is not kept), and text colors, background colors and
+    // underline have no Markdown form and read back as plain text.
+    string content = 7;
+    reserved 8, 9, 13; // removed: icon, color, current_version_number
+    // Whether the document is currently published (agent-retrievable).
+    bool is_published = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether the draft has edits not yet captured in the published version.
+    bool has_unpublished_changes = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The agent-retrieval index status of the published version: one of
+    // "unindexed", "indexing", "indexed", or "failed".
+    string index_status = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When the document was created.
+    google.protobuf.Timestamp created_at = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When the document was last updated.
+    google.protobuf.Timestamp updated_at = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When the document was last published. Unset if never published.
+    optional google.protobuf.Timestamp published_at = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The page number, unique within the workspace. The app shows it as KB
+    // followed by seven digits (42 is KB0000042). Unset for folders.
+    optional int64 page_number = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// A lightweight knowledge document entry used in list/tree responses. Omits
+// the body content; fetch a single document to read its content.
+message KnowledgeDocumentSummary {
+    // The ID of the document.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that owns the document.
+    string team_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the knowledge base the document belongs to.
+    string knowledge_base_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the parent document. Unset for a top-level document.
+    optional string parent_document_id = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether this document is a page or a folder.
+    KnowledgeDocumentKind kind = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The document title.
+    string title = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+    reserved 7, 8; // removed: icon, color (presentation-only)
+    // Whether the document is currently published (agent-retrievable).
+    bool is_published = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The agent-retrieval index status: "unindexed", "indexing", "indexed",
+    // or "failed".
+    string index_status = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When the document was created.
+    google.protobuf.Timestamp created_at = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When the document was last updated.
+    google.protobuf.Timestamp updated_at = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The page number, unique within the workspace. The app shows it as KB
+    // followed by seven digits (42 is KB0000042). Unset for folders.
+    optional int64 page_number = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// The type of delegate for an approval delegation.
+enum ApprovalDelegateType {
+    APPROVAL_DELEGATE_TYPE_UNSPECIFIED = 0;
+    APPROVAL_DELEGATE_TYPE_USER = 1;
+    APPROVAL_DELEGATE_TYPE_GROUP = 2;
+}
+
+// A delegate who can approve on behalf of a delegator.
+message ApprovalDelegate {
+    // The type of delegate (user or group).
+    ApprovalDelegateType type = 1;
+    // The ID of the delegate (user ID or group ID, depending on type).
+    string id = 2;
+}
+
+// An approval delegation rule that allows a user to delegate their approval responsibilities.
+message ApprovalDelegation {
+    // The ID of the approval delegation.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The timestamp when the delegation was created.
+    google.protobuf.Timestamp created_at = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the user who is delegating their approvals.
+    string delegator_user_id = 3;
+    // The delegates who can approve on behalf of the delegator.
+    repeated ApprovalDelegate delegates = 4;
+    // The priority of the delegation rule (lower values are higher priority).
+    int32 priority = 5;
+    // A description of the delegation rule.
+    string description = 6;
+    // When the delegation rule becomes active. Unset means active immediately.
+    optional google.protobuf.Timestamp active_from = 7;
+    // When the delegation rule stops applying (exclusive). Unset means the rule
+    // never expires. Expiry only stops the rule matching new approvals and
+    // ticket assignments — work already routed to a delegate stays with them.
+    optional google.protobuf.Timestamp active_until = 8;
+}
+
+message CustomService {
+    // The ID of the custom service.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that the custom service belongs to.
+    string team_id = 2;
+    // The name of the custom service (e.g., "Internal HR System").
+    string name = 3;
+    // The domain for branding/logo lookup (e.g., "hr.company.com").
+    string domain = 4;
+    // Copy-invariant identity ("csvc_" + 22 alphanumerics), unique within the
+    // workspace. Preserved when the service is pushed or duplicated to another
+    // workspace, so cross-workspace tooling can match copies against their origin.
+    string scoped_id = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// A package is a named set of app instances. Workflows published into a
+// package run with the credentials of the app instances it links.
+message Package {
+    // The ID of the package.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that owns the package.
+    string team_id = 2;
+    // The package name. "Default" for the workspace's default package.
+    string name = 3;
+    // Copy-invariant identity ("pkg_" + 22 alphanumerics), unique within the
+    // workspace. Preserved when the package is pushed to another workspace. Every
+    // workspace's default package has the scoped_id pkg_0000000000000000000001.
+    string scoped_id = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether this is the workspace's default package. Every workspace has exactly one.
+    // It cannot be deleted, renamed or rekeyed.
+    bool is_default = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The IDs of the app instances the package links, ascending.
+    repeated string app_instance_ids = 6;
+}
+
+// An integration represents a configured connection between Serval and an external service.
+// Use the integration ID with endpoints like Sync Ticket to Channel.
+message Integration {
+    // The ID of the integration.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the app instance this integration belongs to.
+    string app_instance_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The API domain for the integration (e.g., "acme.freshservice.com").
+    string api_domain = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Timestamp indicating when the integration was created.
+    google.protobuf.Timestamp created_at = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+/////////////////////////////////////////////////////////
+// Public API / SDK models for workflow runs
+
+// WorkflowRun represents a single execution of a workflow.
+message WorkflowRun {
+    // The unique ID of the workflow run. Persist this to follow up with
+    // GetWorkflowRun / AwaitWorkflowRunResult. This is the orchestration
+    // (Temporal) run ID — the same identifier returned by the webhook
+    // trigger response and by the worker SDK as `ctx.currentWorkflowRun.id`.
+    string id = 1;
+    // The ID of the workflow that was run.
+    string workflow_id = 2;
+    // The ID of the workspace that the workflow belongs to.
+    string team_id = 3;
+    // The status of the workflow run.
+    svflow.common.models.WorkflowRunStatus status = 4;
+    // The timestamp when the workflow run was created.
+    string created_at = 5;
+    // The timestamp when the workflow run completed (if applicable).
+    optional string completed_at = 6;
+    // The ID of the user who initiated the workflow run.
+    string initiated_by_user_id = 7;
+    // The ID of the target user for the workflow run (if different from initiator).
+    optional string target_user_id = 8;
+    // The inputs provided to the workflow (JSON string).
+    optional string inputs = 9;
+    // The output of the workflow run (JSON string, available when completed or failed).
+    optional string output = 10;
+    // The ID of the linked ticket, if any.
+    optional string linked_ticket_id = 11;
+    // The ID of the approval request associated with this workflow run, if any.
+    optional string approval_request_id = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The timestamp when the workflow run status was last updated.
+    string status_updated_at = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The run ID of the parent workflow run that spawned this run, if this run
+    // is a child (sub-workflow). Empty for top-level runs.
+    optional string parent_workflow_run_id = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The step number in the parent run that spawned this run, if this run is
+    // a child.
+    optional int64 parent_workflow_run_step_number = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// WorkflowRunTaskOutcome is the resolved outcome of a single task (step) run.
+enum WorkflowRunTaskOutcome {
+    WORKFLOW_RUN_TASK_OUTCOME_UNSPECIFIED = 0;
+    // The task has not started yet.
+    WORKFLOW_RUN_TASK_OUTCOME_PENDING = 1;
+    // The task is currently running (has started but not resolved).
+    WORKFLOW_RUN_TASK_OUTCOME_RUNNING = 2;
+    // The task completed successfully.
+    WORKFLOW_RUN_TASK_OUTCOME_SUCCESS = 3;
+    // The task failed.
+    WORKFLOW_RUN_TASK_OUTCOME_FAILED = 4;
+    // The task is paused (e.g. waiting on an approval or signal).
+    WORKFLOW_RUN_TASK_OUTCOME_PAUSED = 5;
+}
+
+// WorkflowRunTaskSummary is a lightweight per-step entry for listing a run's
+// tasks. Input/output previews are truncated; use GetWorkflowRunTask for the
+// full (capped) input/output of a single step.
+message WorkflowRunTaskSummary {
+    // The step number of the task within the run.
+    int64 step_number = 1;
+    // The human-readable task name (falls back to the function name).
+    string task_name = 2;
+    // The resolved outcome of the task.
+    WorkflowRunTaskOutcome outcome = 3;
+    // A truncated preview of the task input (JSON string), if any.
+    optional string input_preview = 4;
+    // A truncated preview of the task output (JSON string), if any.
+    optional string output_preview = 5;
+    // True when input_preview was truncated.
+    bool input_truncated = 6;
+    // True when output_preview was truncated.
+    bool output_truncated = 7;
+}
+
+// WorkflowRunTask is the full detail for a single task (step) run. Input and
+// output are returned with a generous size cap; the *_truncated flags report
+// whether the cap was hit.
+message WorkflowRunTask {
+    // The step number of the task within the run.
+    int64 step_number = 1;
+    // The human-readable task name (falls back to the function name).
+    string task_name = 2;
+    // The underlying function name the task invoked.
+    string function_name = 3;
+    // The resolved outcome of the task.
+    WorkflowRunTaskOutcome outcome = 4;
+    // The task input (JSON string), if any. Capped in size.
+    optional string input = 5;
+    // The task output (JSON string), if any. Capped in size.
+    optional string output = 6;
+    // True when input was truncated to the size cap.
+    bool input_truncated = 7;
+    // True when output was truncated to the size cap.
+    bool output_truncated = 8;
+}
+
+/////////////////////////////////////////////////////////
+// Public API / SDK models for access requests
+
+// The status of an access request time allocation.
+enum AccessRequestTimeAllocationStatus {
+    ACCESS_REQUEST_TIME_ALLOCATION_STATUS_UNSPECIFIED = 0;
+    // The time allocation is pending approval.
+    ACCESS_REQUEST_TIME_ALLOCATION_STATUS_PENDING = 1;
+    // The time allocation is approved and active.
+    ACCESS_REQUEST_TIME_ALLOCATION_STATUS_ACTIVE = 2;
+    // The time allocation was invalidated (superseded, canceled, rejected, or concluded).
+    ACCESS_REQUEST_TIME_ALLOCATION_STATUS_INVALIDATED = 3;
+}
+
+// The reason a time allocation was invalidated.
+enum AccessRequestTimeAllocationInvalidationReason {
+    ACCESS_REQUEST_TIME_ALLOCATION_INVALIDATION_REASON_UNSPECIFIED = 0;
+    // Replaced by a newer extension request.
+    ACCESS_REQUEST_TIME_ALLOCATION_INVALIDATION_REASON_SUPERSEDED = 1;
+    // User manually canceled the pending request.
+    ACCESS_REQUEST_TIME_ALLOCATION_INVALIDATION_REASON_CANCELED = 2;
+    // Denied by an approver.
+    ACCESS_REQUEST_TIME_ALLOCATION_INVALIDATION_REASON_REJECTED = 3;
+    // Parent access request was concluded (revoked, expired, etc.).
+    ACCESS_REQUEST_TIME_ALLOCATION_INVALIDATION_REASON_CONCLUDED = 4;
+}
+
+// A time allocation represents a single grant (or pending grant) of access
+// time within an access request. When an access request is first created, one
+// time allocation is created alongside it with the initially requested
+// duration. If the user later extends the request, the current time allocation
+// is invalidated (reason = SUPERSEDED) and a brand-new time allocation is
+// created with the updated duration. This means an access request accumulates
+// a history of time allocations over its lifetime, but at most one is active
+// and at most one is pending at any given moment.
+message AccessRequestTimeAllocation {
+    // The unique ID of the time allocation.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The status of this time allocation.
+    AccessRequestTimeAllocationStatus status = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The timestamp when the time allocation was created.
+    string created_at = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The number of minutes of access requested in this time allocation.
+    int32 requested_minutes = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The number of minutes actually approved. Null while the time allocation is pending.
+    optional int32 approved_minutes = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The business justification provided for this time allocation.
+    optional string business_justification = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the user who requested this time allocation (may differ from
+    // the original requester for extensions).
+    string requested_by_user_id = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Why the time allocation was invalidated. Only set when status is INVALIDATED.
+    optional AccessRequestTimeAllocationInvalidationReason invalidation_reason = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the ticket this time allocation was created from, if any. For
+    // the initial allocation this is the ticket that originated the access
+    // request. For extensions this may be a different ticket.
+    optional string linked_ticket_id = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the approval request for this time allocation, if any.
+    // Each time allocation may have its own approval round (e.g., initial request
+    // vs. extension each go through separate approval).
+    optional string approval_request_id = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// AccessRequest represents a request for access to an entitlement.
+message AccessRequest {
+    // The unique ID of the access request.
+    string id = 1;
+    // The ID of the workspace that the access request belongs to.
+    string team_id = 2;
+    // The status of the access request.
+    svflow.common.models.AccessRequestStatus status = 3;
+    // The timestamp when the access request was created.
+    string created_at = 4;
+    reserved 5; // requested_by_user_id moved to AccessRequestTimeAllocation
+    // The ID of the target user for whom access was requested.
+    string target_user_id = 6;
+    // The ID of the requested role.
+    string requested_role_id = 7;
+    reserved 8; // access_minutes moved to AccessRequestTimeAllocation.requested_minutes
+    reserved 9; // business_justification moved to AccessRequestTimeAllocation
+    // The timestamp when the currently active time allocation expires. This is
+    // only set when the access request has been provisioned and is not yet
+    // concluded. If the request has been extended, this reflects the expiry of
+    // the latest (current) time allocation, not the original one.
+    optional string expires_at = 10;
+    // The ID of the ticket that originated this access request. This always
+    // matches the linked_ticket_id of the first time allocation. Extensions
+    // may be created from a different ticket — see each time allocation's
+    // linked_ticket_id for that.
+    optional string linked_ticket_id = 11;
+    // Every access request contains one or more time allocations. A time
+    // allocation represents a discrete grant (or pending grant) of access for a
+    // specific duration. The first time allocation is created with the initial
+    // request. When a user extends an existing access request, a new time
+    // allocation is appended — the previous one is invalidated (superseded) and
+    // the new one becomes the active or pending allocation. At most one time
+    // allocation is active and at most one is pending at any given time.
+    //
+    // Ordered by creation time ascending.
+    repeated AccessRequestTimeAllocation time_allocations = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// RequestableRole pairs a role with its access policy, giving callers
+// everything needed to build an access request form in a single response.
+message RequestableRole {
+    // The role that can be requested.
+    Role role = 1;
+    // The access policy governing this role's request constraints
+    // (max duration, recommended duration, justification requirements).
+    AccessPolicy access_policy = 2;
+}
+
+/////////////////////////////////////////////////////////
+// Public API / SDK models for access profiles
+
+// An access profile defines which entitlements are available
+// to which groups of users, and which workflows apply.
+message AccessProfile {
+    // The ID of the access profile.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that the access profile belongs to.
+    string team_id = 2;
+    // The name of the access profile.
+    string name = 3;
+    // A description of the access profile.
+    optional string description = 4;
+    // Whether this is the workspace's default access profile (server-managed).
+    bool is_team_default = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The timestamp when the access profile was created.
+    google.protobuf.Timestamp created_at = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The rules that determine which users this profile applies to.
+    AccessProfileMatchingCriteria matching_criteria = 7;
+    // Deprecated: read and manage grants through the access-profile-grant
+    // endpoints (/v2/access-profile-grants) instead. Still populated on
+    // reads for compatibility; the list is unbounded on large profiles.
+    AccessProfileGrants grants = 8 [deprecated = true];
+    // Built-in profile type, if this is a built-in (system-managed) profile.
+    // Empty string for user-created profiles. Possible values track
+    // svflow.common.AccessProfileBuiltinProfileType (e.g. "team_members").
+    string builtin_profile_type = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Stable, workspace-scoped identity of the profile (apr_ + 22 chars).
+    // Minted at create when not supplied; preserved verbatim when the profile
+    // is copied to another workspace, so cross-workspace tooling can match copies to
+    // their origin. Settable on create and rekeyable via update, except for
+    // built-in profiles, whose sentinel scoped id is server-managed.
+    string scoped_id = 10;
+    reserved 11, 12;
+    AccessProfileBirthrightPolicy birthright = 13;
+}
+
+// The kind of resource an access profile grant attaches to.
+// One access-profile-to-resource attachment. For workflows and app resource
+// roles the profile grants access; for forms and skills it narrows the
+// audience (a form or skill with no grants reaches anyone in the org).
+// Exactly one of the resource id fields is set; the field itself carries the
+// resource kind, so cross-workspace tooling can resolve each id against its own
+// resource type.
+message AccessProfileGrant {
+    // The ID of the grant.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the access profile.
+    string access_profile_id = 2;
+    // The ID of the granted workflow.
+    optional string workflow_id = 3;
+    // The ID of the granted app resource role.
+    optional string app_resource_role_id = 4;
+    // The ID of the form whose audience this profile is part of.
+    optional string form_id = 5;
+    // The ID of the gated knowledge item. Knowledge-item grants are readable
+    // but not writable via the public API; knowledge gating is managed in-app
+    // (links inherit down the item tree).
+    optional string knowledge_item_id = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the skill whose audience this profile is part of.
+    optional string skill_id = 10;
+    // Whether this grant is a DENY link: the profile's users are excluded
+    // from the resource instead of granted it.
+    bool excluded = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether this app-resource-role grant automatically tracks the workspace's
+    // default access profile. Always false for other resource types.
+    bool tracks_team_default_access_profile = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The timestamp when the grant was created.
+    google.protobuf.Timestamp created_at = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// A runtime approval request tracking the approval workflow for an
+// access request or workflow run.
+message ApprovalRequest {
+    // The ID of the approval request.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The overall result of the approval request (derived from steps).
+    svflow.common.models.ApprovalRequestResult result = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The timestamp when the approval request was created.
+    google.protobuf.Timestamp created_at = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+    // The parent resource this approval request is for.
+    oneof for_resource {
+        // The ID of the access request time allocation this approval is for.
+        // Each time allocation (initial request or extension) has its own approval round.
+        string access_request_time_allocation_id = 4;
+        // The ID of the workflow run this approval is for.
+        string workflow_run_id = 5;
+    }
+
+    // The timestamp when the approval request was last updated.
+    google.protobuf.Timestamp updated_at = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Controls whether approvers are asked for a justification when deciding.
+    // Valid values: "not_requested", "optional", "required",
+    // "required_for_approval", "required_for_denial".
+    string approver_justification_mode = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// A runtime approval step with inline approver resolutions.
+message ApprovalRequestStep {
+    // The ID of the approval step.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The step number (1-indexed, ordered).
+    int32 step_number = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The result of the step.
+    svflow.common.models.ApprovalRequestResult result = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Approver resolutions. Populated once the step is activated and
+    // approvers are known (either from configured sources or assigned
+    // by a custom workflow).
+    repeated ApprovalRequestStepResolution resolutions = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Configured approver sources for steps not yet activated.
+    repeated svflow.common.models.ConfiguredApproverSource configured_approver_sources = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Present if this step uses a custom approval workflow.
+    optional ApprovalRequestStepCustomWorkflowRun custom_workflow_run = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether this step is a fallback: it decides only once the step it backs
+    // up escalates.
+    bool is_fallback = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// An individual approver's resolution within an approval step.
+message ApprovalRequestStepResolution {
+    // The ID of this resolution.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the user who is the approver for this resolution.
+    string approver_user_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether this approver is a primary or secondary approver for the step.
+    svflow.common.models.ApprovalRequestUserType approver_type = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The result of the approver's decision.
+    svflow.common.models.ApprovalRequestResult result = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // When the result was set. Null if the approver hasn't acted yet.
+    optional google.protobuf.Timestamp result_set_at = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Whether this resolution was auto-approved.
+    bool auto_approved = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Free-text justification supplied by this approver alongside their decision.
+    optional string justification = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // If this approver was assigned by a delegation rule, the ID of the user the
+    // approval was originally routed to (the start of the delegation chain).
+    optional string delegated_from_user_id = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// Information about a custom workflow run used for approval.
+message ApprovalRequestStepCustomWorkflowRun {
+    // The ID of the workflow run.
+    string run_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The status of the workflow run.
+    svflow.common.models.WorkflowRunStatus status = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+    // The outcome of the custom workflow, once completed.
+    oneof outcome {
+        // The workflow auto-resolved the step (approved/denied directly).
+        AutoResolution auto_resolution = 3;
+        // The workflow defined the approvers. Their decisions appear
+        // in the parent ApprovalRequestStep's resolutions field.
+        ApproverAssignment approver_assignment = 4;
+    }
+}
+
+// The custom workflow directly approved or denied the step.
+message AutoResolution {
+    // The result the workflow set.
+    svflow.common.models.ApprovalRequestResult result = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The reason provided by the workflow.
+    optional string reason = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// The custom workflow determined who should approve.
+message ApproverAssignment {
+    // The reason or context the workflow provided for this assignment.
+    optional string reason = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// One endpoint from a custom service's uploaded OpenAPI/Swagger spec.
+//
+// Metadata only. Full request/response schemas live in
+// CustomServiceEndpointDetail, fetched one endpoint at a time -- returning
+// them inline would put tens of KB per result into an agent's context, which
+// is the failure this feature exists to prevent.
+message CustomServiceEndpoint {
+    string id = 1;
+    string custom_service_id = 2;
+    string custom_service_name = 3;
+    string document_id = 4;
+    string method = 5;
+    string path = 6;
+    string operation_id = 7;
+    string summary = 8;
+    repeated string tags = 9;
+    bool deprecated = 10;
+    // Base URL from the spec's servers/host block, when it declared one. The
+    // app instance's configured base URL remains authoritative for calls.
+    string server_base_url = 11;
+    float score = 12;
+}
+
+// One endpoint plus the parts too large to return from search.
+message CustomServiceEndpointDetail {
+    CustomServiceEndpoint endpoint = 1;
+    string description = 2;
+    // The EndpointInfo-shaped operation document as JSON: parameters and
+    // request/response schemas with local $refs already resolved.
+    string details_json = 3;
+}
+
+// An image Serval hosts for a workspace's form card options. Referenced from a card
+// option by scoped id; a render mints a short-lived URL for it, so there is no
+// durable URL on this model to hand out.
+message FormImage {
+    // The ID of the image.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The ID of the workspace that the image belongs to.
+    string team_id = 2;
+    // The copy-invariant scoped ID (fimg_ + 22 base62 chars), stable across
+    // cross-workspace copies. This is what a card option's imageAssetId names.
+    string scoped_id = 3;
+    // The uploader's file name.
+    string file_name = 4;
+    // Content type of the STORED rendition, which normalization may have
+    // changed from the upload's (an opaque PNG is re-encoded as JPEG).
+    string content_type = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    int32 width_px = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+    int32 height_px = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+    int64 size_bytes = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The stored rendition. Populated only when explicitly requested — it is
+    // what lets a config push carry the picture to another workspace, and is noise
+    // on every other read.
+    bytes data = 9;
+}
+
+// Recorded Access Management roster membership, including synced access.
+// This is not a live verification against the external application.
+message AccessMembership {
+    string user_id = 1;
+    string app_instance_id = 2;
+    string app_instance_name = 3;
+    string resource_id = 4;
+    string resource_name = 5;
+    string role_id = 6;
+    string role_name = 7;
+}
+
+// Role sync for one resource type of an app.
+message RoleSync {
+    // The ID of the role sync.
+    string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The workspace that owns the app instance.
+    string team_id = 2;
+    // The app instance whose roles are synced.
+    string app_instance_id = 3;
+    // The resource type the workflows report on. "access" is the app itself.
+    string resource_type_slug = 4;
+    // The workspace workflow that reports who holds each role. Unset when role
+    // sync is switched off.
+    optional string role_holders_workflow_id = 5;
+    // The workspace workflow that reports each resource's roles.
+    optional string roles_workflow_id = 6;
+    // Whether a role holder no user matches gets a new user.
+    bool create_missing_users = 7;
+    // How often each resource syncs, in seconds. Unset uses the app's
+    // interval.
+    optional int32 sync_interval_seconds = 8;
+    // The columns access reviews show for each role holder, in order.
+    repeated AccountFieldMapping review_fields = 9;
+    // Whether the role holders workflow runs.
+    bool enabled = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The live resources of the type; a run covers each of them.
+    int32 resource_count = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+enum RoleSyncRunState {
+    ROLE_SYNC_RUN_STATE_UNSPECIFIED = 0;
+    // No resource has started a run since the run was requested.
+    ROLE_SYNC_RUN_STATE_PENDING = 1;
+    // Some resources have not finished.
+    ROLE_SYNC_RUN_STATE_RUNNING = 2;
+    // Every resource finished and none failed.
+    ROLE_SYNC_RUN_STATE_SUCCEEDED = 3;
+    // Every resource finished and at least one failed.
+    ROLE_SYNC_RUN_STATE_FAILED = 4;
+}
+
+// The latest run of a role sync across the resources of its type.
+message RoleSyncRun {
+    RoleSyncRunState state = 1;
+    // When the run was last requested. Each resource's runs that started
+    // before it are not counted. Unset when none was: each resource's latest
+    // run counts.
+    google.protobuf.Timestamp requested_at = 2;
+    // The live resources of the type.
+    int32 resource_count = 3;
+    // Resources whose run has started.
+    int32 started_count = 4;
+    int32 succeeded_count = 5;
+    int32 failed_count = 6;
+    // Up to five failed resources.
+    repeated RoleSyncRunFailure failures = 7;
+}
+
+message RoleSyncRunFailure {
+    string resource_id = 1;
+    string resource_name = 2;
+    string error_message = 3;
+}

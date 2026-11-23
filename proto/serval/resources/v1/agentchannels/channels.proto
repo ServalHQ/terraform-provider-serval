@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package serval.resources.v1.agentchannels;
+
+import "buf/validate/validate.proto";
+
+enum AgentChannel {
+  AGENT_CHANNEL_UNSPECIFIED = 0;
+  // All text channels, including integrations added in the future.
+  AGENT_CHANNEL_CHAT = 1;
+  AGENT_CHANNEL_VOICE = 2;
+}
+
+// Empty channels means unrestricted, including future channels.
+// Otherwise, any selected channel may match.
+message AgentChannelFilter {
+  repeated AgentChannel channels = 1 [(buf.validate.field).repeated.items.enum = {
+    defined_only: true,
+    not_in: [0]
+  }];
+}

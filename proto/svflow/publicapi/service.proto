@@ -1,0 +1,3393 @@
+syntax = "proto3";
+
+package svflow.publicapi;
+
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "serval/resources/v1/agentchannels/channels.proto";
+import "svflow/common/models.proto";
+import "svflow/pubapimodels/changesets.proto";
+import "svflow/pubapimodels/models.proto";
+import public "svflow/publicapi/changesets.proto";
+import "svrunstate/models/models.proto";
+
+service SvFlowPublicAPIService {
+    // Access Policy Management
+    rpc GetAccessPolicy (GetAccessPolicyRequest) returns (GetAccessPolicyResponse);
+    rpc CreateAccessPolicy (CreateAccessPolicyRequest) returns (CreateAccessPolicyResponse);
+    rpc UpdateAccessPolicy (UpdateAccessPolicyRequest) returns (UpdateAccessPolicyResponse);
+    rpc DeleteAccessPolicy (DeleteAccessPolicyRequest) returns (DeleteAccessPolicyResponse);
+    rpc ListAccessPolicies (ListAccessPoliciesRequest) returns (ListAccessPoliciesResponse);
+
+    // Access Policy Approval Procedure Management
+    rpc GetAccessPolicyApprovalProcedure (GetAccessPolicyApprovalProcedureRequest) returns (GetAccessPolicyApprovalProcedureResponse);
+    rpc CreateAccessPolicyApprovalProcedure (CreateAccessPolicyApprovalProcedureRequest) returns (CreateAccessPolicyApprovalProcedureResponse);
+    rpc UpdateAccessPolicyApprovalProcedure (UpdateAccessPolicyApprovalProcedureRequest) returns (UpdateAccessPolicyApprovalProcedureResponse);
+    rpc DeleteAccessPolicyApprovalProcedure (DeleteAccessPolicyApprovalProcedureRequest) returns (DeleteAccessPolicyApprovalProcedureResponse);
+    rpc ListAccessPolicyApprovalProcedures (ListAccessPolicyApprovalProceduresRequest) returns (ListAccessPolicyApprovalProceduresResponse);
+
+    // Workflow Management
+    rpc GetWorkflow (GetWorkflowRequest) returns (GetWorkflowResponse);
+    rpc CreateWorkflow (CreateWorkflowRequest) returns (CreateWorkflowResponse);
+    rpc UpdateWorkflow (UpdateWorkflowRequest) returns (UpdateWorkflowResponse);
+    rpc DeleteWorkflow (DeleteWorkflowRequest) returns (DeleteWorkflowResponse);
+    rpc ListWorkflows (ListWorkflowsRequest) returns (ListWorkflowsResponse);
+    rpc ListWorkflowVersions (ListWorkflowVersionsRequest) returns (ListWorkflowVersionsResponse);
+    rpc TriggerWorkflowByWebhook (TriggerWorkflowByWebhookRequest) returns (TriggerWorkflowByWebhookResponse);
+    rpc TriggerIngestionWebhook (TriggerIngestionWebhookRequest) returns (TriggerIngestionWebhookResponse);
+
+    // Scoped ID Resolution
+    rpc ResolveScopedRefs (ResolveScopedRefsRequest) returns (ResolveScopedRefsResponse);
+
+    // Tag Management
+    rpc GetTag (GetTagRequest) returns (GetTagResponse);
+    rpc CreateTag (CreateTagRequest) returns (CreateTagResponse);
+    rpc UpdateTag (UpdateTagRequest) returns (UpdateTagResponse);
+    rpc DeleteTag (DeleteTagRequest) returns (DeleteTagResponse);
+    rpc ListTags (ListTagsRequest) returns (ListTagsResponse);
+
+    // Polymorphic tag attach across all subject types (resource, role,
+    // app_instance, workflow, guidance). Replaces the per-subject attach RPCs.
+    rpc AddTagToSubject (AddTagToSubjectRequest) returns (AddTagToSubjectResponse);
+    rpc RemoveTagFromSubject (RemoveTagFromSubjectRequest) returns (RemoveTagFromSubjectResponse);
+    rpc ListSubjectTags (ListSubjectTagsRequest) returns (ListSubjectTagsResponse);
+
+    // Workflow Approval Procedure Management
+    rpc GetWorkflowApprovalProcedure (GetWorkflowApprovalProcedureRequest) returns (GetWorkflowApprovalProcedureResponse);
+    rpc CreateWorkflowApprovalProcedure (CreateWorkflowApprovalProcedureRequest) returns (CreateWorkflowApprovalProcedureResponse);
+    rpc UpdateWorkflowApprovalProcedure (UpdateWorkflowApprovalProcedureRequest) returns (UpdateWorkflowApprovalProcedureResponse);
+    rpc DeleteWorkflowApprovalProcedure (DeleteWorkflowApprovalProcedureRequest) returns (DeleteWorkflowApprovalProcedureResponse);
+    rpc ListWorkflowApprovalProcedures (ListWorkflowApprovalProceduresRequest) returns (ListWorkflowApprovalProceduresResponse);
+    rpc ListTeamWorkflowApprovalProcedures (ListTeamWorkflowApprovalProceduresRequest) returns (ListTeamWorkflowApprovalProceduresResponse);
+    rpc ListTeamAccessPolicyApprovalProcedures (ListTeamAccessPolicyApprovalProceduresRequest) returns (ListTeamAccessPolicyApprovalProceduresResponse);
+
+    // Approval Procedure Management (named, workspace-scoped library
+    // procedures with no parent workflow or access policy)
+    rpc CreateApprovalProcedure (CreateApprovalProcedureRequest) returns (CreateApprovalProcedureResponse);
+    rpc GetApprovalProcedure (GetApprovalProcedureRequest) returns (GetApprovalProcedureResponse);
+    rpc ListApprovalProcedures (ListApprovalProceduresRequest) returns (ListApprovalProceduresResponse);
+    rpc UpdateApprovalProcedure (UpdateApprovalProcedureRequest) returns (UpdateApprovalProcedureResponse);
+    rpc DeleteApprovalProcedure (DeleteApprovalProcedureRequest) returns (DeleteApprovalProcedureResponse);
+    rpc ListLegacyApprovalMigrationFailures (ListLegacyApprovalMigrationFailuresRequest) returns (ListLegacyApprovalMigrationFailuresResponse);
+
+    // Role sync. Not documented: shapes may change while Catalyst is its only
+    // writer.
+    rpc CreateRoleSync (CreateRoleSyncRequest) returns (CreateRoleSyncResponse);
+    rpc UpdateRoleSync (UpdateRoleSyncRequest) returns (UpdateRoleSyncResponse);
+    rpc GetRoleSync (GetRoleSyncRequest) returns (GetRoleSyncResponse);
+    rpc ListRoleSyncs (ListRoleSyncsRequest) returns (ListRoleSyncsResponse);
+    rpc RunRoleSync (RunRoleSyncRequest) returns (RunRoleSyncResponse);
+    rpc AwaitRoleSyncRun (AwaitRoleSyncRunRequest) returns (AwaitRoleSyncRunResponse);
+    rpc GetAppAccountFields (GetAppAccountFieldsRequest) returns (GetAppAccountFieldsResponse);
+    rpc UpdateAppAccountFields (UpdateAppAccountFieldsRequest) returns (UpdateAppAccountFieldsResponse);
+
+    // Folder Management
+    rpc GetFolder (GetFolderRequest) returns (GetFolderResponse);
+    rpc CreateFolder (CreateFolderRequest) returns (CreateFolderResponse);
+    rpc UpdateFolder (UpdateFolderRequest) returns (UpdateFolderResponse);
+    rpc DeleteFolder (DeleteFolderRequest) returns (DeleteFolderResponse);
+    rpc ListFolders (ListFoldersRequest) returns (ListFoldersResponse);
+    rpc ListFolderContents (ListFolderContentsRequest) returns (ListFolderContentsResponse);
+    rpc SetFolderItemLocation (SetFolderItemLocationRequest) returns (SetFolderItemLocationResponse);
+
+    // Guidance Management
+    rpc GetGuidance (GetGuidanceRequest) returns (GetGuidanceResponse);
+    rpc CreateGuidance (CreateGuidanceRequest) returns (CreateGuidanceResponse);
+    rpc UpdateGuidance (UpdateGuidanceRequest) returns (UpdateGuidanceResponse);
+    rpc DeleteGuidance (DeleteGuidanceRequest) returns (DeleteGuidanceResponse);
+    rpc ListGuidances (ListGuidancesRequest) returns (ListGuidancesResponse);
+    rpc ListGuidanceVersions (ListGuidanceVersionsRequest) returns (ListGuidanceVersionsResponse);
+
+    // Skill Management. The Guidance RPCs above are permanent aliases of
+    // these for existing API clients.
+    rpc GetSkill (GetSkillRequest) returns (GetSkillResponse);
+    rpc CreateSkill (CreateSkillRequest) returns (CreateSkillResponse);
+    rpc UpdateSkill (UpdateSkillRequest) returns (UpdateSkillResponse);
+    rpc DeleteSkill (DeleteSkillRequest) returns (DeleteSkillResponse);
+    rpc ListSkills (ListSkillsRequest) returns (ListSkillsResponse);
+    rpc ListSkillVersions (ListSkillVersionsRequest) returns (ListSkillVersionsResponse);
+
+    // Form Management
+    rpc GetForm (GetFormRequest) returns (GetFormResponse);
+    rpc CreateForm (CreateFormRequest) returns (CreateFormResponse);
+    rpc CreateFormImage (CreateFormImageRequest) returns (CreateFormImageResponse);
+    rpc ListFormImages (ListFormImagesRequest) returns (ListFormImagesResponse);
+    rpc UpdateForm (UpdateFormRequest) returns (UpdateFormResponse);
+    rpc DeleteForm (DeleteFormRequest) returns (DeleteFormResponse);
+    rpc ListForms (ListFormsRequest) returns (ListFormsResponse);
+    rpc ListSubmittableForms (ListSubmittableFormsRequest) returns (ListSubmittableFormsResponse);
+
+    // App Resource Management
+    rpc GetAppResource (GetAppResourceRequest) returns (GetAppResourceResponse);
+    rpc CreateAppResource (CreateAppResourceRequest) returns (CreateAppResourceResponse);
+    rpc BatchCreateAppResources (BatchCreateAppResourcesRequest) returns (BatchCreateAppResourcesResponse);
+    rpc UpdateAppResource (UpdateAppResourceRequest) returns (UpdateAppResourceResponse);
+    rpc BatchUpdateAppResources (BatchUpdateAppResourcesRequest) returns (BatchUpdateAppResourcesResponse);
+    rpc DeleteAppResource (DeleteAppResourceRequest) returns (DeleteAppResourceResponse);
+    rpc SearchAppResources (SearchAppResourcesRequest) returns (SearchAppResourcesResponse);
+    rpc ListAppResources (ListAppResourcesRequest) returns (ListAppResourcesResponse);
+    rpc ListResourcesForAppInstance (ListResourcesForAppInstanceRequest) returns (ListResourcesForAppInstanceResponse);
+
+    // App Resource Entitlement Management (deprecated - use Role endpoints)
+    rpc GetAppResourceEntitlement (GetAppResourceEntitlementRequest) returns (GetAppResourceEntitlementResponse);
+    rpc CreateAppResourceEntitlement (CreateAppResourceEntitlementRequest) returns (CreateAppResourceEntitlementResponse);
+    rpc UpdateAppResourceEntitlement (UpdateAppResourceEntitlementRequest) returns (UpdateAppResourceEntitlementResponse);
+    rpc BatchUpdateAppResourceEntitlements (BatchUpdateAppResourceEntitlementsRequest) returns (BatchUpdateAppResourceEntitlementsResponse);
+    rpc DeleteAppResourceEntitlement (DeleteAppResourceEntitlementRequest) returns (DeleteAppResourceEntitlementResponse);
+    rpc SearchAppResourceEntitlements (SearchAppResourceEntitlementsRequest) returns (SearchAppResourceEntitlementsResponse);
+    rpc ListAppResourceEntitlements (ListAppResourceEntitlementsRequest) returns (ListAppResourceEntitlementsResponse);
+    rpc ListEntitlementsForAppResource (ListEntitlementsForAppResourceRequest) returns (ListEntitlementsForAppResourceResponse);
+
+    // App Resource Role Management
+    rpc GetAppResourceRole (GetAppResourceRoleRequest) returns (GetAppResourceRoleResponse);
+    rpc CreateAppResourceRole (CreateAppResourceRoleRequest) returns (CreateAppResourceRoleResponse);
+    rpc UpdateAppResourceRole (UpdateAppResourceRoleRequest) returns (UpdateAppResourceRoleResponse);
+    rpc BatchUpdateAppResourceRoles (BatchUpdateAppResourceRolesRequest) returns (BatchUpdateAppResourceRolesResponse);
+    rpc DeleteAppResourceRole (DeleteAppResourceRoleRequest) returns (DeleteAppResourceRoleResponse);
+    rpc SearchAppResourceRoles (SearchAppResourceRolesRequest) returns (SearchAppResourceRolesResponse);
+    rpc ListAppResourceRoles (ListAppResourceRolesRequest) returns (ListAppResourceRolesResponse);
+
+    // Workspace-level access request settings (defaults applied to new roles).
+    rpc GetTeamAccessRequestSettings (GetTeamAccessRequestSettingsRequest) returns (GetTeamAccessRequestSettingsResponse);
+    rpc UpdateTeamAccessRequestSettings (UpdateTeamAccessRequestSettingsRequest) returns (UpdateTeamAccessRequestSettingsResponse);
+
+    // App Instance Management
+    rpc GetAppInstance (GetAppInstanceRequest) returns (GetAppInstanceResponse);
+    rpc CreateAppInstance (CreateAppInstanceRequest) returns (CreateAppInstanceResponse);
+    rpc UpdateAppInstance (UpdateAppInstanceRequest) returns (UpdateAppInstanceResponse);
+    rpc DeleteAppInstance (DeleteAppInstanceRequest) returns (DeleteAppInstanceResponse);
+    rpc ListAppInstances (ListAppInstancesRequest) returns (ListAppInstancesResponse);
+    rpc ListAppInstanceIntegrations (ListAppInstanceIntegrationsRequest) returns (ListAppInstanceIntegrationsResponse);
+    // The workspace's worker replicas (Serval-managed and self-hosted) that
+    // reported recently, with what each runs and its latest connectivity
+    // checks. Read from svrunstate.
+    rpc ListWorkerReplicas (ListWorkerReplicasRequest) returns (ListWorkerReplicasResponse);
+    // Upstreams the workspace's worker replicas could not open, per app instance
+    // and cause. Read from svrunstate.
+    rpc ListWorkerEgressFailures (ListWorkerEgressFailuresRequest) returns (ListWorkerEgressFailuresResponse);
+    // Runs waiting on the workspace's self-hosted queues, which only the workspace's
+    // own workers can claim. The signal a customer-side autoscaler scales
+    // self-hosted workers on. Read from svrunstate.
+    rpc GetSelfHostedQueuePressure (GetSelfHostedQueuePressureRequest) returns (GetSelfHostedQueuePressureResponse);
+    rpc GetAppInstanceHealthChecks (GetAppInstanceHealthChecksRequest) returns (GetAppInstanceHealthChecksResponse);
+    // Returns the agent card captured by the last A2A discovery sync for an
+    // app instance (NotFound until a sync has stored one).
+    rpc GetAppInstanceAgentCard (GetAppInstanceAgentCardRequest) returns (GetAppInstanceAgentCardResponse);
+
+    // App Instance Label Management — DEPRECATED. App instance labels are
+    // unified into the polymorphic tag model; these shim onto the Tag /
+    // tag-subject RPCs for backward compatibility. Use the Tag +
+    // AddTagToSubject family instead.
+    rpc ListAppInstanceLabels (ListAppInstanceLabelsRequest) returns (ListAppInstanceLabelsResponse) { option deprecated = true; }
+    rpc CreateAppInstanceLabel (CreateAppInstanceLabelRequest) returns (CreateAppInstanceLabelResponse) { option deprecated = true; }
+    rpc UpdateAppInstanceLabel (UpdateAppInstanceLabelRequest) returns (UpdateAppInstanceLabelResponse) { option deprecated = true; }
+    rpc DeleteAppInstanceLabel (DeleteAppInstanceLabelRequest) returns (DeleteAppInstanceLabelResponse) { option deprecated = true; }
+    rpc AddLabelToAppInstance (AddLabelToAppInstanceRequest) returns (AddLabelToAppInstanceResponse) { option deprecated = true; }
+    rpc RemoveLabelFromAppInstance (RemoveLabelFromAppInstanceRequest) returns (RemoveLabelFromAppInstanceResponse) { option deprecated = true; }
+    rpc BulkAddLabelToAppInstances (BulkAddLabelToAppInstancesRequest) returns (BulkAddLabelToAppInstancesResponse) { option deprecated = true; }
+    rpc BulkRemoveLabelFromAppInstances (BulkRemoveLabelFromAppInstancesRequest) returns (BulkRemoveLabelFromAppInstancesResponse) { option deprecated = true; }
+
+    // Access Relationship Management. Polymorphic over the subject the
+    // relationship is on (app instance / resource / role (entitlement) / workspace).
+    // Owner management is just relationship_type=OWNER — there is no separate
+    // "owners" RPC family.
+    rpc CreateAccessRelationship (CreateAccessRelationshipRequest) returns (CreateAccessRelationshipResponse);
+    rpc GetAccessRelationship (GetAccessRelationshipRequest) returns (GetAccessRelationshipResponse);
+    rpc UpdateAccessRelationship (UpdateAccessRelationshipRequest) returns (UpdateAccessRelationshipResponse);
+    rpc DeleteAccessRelationship (DeleteAccessRelationshipRequest) returns (DeleteAccessRelationshipResponse);
+    rpc ListAccessRelationships (ListAccessRelationshipsRequest) returns (ListAccessRelationshipsResponse);
+
+    // DEPRECATED app-relationship RPCs — superseded by the AccessRelationship
+    // family above; shim onto it for the app_instance subject, retained for
+    // backward compatibility.
+    rpc CreateAppRelationship (CreateAppRelationshipRequest) returns (CreateAppRelationshipResponse) { option deprecated = true; }
+    rpc GetAppRelationship (GetAppRelationshipRequest) returns (GetAppRelationshipResponse) { option deprecated = true; }
+    rpc UpdateAppRelationship (UpdateAppRelationshipRequest) returns (UpdateAppRelationshipResponse) { option deprecated = true; }
+    rpc DeleteAppRelationship (DeleteAppRelationshipRequest) returns (DeleteAppRelationshipResponse) { option deprecated = true; }
+    rpc ListAppRelationships (ListAppRelationshipsRequest) returns (ListAppRelationshipsResponse) { option deprecated = true; }
+
+    // Custom Service Management
+    rpc GetCustomService (GetCustomServiceRequest) returns (GetCustomServiceResponse);
+    rpc CreateCustomService (CreateCustomServiceRequest) returns (CreateCustomServiceResponse);
+    rpc UpdateCustomService (UpdateCustomServiceRequest) returns (UpdateCustomServiceResponse);
+    rpc DeleteCustomService (DeleteCustomServiceRequest) returns (DeleteCustomServiceResponse);
+    rpc ListCustomServices (ListCustomServicesRequest) returns (ListCustomServicesResponse);
+
+    // Package Management
+    rpc GetPackage (GetPackageRequest) returns (GetPackageResponse);
+    rpc CreatePackage (CreatePackageRequest) returns (CreatePackageResponse);
+    rpc UpdatePackage (UpdatePackageRequest) returns (UpdatePackageResponse);
+    rpc DeletePackage (DeletePackageRequest) returns (DeletePackageResponse);
+    rpc ListPackages (ListPackagesRequest) returns (ListPackagesResponse);
+
+    // Workflow Run Management
+    rpc StartWorkflowRun (StartWorkflowRunRequest) returns (StartWorkflowRunResponse);
+    rpc AwaitWorkflowRunResult (AwaitWorkflowRunResultRequest) returns (AwaitWorkflowRunResultResponse);
+    rpc GetWorkflowRun (GetWorkflowRunRequest) returns (GetWorkflowRunResponse);
+    rpc ListWorkflowRuns (ListWorkflowRunsRequest) returns (ListWorkflowRunsResponse);
+    rpc SearchWorkflowRuns (SearchWorkflowRunsRequest) returns (SearchWorkflowRunsResponse);
+    rpc CountWorkflowRuns (CountWorkflowRunsRequest) returns (CountWorkflowRunsResponse);
+    rpc ListWorkflowRunTasks (ListWorkflowRunTasksRequest) returns (ListWorkflowRunTasksResponse);
+    rpc GetWorkflowRunTask (GetWorkflowRunTaskRequest) returns (GetWorkflowRunTaskResponse);
+
+    // Access Request Management
+    rpc CreateAccessRequest (CreateAccessRequestRequest) returns (CreateAccessRequestResponse);
+    rpc GetAccessRequest (GetAccessRequestRequest) returns (GetAccessRequestResponse);
+    rpc ListAccessRequests (ListAccessRequestsRequest) returns (ListAccessRequestsResponse);
+    rpc SearchAccessMemberships (SearchAccessMembershipsRequest) returns (SearchAccessMembershipsResponse);
+    rpc SearchAccessRequests (SearchAccessRequestsRequest) returns (SearchAccessRequestsResponse);
+    rpc RevokeAccessRequest (RevokeAccessRequestRequest) returns (RevokeAccessRequestResponse);
+    rpc ListRequestableRoles (ListRequestableRolesRequest) returns (ListRequestableRolesResponse);
+
+    // Approval Request Management
+    rpc ListApprovalRequests (ListApprovalRequestsRequest) returns (ListApprovalRequestsResponse);
+    rpc SearchApprovalRequests (SearchApprovalRequestsRequest) returns (SearchApprovalRequestsResponse);
+    rpc GetApprovalRequest (GetApprovalRequestRequest) returns (GetApprovalRequestResponse);
+
+    // Approval Request Step Management
+    rpc ListApprovalRequestSteps (ListApprovalRequestStepsRequest) returns (ListApprovalRequestStepsResponse);
+    rpc GetApprovalRequestStep (GetApprovalRequestStepRequest) returns (GetApprovalRequestStepResponse);
+
+    // Access Profile Management
+    rpc CreateAccessProfile (CreateAccessProfileRequest) returns (CreateAccessProfileResponse);
+    rpc GetAccessProfile (GetAccessProfileRequest) returns (GetAccessProfileResponse);
+    rpc UpdateAccessProfile (UpdateAccessProfileRequest) returns (UpdateAccessProfileResponse);
+    rpc DeleteAccessProfile (DeleteAccessProfileRequest) returns (DeleteAccessProfileResponse);
+    rpc ListAccessProfiles (ListAccessProfilesRequest) returns (ListAccessProfilesResponse);
+
+    // Access Profile Grant Management
+    rpc CreateAccessProfileGrant (CreateAccessProfileGrantRequest) returns (CreateAccessProfileGrantResponse);
+    rpc GetAccessProfileGrant (GetAccessProfileGrantRequest) returns (GetAccessProfileGrantResponse);
+    rpc DeleteAccessProfileGrant (DeleteAccessProfileGrantRequest) returns (DeleteAccessProfileGrantResponse);
+    rpc ListAccessProfileGrants (ListAccessProfileGrantsRequest) returns (ListAccessProfileGrantsResponse);
+
+    // Approval Delegation Management
+    rpc CreateApprovalDelegation (CreateApprovalDelegationRequest) returns (CreateApprovalDelegationResponse);
+    rpc GetApprovalDelegation (GetApprovalDelegationRequest) returns (GetApprovalDelegationResponse);
+    rpc UpdateApprovalDelegation (UpdateApprovalDelegationRequest) returns (UpdateApprovalDelegationResponse);
+    rpc DeleteApprovalDelegation (DeleteApprovalDelegationRequest) returns (DeleteApprovalDelegationResponse);
+    rpc ListApprovalDelegations (ListApprovalDelegationsRequest) returns (ListApprovalDelegationsResponse);
+
+    // Knowledge search.
+    rpc SearchKnowledge (SearchKnowledgeRequest) returns (SearchKnowledgeResponse);
+    // Endpoint search over a workspace's uploaded custom-service API documentation.
+    rpc SearchCustomServiceEndpoints (SearchCustomServiceEndpointsRequest) returns (SearchCustomServiceEndpointsResponse);
+    rpc GetCustomServiceEndpoint (GetCustomServiceEndpointRequest) returns (GetCustomServiceEndpointResponse);
+
+    // Native Knowledge Base Management
+    rpc CreateKnowledgeBase (CreateKnowledgeBaseRequest) returns (CreateKnowledgeBaseResponse);
+    rpc GetKnowledgeBase (GetKnowledgeBaseRequest) returns (GetKnowledgeBaseResponse);
+    rpc ListKnowledgeBases (ListKnowledgeBasesRequest) returns (ListKnowledgeBasesResponse);
+    rpc UpdateKnowledgeBase (UpdateKnowledgeBaseRequest) returns (UpdateKnowledgeBaseResponse);
+    rpc DeleteKnowledgeBase (DeleteKnowledgeBaseRequest) returns (DeleteKnowledgeBaseResponse);
+
+    // Native Knowledge Document Management
+    rpc CreateKnowledgeDocument (CreateKnowledgeDocumentRequest) returns (CreateKnowledgeDocumentResponse);
+    rpc GetKnowledgeDocument (GetKnowledgeDocumentRequest) returns (GetKnowledgeDocumentResponse);
+    rpc ListKnowledgeDocuments (ListKnowledgeDocumentsRequest) returns (ListKnowledgeDocumentsResponse);
+    rpc UpdateKnowledgeDocument (UpdateKnowledgeDocumentRequest) returns (UpdateKnowledgeDocumentResponse);
+    rpc MoveKnowledgeDocument (MoveKnowledgeDocumentRequest) returns (MoveKnowledgeDocumentResponse);
+    rpc DeleteKnowledgeDocument (DeleteKnowledgeDocumentRequest) returns (DeleteKnowledgeDocumentResponse);
+    rpc PublishKnowledgeDocument (PublishKnowledgeDocumentRequest) returns (PublishKnowledgeDocumentResponse);
+    rpc UnpublishKnowledgeDocument (UnpublishKnowledgeDocumentRequest) returns (UnpublishKnowledgeDocumentResponse);
+
+    // Custom Knowledge Ingestion — connect a published ingestion workflow as a
+    // custom knowledge source (auto-provisions the read-only mirror base).
+    rpc CreateKnowledgeIngestionConfig (CreateKnowledgeIngestionConfigRequest) returns (CreateKnowledgeIngestionConfigResponse);
+}
+
+// Requests / Responses
+
+// Sets up a custom knowledge ingestion: connects a published knowledge ingestion
+// workflow as a custom knowledge source. Serval auto-provisions one read-only
+// mirror knowledge base for the source and keeps it synced.
+message CreateKnowledgeIngestionConfigRequest {
+    // The workspace that will own the custom knowledge source.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The published knowledge ingestion workflow to sync from.
+    string workflow_id = 2 [(google.api.field_behavior) = REQUIRED];
+    // Display name for the source / mirror base. Defaults to the workflow's name.
+    optional string name = 3;
+    // When true, the mirror base is AI-context only: indexed for retrieval but
+    // hidden from human-facing surfaces (not browsable, not in the service
+    // catalog). Defaults to false.
+    optional bool ai_context_only = 4;
+}
+
+message CreateKnowledgeIngestionConfigResponse {
+    // The created ingestion config's ID.
+    string id = 1;
+    // The backing knowledge source's ID.
+    string knowledge_source_id = 2;
+    // Resolved display name of the source (the supplied name, or the workflow's).
+    string name = 3;
+    // Whether the mirror base was created AI-context only.
+    bool ai_context_only = 4;
+}
+
+message GetAccessPolicyRequest {
+    // The ID of the access policy.
+    string id = 1;
+}
+
+message GetAccessPolicyResponse {
+    // The access policy.
+    pubapimodels.AccessPolicy data = 1;
+}
+
+message CreateAccessPolicyRequest {
+    // The ID of the workspace.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The name of the access policy.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // A description of the access policy.
+    string description = 3;
+    // The maximum number of minutes that access can be granted for (optional).
+    optional int32 max_access_minutes = 4;
+    // Whether a business justification is required when requesting access (optional).
+    optional bool require_business_justification = 5;
+    // The recommended duration in minutes for access requests (optional).
+    optional int32 recommended_access_minutes = 6;
+    // Whether requests made on behalf of others require the target user's
+    // confirmation (optional).
+    optional bool require_on_behalf_of_confirmation = 7;
+    // Stable, workspace-scoped identity for the policy (apo_ + 22 base62 chars).
+    // Omit to have one minted. Must be unique within the workspace; reserved
+    // sentinel values (the workspace-default policy) are rejected.
+    optional string scoped_id = 8;
+    // The ID of a named approval procedure that must approve requests for
+    // roles governed by the policy. Omit it, or send an empty string, to
+    // create the policy without approval. Attaching requires permission to
+    // view approval procedures.
+    optional string approval_procedure_id = 9;
+    // Collect access requests with a form rather than a chat conversation.
+    optional bool require_form_confirmation = 10;
+}
+
+message CreateAccessPolicyResponse {
+    // The created access policy.
+    pubapimodels.AccessPolicy data = 1;
+}
+
+message UpdateAccessPolicyRequest {
+    // The ID of the access policy.
+    string id = 1;
+    // The name of the access policy.
+    string name = 2;
+    // A description of the access policy.
+    string description = 3;
+    // The maximum number of minutes that access can be granted for.
+    int32 max_access_minutes = 4;
+    // Whether a business justification is required when requesting access. Omit to leave unchanged.
+    optional bool require_business_justification = 5;
+    // The recommended duration in minutes for access requests (optional).
+    optional int32 recommended_access_minutes = 6;
+    // Whether requests made on behalf of others require the target user's
+    // confirmation. Omit to leave unchanged.
+    optional bool require_on_behalf_of_confirmation = 7;
+    // Rekeys the policy's stable identity (apo_ + 22 base62 chars). Omit to
+    // leave unchanged. Must be unique within the workspace. The workspace-default
+    // policy cannot be rekeyed, and reserved sentinel values are rejected.
+    optional string scoped_id = 8;
+    // The ID of a named approval procedure that must approve requests for
+    // roles governed by the policy. Omit to leave the policy's approval
+    // unchanged; send an empty string to remove it. Attaching requires
+    // permission to view approval procedures and removing requires permission
+    // to delete them.
+    optional string approval_procedure_id = 9;
+    // Collect access requests with a form. Omit to leave unchanged.
+    optional bool require_form_confirmation = 10;
+}
+
+message UpdateAccessPolicyResponse {
+    // The updated access policy.
+    pubapimodels.AccessPolicy data = 1;
+}
+
+message DeleteAccessPolicyRequest {
+    // The ID of the access policy.
+    string id = 1;
+}
+
+message DeleteAccessPolicyResponse {}
+
+message ListAccessPoliciesRequest {
+    // The ID of the workspace.
+    string team_id = 1;
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListAccessPoliciesResponse {
+    // The list of access policies.
+    repeated pubapimodels.AccessPolicy data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// Workflow requests and responses
+
+message GetWorkflowRequest {
+    // The ID of the workflow.
+    string id = 1;
+}
+
+message GetWorkflowResponse {
+    // The workflow.
+    pubapimodels.Workflow data = 1;
+    // Present after a successful binding read, including an empty result.
+    // Absent or null means this response does not expose configured bindings.
+    ConfiguredWorkflowAppBindings configured_app_bindings = 2;
+}
+
+// Saved workflow app-alias bindings, independent of file versions and catalog aliases.
+// Includes only non-deleted app instances currently visible to the workflow's workspace;
+// an empty result does not rule out hidden bindings or other workflow dependencies.
+// Does not establish credentials, connectivity, or runtime access.
+message ConfiguredWorkflowAppBindings {
+    repeated ConfiguredWorkflowAppBinding bindings = 1;
+}
+
+message ConfiguredWorkflowAppBinding {
+    string alias = 1;
+    string app_instance_id = 2;
+}
+
+message CreateWorkflowResponse {
+    // The created workflow.
+    pubapimodels.Workflow data = 1;
+    // Advisory reconciliation of the saved content against the version's
+    // package. Always empty when the workspace is not on Integration Access.
+    repeated svflow.common.models.IntegrationAccessFinding integration_access_findings = 2;
+}
+
+message UpdateWorkflowResponse {
+    // The updated workflow.
+    pubapimodels.Workflow data = 1;
+    // Advisory reconciliation of the saved content against the version's
+    // package. Always empty when the workspace is not on Integration Access or
+    // when the save carried no new content.
+    repeated svflow.common.models.IntegrationAccessFinding integration_access_findings = 2;
+}
+
+message DeleteWorkflowRequest {
+    // The ID of the workflow.
+    string id = 1;
+}
+
+message DeleteWorkflowResponse {}
+
+message ListWorkflowsRequest {
+    // The ID of the workspace.
+    string team_id = 1;
+    reserved 2; // was: include_temporary
+    // Maximum number of results to return. Default is 1000, maximum is 2000.
+    optional int32 page_size = 3;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 4;
+}
+
+message ListWorkflowsResponse {
+    // The list of workflows.
+    repeated pubapimodels.Workflow data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message ResolveScopedRefsRequest {
+    // The workspace to resolve the scoped ids within.
+    string team_id = 1;
+    // The scoped ids to resolve (wf_/skill_/ent_/form_). Ids that do not resolve
+    // in the workspace are omitted from the response.
+    repeated string scoped_ids = 2;
+}
+
+message ResolveScopedRefsResponse {
+    // The resolved references, one per scoped id that exists in the workspace.
+    repeated ResolvedScopedRef data = 1;
+}
+
+message ResolvedScopedRef {
+    // The scoped id that was resolved.
+    string scoped_id = 1;
+    // The resource's global UUID within the workspace.
+    string id = 2;
+    // The resource's display name.
+    string name = 3;
+    // The resource kind: "workflow", "guidance", "entitlement", or "form".
+    string kind = 4;
+}
+
+message ListWorkflowVersionsRequest {
+    // The workflow UUID. Not a wf_ scoped id. StartWorkflowRun is the call that accepts either form.
+    string workflow_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // If true, include unpublished draft versions alongside published ones.
+    // Default false (only the complete history of published versions).
+    optional bool include_unpublished_drafts = 2;
+    // Maximum number of results to return. Default is 1000, maximum is 2000.
+    optional int32 page_size = 3;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 4;
+}
+
+message ListWorkflowVersionsResponse {
+    // The list of workflow versions, newest first.
+    repeated pubapimodels.WorkflowVersion data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// Tag Requests / Responses
+
+message GetTagRequest {
+    // The ID of the tag.
+    string id = 1;
+}
+
+message GetTagResponse {
+    // The tag.
+    pubapimodels.Tag data = 1;
+}
+
+message CreateTagRequest {
+    // The ID of the workspace to create the tag for.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The name of the tag.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // The color of the tag (CSS color string).
+    optional string color = 3;
+    // The icon slug for the tag.
+    optional string icon_slug = 4;
+    // Optional description of the tag.
+    optional string description = 5;
+}
+
+message CreateTagResponse {
+    // The created tag.
+    pubapimodels.Tag data = 1;
+}
+
+message UpdateTagRequest {
+    // The ID of the tag.
+    string id = 1;
+    // The name of the tag.
+    string name = 2;
+    // The color of the tag (CSS color string).
+    optional string color = 3;
+    // The icon slug for the tag.
+    optional string icon_slug = 4;
+    // Optional description of the tag. Omit to leave unchanged.
+    optional string description = 5;
+}
+
+message UpdateTagResponse {
+    // The updated tag.
+    pubapimodels.Tag data = 1;
+}
+
+message DeleteTagRequest {
+    // The ID of the tag.
+    string id = 1;
+}
+
+message DeleteTagResponse {}
+
+message ListTagsRequest {
+    // The ID of the workspace.
+    string team_id = 1;
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListTagsResponse {
+    // The list of tags.
+    repeated pubapimodels.Tag data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// ---- Polymorphic tag attach ----
+message AddTagToSubjectRequest {
+    svflow.common.models.TagSubjectType subject_type = 1 [(google.api.field_behavior) = REQUIRED];
+    string subject_id = 2 [(google.api.field_behavior) = REQUIRED];
+    string tag_id = 3 [(google.api.field_behavior) = REQUIRED];
+}
+message AddTagToSubjectResponse {
+    // The subject's resulting tag set.
+    repeated pubapimodels.Tag data = 1;
+}
+message RemoveTagFromSubjectRequest {
+    svflow.common.models.TagSubjectType subject_type = 1 [(google.api.field_behavior) = REQUIRED];
+    string subject_id = 2 [(google.api.field_behavior) = REQUIRED];
+    string tag_id = 3 [(google.api.field_behavior) = REQUIRED];
+}
+message RemoveTagFromSubjectResponse {
+    repeated pubapimodels.Tag data = 1;
+}
+message ListSubjectTagsRequest {
+    svflow.common.models.TagSubjectType subject_type = 1 [(google.api.field_behavior) = REQUIRED];
+    string subject_id = 2 [(google.api.field_behavior) = REQUIRED];
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+    optional int32 page_size = 3;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 4;
+}
+message ListSubjectTagsResponse {
+    repeated pubapimodels.Tag data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// Access Policy Approval Procedure Requests / Responses
+
+message GetAccessPolicyApprovalProcedureRequest {
+    // The ID of the access policy.
+    string access_policy_id = 1;
+    // The ID of the approval procedure.
+    string id = 2;
+}
+
+message GetAccessPolicyApprovalProcedureResponse {
+    // The approval procedure.
+    pubapimodels.AccessPolicyApprovalProcedure data = 1;
+}
+
+message CreateAccessPolicyApprovalProcedureRequest {
+    // The ID of the access policy to create the approval procedure for.
+    string access_policy_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The approval steps for the procedure.
+    repeated pubapimodels.ApprovalStep steps = 2;
+    // How long each step waits for a human decision before timing out
+    // (in seconds). Omit / zero means the server default (30 days). Non-zero
+    // values must be within [5 minutes, 90 days].
+    optional int32 timeout_seconds = 3;
+    // Authoritative staged topology. When supplied with steps, steps must be
+    // the equivalent flattened compatibility projection.
+    repeated pubapimodels.AccessPolicyApprovalStage stages = 4;
+}
+
+message CreateAccessPolicyApprovalProcedureResponse {
+    // The created approval procedure.
+    pubapimodels.AccessPolicyApprovalProcedure data = 1;
+}
+
+message UpdateAccessPolicyApprovalProcedureRequest {
+    // The ID of the access policy.
+    string access_policy_id = 1;
+    // The ID of the approval procedure.
+    string id = 2;
+    // The approval steps for the procedure. Required unless stages is set:
+    // an empty procedure is rejected, never treated as removal — use
+    // DeleteAccessPolicyApprovalProcedure to remove the gate.
+    repeated pubapimodels.ApprovalStep steps = 3;
+    // How long each step waits for a human decision before timing out
+    // (in seconds). Omit / zero means "keep the existing value". Non-zero
+    // values must be within [5 minutes, 90 days].
+    optional int32 timeout_seconds = 4;
+    // Authoritative staged topology. When supplied with steps, steps must be
+    // the equivalent flattened compatibility projection.
+    repeated pubapimodels.AccessPolicyApprovalStage stages = 5;
+}
+
+message UpdateAccessPolicyApprovalProcedureResponse {
+    // The updated approval procedure.
+    pubapimodels.AccessPolicyApprovalProcedure data = 1;
+}
+
+message DeleteAccessPolicyApprovalProcedureRequest {
+    // The ID of the access policy.
+    string access_policy_id = 1;
+    // The ID of the approval procedure.
+    string id = 2;
+}
+
+message DeleteAccessPolicyApprovalProcedureResponse {}
+
+message ListAccessPolicyApprovalProceduresRequest {
+    // The ID of the access policy to list approval procedures for.
+    string access_policy_id = 1;
+}
+
+message ListAccessPolicyApprovalProceduresResponse {
+    // The list of approval procedures (typically 0 or 1).
+    repeated pubapimodels.AccessPolicyApprovalProcedure data = 1;
+}
+
+// Workflow Approval Procedure Requests / Responses
+
+message GetWorkflowApprovalProcedureRequest {
+    // The ID of the workflow.
+    string workflow_id = 1;
+    // The ID of the approval procedure.
+    string id = 2;
+}
+
+message GetWorkflowApprovalProcedureResponse {
+    // The approval procedure.
+    pubapimodels.WorkflowApprovalProcedure data = 1;
+}
+
+message CreateWorkflowApprovalProcedureRequest {
+    // The ID of the workflow to create the approval procedure for.
+    string workflow_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The approval steps for the procedure.
+    repeated pubapimodels.ApprovalStep steps = 2;
+    // When non-empty, stages are authoritative and steps are ignored.
+    repeated pubapimodels.WorkflowApprovalStage stages = 3;
+}
+
+message CreateWorkflowApprovalProcedureResponse {
+    // The created approval procedure.
+    pubapimodels.WorkflowApprovalProcedure data = 1;
+}
+
+message UpdateWorkflowApprovalProcedureRequest {
+    // The ID of the workflow.
+    string workflow_id = 1;
+    // The ID of the approval procedure.
+    string id = 2;
+    // The approval steps for the procedure. Required unless stages is set:
+    // an empty procedure is rejected, never treated as removal — use
+    // DeleteWorkflowApprovalProcedure to remove the gate.
+    repeated pubapimodels.ApprovalStep steps = 3;
+    // When non-empty, stages are authoritative and steps are ignored.
+    repeated pubapimodels.WorkflowApprovalStage stages = 4;
+}
+
+message UpdateWorkflowApprovalProcedureResponse {
+    // The updated approval procedure.
+    pubapimodels.WorkflowApprovalProcedure data = 1;
+}
+
+message DeleteWorkflowApprovalProcedureRequest {
+    // The ID of the workflow.
+    string workflow_id = 1;
+    // The ID of the approval procedure.
+    string id = 2;
+}
+
+message DeleteWorkflowApprovalProcedureResponse {}
+
+message ListWorkflowApprovalProceduresRequest {
+    // The ID of the workflow to list approval procedures for.
+    string workflow_id = 1;
+}
+
+message ListWorkflowApprovalProceduresResponse {
+    // The list of approval procedures (typically 0 or 1).
+    repeated pubapimodels.WorkflowApprovalProcedure data = 1;
+}
+
+// Workspace-scoped Workflow Approval Procedure requests and responses
+
+message ListTeamWorkflowApprovalProceduresRequest {
+    // The ID of the workspace.
+    string team_id = 1;
+    // Maximum number of results to return. Default is 1000, maximum is 1000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListTeamWorkflowApprovalProceduresResponse {
+    // The list of workflow approval procedures for the workspace.
+    repeated pubapimodels.WorkflowApprovalProcedure data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// Workspace-scoped Access Policy Approval Procedure requests and responses
+
+message ListTeamAccessPolicyApprovalProceduresRequest {
+    // The ID of the workspace.
+    string team_id = 1;
+    // Maximum number of results to return. Default is 1000, maximum is 1000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListTeamAccessPolicyApprovalProceduresResponse {
+    // The list of access policy approval procedures for the workspace.
+    repeated pubapimodels.AccessPolicyApprovalProcedure data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// Approval procedure requests and responses
+
+message CreateApprovalProcedureResponse {
+    pubapimodels.ApprovalProcedure data = 1;
+}
+
+message GetApprovalProcedureRequest {
+    // The ID of the approval procedure.
+    string id = 1;
+}
+
+message GetApprovalProcedureResponse {
+    pubapimodels.ApprovalProcedure data = 1;
+    // The workflows and access policies this procedure is attached to. Editing
+    // the procedure changes the approval for every one of them.
+    repeated pubapimodels.ApprovalProcedureConsumer consumers = 2;
+}
+
+message ListApprovalProceduresRequest {
+    // The ID of the workspace to list approval procedures for.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ListApprovalProceduresResponse {
+    // The workspace's approval procedures, name-ascending.
+    repeated pubapimodels.ApprovalProcedure data = 1;
+}
+
+message UpdateApprovalProcedureResponse {
+    pubapimodels.ApprovalProcedure data = 1;
+}
+
+message DeleteApprovalProcedureRequest {
+    // The ID of the approval procedure.
+    string id = 1;
+}
+
+message DeleteApprovalProcedureResponse {}
+
+message ListLegacyApprovalMigrationFailuresRequest {
+    // The ID of the workspace.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ListLegacyApprovalMigrationFailuresResponse {
+    // Consumers the latest migration run could not convert.
+    repeated pubapimodels.LegacyApprovalMigrationFailure data = 1;
+    // Consumers still on a legacy approval, including ones not yet migrated.
+    int32 legacy_consumer_count = 2;
+    // Whether a migration run is in progress.
+    bool running = 3;
+    // Set when the latest run failed, timed out or was terminated, so
+    // consumers it never reached have no failure row.
+    optional string last_run_error = 4;
+}
+
+// Role sync requests and responses
+
+message CreateRoleSyncResponse {
+    pubapimodels.RoleSync data = 1;
+}
+
+message UpdateRoleSyncResponse {
+    pubapimodels.RoleSync data = 1;
+}
+
+message GetRoleSyncRequest {
+    // The ID of the role sync.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetRoleSyncResponse {
+    pubapimodels.RoleSync data = 1;
+}
+
+message ListRoleSyncsRequest {
+    // The app instance whose role syncs to list, one per resource type.
+    string app_instance_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ListRoleSyncsResponse {
+    repeated pubapimodels.RoleSync data = 1;
+}
+
+// Runs a role sync for every resource of its type now.
+message RunRoleSyncRequest {
+    // The ID of the role sync.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message RunRoleSyncResponse {
+    pubapimodels.RoleSyncRun data = 1;
+}
+
+// Waits for a role sync's latest run to finish on every resource of its type.
+message AwaitRoleSyncRunRequest {
+    // The ID of the role sync.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+    // How long to wait, in seconds. Default 30, at most 60.
+    optional int32 wait_timeout_seconds = 2;
+}
+
+message AwaitRoleSyncRunResponse {
+    pubapimodels.RoleSyncRun data = 1;
+    // The wait ran out before the run finished; call again to keep waiting.
+    bool timed_out = 2;
+}
+
+message GetAppAccountFieldsRequest {
+    // The app instance.
+    string app_instance_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetAppAccountFieldsResponse {
+    repeated pubapimodels.AccountFieldMapping data = 1;
+}
+
+message UpdateAppAccountFieldsResponse {
+    repeated pubapimodels.AccountFieldMapping data = 1;
+}
+
+// Folder requests and responses
+
+message GetFolderRequest {
+    // The ID of the folder. The owning workspace is resolved from the folder.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetFolderResponse {
+    // The folder.
+    pubapimodels.Folder data = 1;
+}
+
+message CreateFolderResponse {
+    // The created folder.
+    pubapimodels.Folder data = 1;
+}
+
+message UpdateFolderResponse {
+    // The updated folder.
+    pubapimodels.Folder data = 1;
+}
+
+message DeleteFolderRequest {
+    // The ID of the folder. The owning workspace is resolved from the folder.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteFolderResponse {}
+
+message ListFoldersRequest {
+    // The ID of the workspace.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The non-folder item type of folders to list. Required — folders are
+    // scoped per type, and FOLDER_ITEM_TYPE_UNSPECIFIED and
+    // FOLDER_ITEM_TYPE_FOLDER are rejected.
+    pubapimodels.FolderItemType item_type = 2 [(google.api.field_behavior) = REQUIRED];
+    // Optional. When set, return only the direct children of this folder. When
+    // unset, return all folders of the given type for the workspace (a flat list;
+    // use parent_folder_id to reconstruct the tree).
+    optional string parent_folder_id = 3;
+    // Maximum number of results to return. Default is 1000, maximum is 2000.
+    // When neither page_size nor page_token is set, all results are returned.
+    optional int32 page_size = 4;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 5;
+}
+
+message ListFoldersResponse {
+    // The folders. Use parent_folder_id to reconstruct the tree.
+    repeated pubapimodels.Folder data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message ListFolderContentsRequest {
+    // The ID of the workspace.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The non-folder item type of the folder tree to list.
+    pubapimodels.FolderItemType item_type = 2 [(google.api.field_behavior) = REQUIRED];
+    // The folder whose direct items should be listed. Unset lists the root.
+    optional string folder_id = 3;
+    // Maximum number of results to return. Default is 1000, maximum is 2000.
+    optional int32 page_size = 4;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 5;
+}
+
+message ListFolderContentsResponse {
+    repeated pubapimodels.FolderItem data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message SetFolderItemLocationRequest {
+    // The item to move.
+    pubapimodels.FolderItem item = 1 [(google.api.field_behavior) = REQUIRED];
+    // The destination folder. Unset moves the item to the root (no folder).
+    // Must be in the same workspace and compatible folder tree as the item.
+    optional string folder_id = 2;
+}
+
+message SetFolderItemLocationResponse {
+    pubapimodels.FolderItemLocation data = 1;
+}
+
+// Guidance requests and responses
+
+message GetGuidanceRequest {
+    // The ID of the guidance.
+    string id = 1;
+}
+
+message GetGuidanceResponse {
+    // The guidance.
+    pubapimodels.Guidance data = 1;
+}
+
+message CreateGuidanceRequest {
+    // The ID of the workspace.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Short title identifying this Help Desk Skill (e.g. "Route password
+    // reset tickets to IT"). Shown in the skills list and in chips when
+    // the skill is referenced. Keep it descriptive but concise.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // TRIGGER condition — when should the help desk agent invoke this
+    // skill? Plain prose answering "When should Serval use this skill?".
+    // Example: "When a ticket is about an SSO login failure or a user
+    // cannot access their Okta account." Required for the skill to be
+    // matched against incoming tickets.
+    string description = 3;
+    // BEHAVIOR instructions — how should the help desk agent handle the
+    // situation when this skill fires? Plain prose answering "How should
+    // Serval handle this situation?". Include the concrete steps,
+    // workflows to run (use `<@workflow:ID>` mentions), who to escalate
+    // to (use `<@user:ID>` mentions), and any relevant context. Required
+    // for the skill to actually do anything useful.
+    string content = 4 [(google.api.field_behavior) = REQUIRED];
+    // Whether this guidance should always be used (optional, defaults to false).
+    optional bool should_always_use = 5;
+    // Whether to publish the guidance after creation (optional).
+    optional bool is_published = 6;
+  // Omitted or empty selects all channels, including future channels.
+    serval.resources.v1.agentchannels.AgentChannelFilter channel_filter = 7;
+}
+
+message CreateGuidanceResponse {
+    // The created guidance.
+    pubapimodels.Guidance data = 1;
+}
+
+message UpdateGuidanceRequest {
+    // The ID of the guidance.
+    string id = 1;
+    // Short title identifying this Help Desk Skill (e.g. "Route password
+    // reset tickets to IT").
+    string name = 2;
+    // TRIGGER condition — when should the help desk agent invoke this
+    // skill? Plain prose answering "When should Serval use this skill?".
+    // Example: "When a ticket is about an SSO login failure or a user
+    // cannot access their Okta account."
+    string description = 3;
+    // BEHAVIOR instructions — how should the help desk agent handle the
+    // situation when this skill fires? Plain prose answering "How should
+    // Serval handle this situation?". Include the concrete steps,
+    // workflows to run (use `<@workflow:ID>` mentions), who to escalate
+    // to (use `<@user:ID>` mentions), and any relevant context.
+    string content = 4;
+    // Whether this guidance should always be used (optional).
+    optional bool should_always_use = 5;
+    // Whether the guidance is published. Set to true to publish the guidance.
+    optional bool is_published = 6;
+  // Omitted preserves the selection; an empty filter resets to all channels without creating a content version.
+    serval.resources.v1.agentchannels.AgentChannelFilter channel_filter = 7;
+}
+
+message UpdateGuidanceResponse {
+    // The updated guidance.
+    pubapimodels.Guidance data = 1;
+}
+
+message DeleteGuidanceRequest {
+    // The ID of the guidance.
+    string id = 1;
+}
+
+message DeleteGuidanceResponse {}
+
+message ListGuidancesRequest {
+    // The ID of the workspace.
+    string team_id = 1;
+    // Maximum number of results to return. Default is 1000, maximum is 2000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListGuidancesResponse {
+    // The list of guidances.
+    repeated pubapimodels.Guidance data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message ListGuidanceVersionsRequest {
+    // The ID of the guidance whose versions to list.
+    string guidance_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // If true, include unpublished draft versions alongside published ones.
+    // Default false (only the complete history of published versions).
+    optional bool include_unpublished_drafts = 2;
+    // Maximum number of results to return. Default is 1000, maximum is 2000.
+    optional int32 page_size = 3;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 4;
+}
+
+message ListGuidanceVersionsResponse {
+    // The list of guidance versions, newest first.
+    repeated pubapimodels.GuidanceVersion data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// Skill requests and responses
+
+message GetSkillRequest {
+    // The ID of the skill.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetSkillResponse {
+    // The skill.
+    pubapimodels.Skill data = 1;
+}
+
+message CreateSkillRequest {
+    // The ID of the workspace.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Short title identifying this skill (e.g. "Route password reset tickets
+    // to IT"). Shown in the skills list and in chips when the skill is
+    // referenced. Keep it descriptive but concise.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // TRIGGER condition — when should the help desk agent invoke this
+    // skill? Plain prose answering "When should Serval use this skill?".
+    // Example: "When a ticket is about an SSO login failure or a user
+    // cannot access their Okta account."
+    string description = 3 [(google.api.field_behavior) = REQUIRED];
+    // BEHAVIOR instructions — how should the help desk agent handle the
+    // situation when this skill fires? Plain prose answering "How should
+    // Serval handle this situation?". Include the concrete steps,
+    // workflows to run (use `<@workflow:ID>` mentions), who to escalate
+    // to (use `<@user:ID>` mentions), and any relevant context.
+    string content = 4 [(google.api.field_behavior) = REQUIRED];
+    // Whether the help desk agent always uses this skill instead of
+    // selecting it by its description. Defaults to false.
+    optional bool should_always_use = 5;
+    // Whether to publish the skill after creating it. Defaults to false,
+    // which saves an unpublished draft.
+    optional bool is_published = 6;
+    // The channels where the help desk agent can use the skill. Omitted or
+    // empty selects every channel, including channels added later.
+    serval.resources.v1.agentchannels.AgentChannelFilter channel_filter = 7;
+}
+
+message CreateSkillResponse {
+    // The created skill.
+    pubapimodels.Skill data = 1;
+}
+
+message UpdateSkillRequest {
+    // The ID of the skill.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Short title identifying this skill. Leave empty to keep the current
+    // name.
+    string name = 2;
+    // TRIGGER condition — when should the help desk agent invoke this
+    // skill? Leave empty to keep the current description.
+    string description = 3;
+    // BEHAVIOR instructions — how should the help desk agent handle the
+    // situation when this skill fires? Leave empty to keep the current
+    // content.
+    string content = 4;
+    // Whether the help desk agent always uses this skill instead of
+    // selecting it by its description.
+    optional bool should_always_use = 5;
+    // Set to true to publish the skill after saving this update.
+    optional bool is_published = 6;
+    // The channels where the help desk agent can use the skill. Omitted keeps
+    // the current selection; an empty filter resets to every channel without
+    // creating a content version.
+    serval.resources.v1.agentchannels.AgentChannelFilter channel_filter = 7;
+}
+
+message UpdateSkillResponse {
+    // The updated skill.
+    pubapimodels.Skill data = 1;
+}
+
+message DeleteSkillRequest {
+    // The ID of the skill.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteSkillResponse {}
+
+message ListSkillsRequest {
+    // The ID of the workspace.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Maximum number of results to return. Default is 1000, maximum is 2000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListSkillsResponse {
+    // The list of skills.
+    repeated pubapimodels.Skill data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message ListSkillVersionsRequest {
+    // The ID of the skill whose versions to list.
+    string skill_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // If true, include unpublished draft versions alongside published ones.
+    // Default false (only the complete history of published versions).
+    optional bool include_unpublished_drafts = 2;
+    // Maximum number of results to return. Default is 1000, maximum is 2000.
+    optional int32 page_size = 3;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 4;
+}
+
+message ListSkillVersionsResponse {
+    // The list of skill versions, newest first.
+    repeated pubapimodels.SkillVersion data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// Form requests and responses
+
+message GetFormRequest {
+    // The ID of the form.
+    string id = 1;
+}
+message GetFormResponse {
+    // The form.
+    pubapimodels.Form data = 1;
+}
+
+message CreateFormRequest {
+    // The ID of the workspace.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Display name of the form, shown wherever the form is listed. Names of
+    // published items are unique per workspace across forms, workflows, and skills;
+    // a taken name is suffixed ("Order laptop 2") rather than rejected.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // What the form is for, shown under the name.
+    string description = 3;
+    // The form module source: TSX importing "serval/forms", exporting
+    // `main = view({ fn })`. Saved as a draft as-is; it is compiled when the
+    // form is published, so a broken draft can be saved and fixed later.
+    string content = 4 [(google.api.field_behavior) = REQUIRED];
+    // Whether to publish the form after creation (optional). Publishing
+    // compiles the module and resolves every workflow it imports against the
+    // workspace's published workflows.
+    optional bool is_published = 5;
+    // Copy-invariant identity to create the form under ("form_" + 22
+    // alphanumerics). Leave unset and the server mints one. Set it to the
+    // source form's scoped_id when pushing configuration between workspaces or
+    // environments: the copy then answers to the same scoped id as its source,
+    // so the next push resolves it and updates in place instead of creating a
+    // second form that collides on name. Must not already be in use on the
+    // workspace.
+    optional string scoped_id = 6;
+}
+message CreateFormResponse {
+    // The created form.
+    pubapimodels.Form data = 1;
+}
+
+message UpdateFormRequest {
+    // The ID of the form.
+    string id = 1;
+    // Display name of the form. Omit or send empty to leave unchanged.
+    string name = 2;
+    // What the form is for. Omit or send empty to leave unchanged.
+    string description = 3;
+    // The form module source. Omit or send empty to leave unchanged.
+    string content = 4;
+    // Whether the form is published. Set to true to publish the current draft.
+    optional bool is_published = 5;
+    // Whether the form accepts new sessions. Set false to stop it being
+    // fillable without deleting it; its versions and published state are kept.
+    optional bool is_enabled = 6;
+}
+message UpdateFormResponse {
+    // The updated form.
+    pubapimodels.Form data = 1;
+}
+
+message DeleteFormRequest {
+    // The ID of the form.
+    string id = 1;
+}
+message DeleteFormResponse {}
+
+message ListFormsRequest {
+    // The ID of the workspace.
+    string team_id = 1;
+    // Maximum number of results to return. Default is 1000, maximum is 2000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+    // Return only published forms (true) or only never-published ones
+    // (false). Omit to return both.
+    optional bool is_published = 4;
+}
+message ListFormsResponse {
+    // The list of forms.
+    repeated pubapimodels.Form data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message ListSubmittableFormsRequest {
+    // Case-insensitive text the form's name must contain. Omit to list every
+    // form the caller can submit.
+    optional string name_query = 1;
+}
+message ListSubmittableFormsResponse {
+    // The forms the caller can fill in, across the organization's workspaces,
+    // sorted by name. At most 25.
+    repeated pubapimodels.SubmittableForm data = 1;
+    // True when more forms matched than were returned; narrow name_query to
+    // find the rest.
+    bool truncated = 2;
+}
+
+// App Resource requests and responses
+
+message GetAppResourceRequest {
+    // The ID of the resource.
+    string id = 1;
+}
+
+message GetAppResourceResponse {
+    // The resource.
+    pubapimodels.Resource data = 1;
+    // The resource's owners (users/groups with relationship_type=OWNER).
+    repeated pubapimodels.AccessRelationship owners = 2;
+}
+
+message CreateAppResourceRequest {
+    // The ID of the app instance.
+    string app_instance_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The type of the resource.
+    string resource_type = 2 [(google.api.field_behavior) = REQUIRED];
+    // The name of the resource.
+    string name = 3 [(google.api.field_behavior) = REQUIRED];
+    // A description of the resource.
+    string description = 4;
+    // The external ID of the resource (optional).
+    optional string external_id = 5;
+    // Owners (users/groups) to set on the created resource (optional).
+    repeated pubapimodels.OwnerTarget owners = 6;
+    // Scoped ID to assign ("ar_" + 22 alphanumeric chars); omit to mint one.
+    // Only allowed for custom resources — other resource types derive their
+    // scoped id from their external identity.
+    optional string scoped_id = 7;
+}
+
+message CreateAppResourceResponse {
+    // The created resource.
+    pubapimodels.Resource data = 1;
+}
+
+message UpdateAppResourceRequest {
+    // The ID of the resource.
+    string id = 1;
+    // The type of the resource.
+    string resource_type = 2;
+    // The name of the resource.
+    string name = 3;
+    // A description of the resource.
+    string description = 4;
+    // The external ID of the resource. Omit to leave it unchanged; an empty
+    // string clears it. Only custom resources can change it; for other
+    // resource types it must be omitted or equal the current value.
+    optional string external_id = 5;
+    // Replaces the resource's whole owner set when present (an empty set
+    // removes all owners). Omit to leave owners unchanged.
+    pubapimodels.OwnerTargetSet owners = 6;
+    // Rekeys the resource's scoped id ("ar_" + 22 alphanumeric chars); omit
+    // to leave it unchanged. Fails for ingested resources and the built-in
+    // access resource, whose scoped ids are derived from their external
+    // identity.
+    optional string scoped_id = 7;
+}
+
+message UpdateAppResourceResponse {
+    // The updated resource.
+    pubapimodels.Resource data = 1;
+}
+
+message DeleteAppResourceRequest {
+    // The ID of the resource.
+    string id = 1;
+}
+
+message DeleteAppResourceResponse {}
+
+message SearchAppResourcesRequest {
+    // Filter by workspace ID. Required if app_instance_ids is not provided.
+    optional string team_id = 1;
+    // Filter by app instance IDs.
+    repeated string app_instance_ids = 2;
+    // Filter by external IDs. Requires exactly one app_instance_id.
+    repeated string external_ids = 3;
+    // Filter by specific resource IDs.
+    repeated string resource_ids = 4;
+    
+    reserved 10, 11; // Previously: limit, cursor (removed)
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+    optional int32 page_size = 12;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 13;
+}
+
+message SearchAppResourcesResponse {
+    // The list of resources.
+    repeated pubapimodels.Resource data = 1;
+    reserved 2; // Previously: next_cursor (removed)
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 3;
+}
+
+message ListAppResourcesRequest {
+    // Filter by workspace ID. At least one of team_id or app_instance_id must be provided.
+    optional string team_id = 1;
+    // Filter by app instance ID. At least one of team_id or app_instance_id must be provided.
+    optional string app_instance_id = 2;
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+    optional int32 page_size = 3;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 4;
+}
+
+message ListAppResourcesResponse {
+    // The list of resources.
+    repeated pubapimodels.Resource data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message ListResourcesForAppInstanceRequest {
+    // The ID of the app instance.
+    string app_instance_id = 1;
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListResourcesForAppInstanceResponse {
+    // The list of resources.
+    repeated pubapimodels.Resource data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message BatchCreateAppResourcesRequest {
+    // The ID of the app instance to create resources under.
+    string app_instance_id = 1;
+    // The resources to create.
+    repeated CreateAppResourceInput resources = 2;
+}
+
+message CreateAppResourceInput {
+    // The type of the resource.
+    string resource_type = 1;
+    // The name of the resource.
+    string name = 2;
+    // A description of the resource.
+    string description = 3;
+    // The external ID of the resource (optional).
+    optional string external_id = 4;
+}
+
+message BatchCreateAppResourcesResponse {
+    // The created resources.
+    repeated pubapimodels.Resource data = 1;
+}
+
+message BatchUpdateAppResourcesRequest {
+    // The resources to update.
+    repeated UpdateAppResourceInput resources = 1;
+}
+
+message UpdateAppResourceInput {
+    // The ID of the resource to update.
+    string id = 1;
+    // The type of the resource.
+    string resource_type = 2;
+    // The name of the resource.
+    string name = 3;
+    // A description of the resource.
+    string description = 4;
+    // The external ID of the resource (optional).
+    optional string external_id = 5;
+    // Rekeys the resource's scoped id ("ar_" + 22 alphanumeric chars); omit
+    // to leave it unchanged. Fails for ingested resources and the built-in
+    // access resource, whose scoped ids are derived from their external
+    // identity.
+    optional string scoped_id = 6;
+}
+
+message BatchUpdateAppResourcesResponse {
+    // The updated resources.
+    repeated pubapimodels.Resource data = 1;
+}
+
+// App Resource Entitlement requests and responses
+
+message GetAppResourceEntitlementRequest {
+    // The ID of the entitlement.
+    string id = 1;
+}
+
+message GetAppResourceEntitlementResponse {
+    // The entitlement.
+    pubapimodels.Entitlement data = 1;
+}
+
+message CreateAppResourceEntitlementRequest {
+    // The ID of the resource.
+    string resource_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The name of the entitlement.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // A description of the entitlement.
+    string description = 3;
+    reserved 4; // was: provisioning_method (deprecated)
+    // Whether requests are enabled for the entitlement.
+    bool requests_enabled = 5;
+    // The default access policy for the entitlement (optional).
+    optional string access_policy_id = 6;
+    reserved 7; // was: linked_entitlement_ids (deprecated)
+
+    // Provisioning configuration. Exactly one method should be set.
+    pubapimodels.ProvisioningMethod provisioning_method = 8 [(google.api.field_behavior) = REQUIRED];
+
+    // The external ID of the entitlement in the external system (optional).
+    optional string external_id = 9;
+    // Data from the external system as a JSON string (optional).
+    optional string external_data = 10;
+}
+
+message CreateAppResourceEntitlementResponse {
+    // The created entitlement.
+    pubapimodels.Entitlement data = 1;
+}
+
+message UpdateAppResourceEntitlementRequest {
+    // The ID of the entitlement.
+    string id = 1;
+    // The name of the entitlement.
+    string name = 2;
+    // A description of the entitlement.
+    string description = 3;
+    reserved 4; // was: provisioning_method (deprecated)
+    // Whether requests are enabled for the entitlement. Omit to leave unchanged.
+    optional bool requests_enabled = 5;
+    // The default access policy for the entitlement (optional).
+    optional string access_policy_id = 6;
+    reserved 7; // was: linked_entitlement_ids (deprecated)
+    reserved 8; // was: manual_provisioning_assignees (deprecated)
+
+    // Provisioning configuration. Exactly one method should be set.
+    pubapimodels.ProvisioningMethod provisioning_method = 9;
+
+    // The external ID of the entitlement in the external system (optional).
+    optional string external_id = 10;
+    // Data from the external system as a JSON string (optional).
+    optional string external_data = 11;
+}
+
+message UpdateAppResourceEntitlementResponse {
+    // The updated entitlement.
+    pubapimodels.Entitlement data = 1;
+}
+
+message BatchUpdateAppResourceEntitlementsRequest {
+    // The entitlements to update. At most 200 per request. A larger batch is rejected with INVALID_ARGUMENT; split it across several requests.
+    repeated UpdateAppResourceEntitlementInput entitlements = 1;
+}
+
+message UpdateAppResourceEntitlementInput {
+    // The ID of the entitlement to update.
+    string id = 1;
+    // The name of the entitlement.
+    string name = 2;
+    // A description of the entitlement.
+    string description = 3;
+    // Whether requests are enabled for the entitlement.
+    // Omit to leave the current value unchanged.
+    optional bool requests_enabled = 4;
+    // The default access policy for the entitlement (optional).
+    optional string access_policy_id = 5;
+    // Preferred provisioning configuration. Exactly one method should be set.
+    pubapimodels.ProvisioningMethod provisioning_method = 6;
+    // The external ID of the entitlement in the external system (optional).
+    optional string external_id = 7;
+    // Data from the external system as a JSON string (optional).
+    optional string external_data = 8;
+}
+
+message BatchUpdateAppResourceEntitlementsResponse {
+    // The updated entitlements.
+    repeated pubapimodels.Entitlement data = 1;
+}
+
+message DeleteAppResourceEntitlementRequest {
+    // The ID of the entitlement.
+    string id = 1;
+}
+
+message DeleteAppResourceEntitlementResponse {}
+
+message SearchAppResourceEntitlementsRequest {
+    // Filter by workspace ID. Required if app_instance_ids is not provided.
+    optional string team_id = 1;
+    // Filter by app instance IDs.
+    repeated string app_instance_ids = 2;
+    // Filter by resource IDs.
+    repeated string resource_ids = 3;
+    
+    reserved 10, 11; // Previously: limit, cursor (removed)
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+    optional int32 page_size = 12;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 13;
+}
+
+message SearchAppResourceEntitlementsResponse {
+    // The list of entitlements.
+    repeated pubapimodels.Entitlement data = 1;
+    reserved 2; // Previously: next_cursor (removed)
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 3;
+}
+
+message ListAppResourceEntitlementsRequest {
+    // Filter by workspace ID. At least one of team_id, app_instance_id, or resource_id must be provided.
+    optional string team_id = 1;
+    // Filter by resource ID. At least one of team_id, app_instance_id, or resource_id must be provided.
+    optional string resource_id = 2;
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+    optional int32 page_size = 3;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 4;
+    // Filter by app instance ID. At least one of team_id, app_instance_id, or resource_id must be provided.
+    optional string app_instance_id = 5;
+}
+
+message ListAppResourceEntitlementsResponse {
+    // The list of entitlements.
+    repeated pubapimodels.Entitlement data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message ListEntitlementsForAppResourceRequest {
+    // The ID of the resource.
+    string resource_id = 1;
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListEntitlementsForAppResourceResponse {
+    // The list of entitlements.
+    repeated pubapimodels.Entitlement data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// App Resource Role requests and responses
+
+message GetAppResourceRoleRequest {
+    // The ID of the role.
+    string id = 1;
+}
+
+message GetAppResourceRoleResponse {
+    // The role.
+    pubapimodels.Role data = 1;
+    // The role's owners (users/groups with relationship_type=OWNER).
+    repeated pubapimodels.AccessRelationship owners = 2;
+}
+
+message CreateAppResourceRoleRequest {
+    // The ID of the resource.
+    string resource_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The name of the role.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // A description of the role.
+    string description = 3;
+    // Whether requests are enabled for the role.
+    bool requests_enabled = 4;
+    // The default access policy for the role (optional).
+    optional string access_policy_id = 5;
+    // Provisioning configuration. Exactly one method should be set.
+    pubapimodels.RoleProvisioningMethod provisioning_method = 6 [(google.api.field_behavior) = REQUIRED];
+    // The external ID of the role in the external system (optional).
+    optional string external_id = 7;
+    // Data from the external system as a JSON string (optional).
+    optional string external_data = 8;
+    // Owners (users/groups) to set on the created role (optional).
+    repeated pubapimodels.OwnerTarget owners = 9;
+    // Scoped ID to assign to an editable role ("role_" + 22 alphanumeric
+    // chars); omit to mint a random ID. The ID is immutable after creation.
+    optional string scoped_id = 10;
+}
+
+message CreateAppResourceRoleResponse {
+    // The created role.
+    pubapimodels.Role data = 1;
+}
+
+message UpdateAppResourceRoleRequest {
+    // The ID of the role.
+    string id = 1;
+    // The name of the role. Omit to leave unchanged.
+    optional string name = 2;
+    // A description of the role. Omit to leave unchanged.
+    optional string description = 3;
+    // Whether requests are enabled for the role. Omit to leave unchanged.
+    optional bool requests_enabled = 4;
+    // Omit to leave unchanged; an empty string restores the app instance default.
+    optional string access_policy_id = 5;
+    // Provisioning configuration. Exactly one method should be set.
+    pubapimodels.RoleProvisioningMethod provisioning_method = 6;
+    // The external ID of the role in the external system (optional).
+    optional string external_id = 7;
+    // Data from the external system as a JSON string (optional).
+    optional string external_data = 8;
+    optional bool require_form_confirmation = 9;
+    // Replaces the role's whole owner set when present (an empty set removes
+    // all owners). Omit to leave owners unchanged.
+    pubapimodels.OwnerTargetSet owners = 10;
+    // Omit or repeat the current scoped ID. A different value is rejected;
+    // scoped IDs remain unchanged when editable roles are renamed.
+    optional string scoped_id = 11;
+}
+
+message UpdateAppResourceRoleResponse {
+    // The updated role.
+    pubapimodels.Role data = 1;
+}
+
+message BatchUpdateAppResourceRolesRequest {
+    // The roles to update. At most 200 per request. A larger batch is rejected with INVALID_ARGUMENT; split it across several requests.
+    repeated UpdateAppResourceRoleInput roles = 1;
+}
+
+message UpdateAppResourceRoleInput {
+    // The ID of the role to update.
+    string id = 1;
+    // The name of the role.
+    string name = 2;
+    // A description of the role.
+    string description = 3;
+    // Whether requests are enabled for the role.
+    // Omit to leave the current value unchanged.
+    optional bool requests_enabled = 4;
+    // The default access policy for the role (optional).
+    optional string access_policy_id = 5;
+    // Provisioning configuration. Exactly one method should be set.
+    pubapimodels.RoleProvisioningMethod provisioning_method = 6;
+    // The external ID of the role in the external system (optional).
+    optional string external_id = 7;
+    // Data from the external system as a JSON string (optional).
+    optional string external_data = 8;
+    optional bool require_form_confirmation = 9;
+    // Omit or repeat the current scoped ID. A different value is rejected;
+    // scoped IDs remain unchanged when editable roles are renamed.
+    optional string scoped_id = 10;
+}
+
+message BatchUpdateAppResourceRolesResponse {
+    // The updated roles.
+    repeated pubapimodels.Role data = 1;
+}
+
+message GetTeamAccessRequestSettingsRequest {
+    string team_id = 1;
+}
+
+message GetTeamAccessRequestSettingsResponse {
+    pubapimodels.TeamAccessRequestSettings data = 1;
+}
+
+message UpdateTeamAccessRequestSettingsRequest {
+    string team_id = 1;
+    bool default_require_form_confirmation = 2;
+}
+
+message UpdateTeamAccessRequestSettingsResponse {
+    pubapimodels.TeamAccessRequestSettings data = 1;
+}
+
+message DeleteAppResourceRoleRequest {
+    // The ID of the role.
+    string id = 1;
+}
+
+message DeleteAppResourceRoleResponse {}
+
+message SearchAppResourceRolesRequest {
+    // Filter by workspace ID. Required if app_instance_ids is not provided.
+    optional string team_id = 1;
+    // Filter by app instance IDs.
+    repeated string app_instance_ids = 2;
+    // Filter by resource IDs.
+    repeated string resource_ids = 3;
+    // Maximum number of results to return. With query, the default is 50 and
+    // the maximum is 200. Without query, the default and maximum are 10000.
+    optional int32 page_size = 4;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 5;
+    // Case-insensitive substring search over role and parent-resource names,
+    // descriptions, and external IDs. Maximum 256 characters.
+    optional string query = 6;
+}
+
+message SearchAppResourceRolesResponse {
+    // The list of roles.
+    repeated pubapimodels.Role data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message ListAppResourceRolesRequest {
+    // Filter by workspace ID. At least one of team_id, app_instance_id, or resource_id must be provided.
+    optional string team_id = 1;
+
+    // Filter by app instance ID. At least one of team_id, app_instance_id, or resource_id must be provided.
+    optional string app_instance_id = 2;
+
+    // Filter by resource ID. At least one of team_id, app_instance_id, or resource_id must be provided.
+    optional string resource_id = 3;
+    
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+    optional int32 page_size = 4;
+
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 5;
+}
+
+message ListAppResourceRolesResponse {
+    // The list of roles.
+    repeated pubapimodels.Role data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// App Instance requests and responses
+
+message GetAppInstanceRequest {
+    // The ID of the app instance.
+    string id = 1;
+}
+
+message GetAppInstanceResponse {
+    // The app instance.
+    pubapimodels.AppInstance data = 1;
+}
+
+message GetAppInstanceAgentCardRequest {
+    // The ID of the app instance.
+    string app_instance_id = 1;
+}
+
+message GetAppInstanceAgentCardResponse {
+    // The agent card captured by the last A2A discovery sync.
+    svflow.common.models.A2AAgentCard data = 1;
+}
+
+message CreateAppInstanceRequest {
+    // The ID of the workspace.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    
+    // Either a built-in service or a custom service. Exactly one must be set.
+    oneof service_type {
+        // The service identifier (for built-in services like "github", "okta", "aws").
+        string service = 2;
+        // The ID of a custom service to create the app instance for.
+        string custom_service_id = 7;
+    }
+    
+    // The external service instance ID (e.g., GitHub org name, Okta domain, AWS account ID).
+    string external_service_instance_id = 3 [(google.api.field_behavior) = REQUIRED];
+    // The name of the app instance.
+    string name = 4 [(google.api.field_behavior) = REQUIRED];
+    // The default access policy for the app instance (optional).
+    optional string default_access_policy_id = 5;
+    // Whether access requests are enabled for the app instance. Unset keeps
+    // the server default (enabled on creation).
+    optional bool access_requests_enabled = 6;
+    // Initial owners. Omit to create without owners.
+    pubapimodels.AppInstanceOwners owners = 8;
+}
+
+message CreateAppInstanceResponse {
+    // The created app instance.
+    pubapimodels.AppInstance data = 1;
+}
+
+message UpdateAppInstanceRequest {
+    // The ID of the app instance.
+    string id = 1;
+    // The external service instance ID (e.g., GitHub org name, Okta domain, AWS account ID).
+    string external_service_instance_id = 2;
+    // The name of the app instance.
+    string name = 3;
+    // The default access policy for the app instance. Unset leaves the
+    // current policy unchanged. Must not be empty when set — an instance
+    // always has a default policy.
+    optional string default_access_policy_id = 4;
+    // Whether access requests are enabled for the app instance. Unset leaves
+    // the current setting unchanged.
+    optional bool access_requests_enabled = 5;
+    // Omit to leave owners unchanged. When present, replaces all owners; {} clears them.
+    pubapimodels.AppInstanceOwners owners = 6;
+}
+
+message UpdateAppInstanceResponse {
+    // The updated app instance.
+    pubapimodels.AppInstance data = 1;
+}
+
+message DeleteAppInstanceRequest {
+    // The ID of the app instance.
+    string id = 1;
+}
+
+message DeleteAppInstanceResponse {}
+
+message ListWorkerReplicasRequest {
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Only replicas that reported within this many hours. Default 24, maximum 168.
+    optional int32 since_hours = 2;
+}
+
+message ListWorkerReplicasResponse {
+    repeated svrunstate.models.WorkerReplica data = 1;
+}
+
+message ListWorkerEgressFailuresRequest {
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Only failures seen within this many hours. Default 24, maximum 168.
+    optional int32 since_hours = 2;
+}
+
+message ListWorkerEgressFailuresResponse {
+    repeated svrunstate.models.WorkerEgressFailure data = 1;
+}
+
+message GetSelfHostedQueuePressureRequest {
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message SelfHostedQueuePressure {
+    // "self-hosted-default" or "self-hosted-ingestion".
+    string queue = 1;
+    int64 unassigned_runs = 2;
+    double oldest_wait_seconds = 3;
+}
+
+message GetSelfHostedQueuePressureResponse {
+    // Summed across the workspace's self-hosted queues; zero when nothing waits.
+    int64 unassigned_runs = 1;
+    double oldest_wait_seconds = 2;
+    // Per-queue split; queues with nothing waiting are omitted.
+    repeated SelfHostedQueuePressure queues = 3;
+}
+
+message ListAppInstancesRequest {
+    // The ID of the workspace.
+    string team_id = 1;
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListAppInstancesResponse {
+    // The list of app instances.
+    repeated pubapimodels.AppInstance data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message CreateAccessRelationshipRequest {
+    // The kind of subject the relationship is on.
+    svflow.common.models.AccessRelationshipSubjectType subject_type = 1 [(google.api.field_behavior) = REQUIRED];
+    // The ID of the subject (app_instance_id | resource_id | entitlement_id |
+    // team_id), disambiguated by subject_type.
+    string subject_id = 2 [(google.api.field_behavior) = REQUIRED];
+    // The type of relationship.
+    svflow.common.models.AccessRelationshipType relationship_type = 3 [(google.api.field_behavior) = REQUIRED];
+    // The ID of the target (user or group).
+    string target_id = 4 [(google.api.field_behavior) = REQUIRED];
+    // The type of the target.
+    svflow.common.models.AccessRelationshipTargetType target_type = 5 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateAccessRelationshipResponse {
+    // The created access relationship.
+    pubapimodels.AccessRelationship data = 1;
+}
+
+message GetAccessRelationshipRequest {
+    // The ID of the access relationship.
+    string id = 1;
+}
+
+message GetAccessRelationshipResponse {
+    // The access relationship.
+    pubapimodels.AccessRelationship data = 1;
+}
+
+message DeleteAccessRelationshipRequest {
+    // The ID of the access relationship.
+    string id = 1;
+}
+
+message DeleteAccessRelationshipResponse {}
+
+message UpdateAccessRelationshipRequest {
+    // The ID of the access relationship.
+    string id = 1;
+    // The type of relationship.
+    svflow.common.models.AccessRelationshipType relationship_type = 2;
+    // The ID of the target (user or group).
+    string target_id = 3;
+    // The type of the target.
+    svflow.common.models.AccessRelationshipTargetType target_type = 4;
+}
+
+message UpdateAccessRelationshipResponse {
+    // The updated access relationship.
+    pubapimodels.AccessRelationship data = 1;
+}
+
+message ListAccessRelationshipsRequest {
+    // The kind of subject to list relationships for.
+    svflow.common.models.AccessRelationshipSubjectType subject_type = 1 [(google.api.field_behavior) = REQUIRED];
+    // The ID of the subject (app_instance_id | resource_id | entitlement_id |
+    // team_id), disambiguated by subject_type.
+    string subject_id = 2 [(google.api.field_behavior) = REQUIRED];
+    // Filter by target ID (user or group ID).
+    optional string target_id = 3;
+    // Filter by target type.
+    optional svflow.common.models.AccessRelationshipTargetType target_type = 4;
+    // Filter by relationship type.
+    optional svflow.common.models.AccessRelationshipType relationship_type = 5;
+    // Maximum number of results to return per page.
+    optional int32 page_size = 6;
+    // Token for retrieving the next page of results.
+    optional string page_token = 7;
+}
+
+message ListAccessRelationshipsResponse {
+    // The list of access relationships.
+    repeated pubapimodels.AccessRelationship data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// ─────────────────────── DEPRECATED app-relationship + app-instance-label
+// request/response messages. Retained for the backward-compatible shim RPCs
+// above; new integrations should use the AccessRelationship / Tag families.
+message CreateAppRelationshipRequest {
+    option deprecated = true;
+    // The ID of the app instance.
+    string app_instance_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The type of relationship.
+    svflow.common.models.AppRelationshipType relationship_type = 2 [(google.api.field_behavior) = REQUIRED];
+    // The ID of the target (user or group).
+    string target_id = 3 [(google.api.field_behavior) = REQUIRED];
+    // The type of the target.
+    svflow.common.models.AppRelationshipTargetType target_type = 4 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateAppRelationshipResponse {
+    option deprecated = true;
+    // The created app relationship.
+    pubapimodels.AppRelationship data = 1;
+}
+
+message GetAppRelationshipRequest {
+    option deprecated = true;
+    // The ID of the app relationship.
+    string id = 1;
+}
+
+message GetAppRelationshipResponse {
+    option deprecated = true;
+    // The app relationship.
+    pubapimodels.AppRelationship data = 1;
+}
+
+message DeleteAppRelationshipRequest {
+    option deprecated = true;
+    // The ID of the app relationship.
+    string id = 1;
+}
+
+message DeleteAppRelationshipResponse {
+    option deprecated = true;
+}
+
+message UpdateAppRelationshipRequest {
+    option deprecated = true;
+    // The ID of the app relationship.
+    string id = 1;
+    // The type of relationship.
+    svflow.common.models.AppRelationshipType relationship_type = 2;
+    // The ID of the target (user or group).
+    string target_id = 3;
+    // The type of the target.
+    svflow.common.models.AppRelationshipTargetType target_type = 4;
+}
+
+message UpdateAppRelationshipResponse {
+    option deprecated = true;
+    // The updated app relationship.
+    pubapimodels.AppRelationship data = 1;
+}
+
+message ListAppRelationshipsRequest {
+    option deprecated = true;
+    // Filter by target ID (user or group ID).
+    optional string target_id = 1;
+    // Filter by target type.
+    optional svflow.common.models.AppRelationshipTargetType target_type = 2;
+    // The app instance ID to list relationships for.
+    string app_instance_id = 3 [(google.api.field_behavior) = REQUIRED];
+    // Filter by relationship type.
+    optional svflow.common.models.AppRelationshipType relationship_type = 4;
+    // Maximum number of results to return per page.
+    optional int32 page_size = 5;
+    // Token for retrieving the next page of results.
+    optional string page_token = 6;
+}
+
+message ListAppRelationshipsResponse {
+    option deprecated = true;
+    // The list of app relationships.
+    repeated pubapimodels.AppRelationship data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message ListAppInstanceLabelsRequest {
+    option deprecated = true;
+    // The ID of the workspace. Required.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Maximum number of results to return. Default is 1000, maximum is 5000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListAppInstanceLabelsResponse {
+    option deprecated = true;
+    // The list of app instance labels.
+    repeated pubapimodels.AppInstanceLabel data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message CreateAppInstanceLabelRequest {
+    option deprecated = true;
+    // The ID of the workspace to create the label in.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The name of the label. Must be unique within the workspace (case-insensitive).
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // Optional description of the label.
+    string description = 3;
+}
+
+message CreateAppInstanceLabelResponse {
+    option deprecated = true;
+    // The created label.
+    pubapimodels.AppInstanceLabel data = 1;
+}
+
+message UpdateAppInstanceLabelRequest {
+    option deprecated = true;
+    // The ID of the label to update.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The new name of the label.
+    string name = 2;
+    // The new description of the label.
+    string description = 3;
+}
+
+message UpdateAppInstanceLabelResponse {
+    option deprecated = true;
+    // The updated label.
+    pubapimodels.AppInstanceLabel data = 1;
+}
+
+message DeleteAppInstanceLabelRequest {
+    option deprecated = true;
+    // The ID of the label to delete. Removes the label from all app instances
+    // it is currently attached to.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteAppInstanceLabelResponse {
+    option deprecated = true;
+}
+
+message AddLabelToAppInstanceRequest {
+    option deprecated = true;
+    // The ID of the app instance.
+    string app_instance_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The ID of the label to attach.
+    string label_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message AddLabelToAppInstanceResponse {
+    option deprecated = true;
+    // The updated app instance.
+    pubapimodels.AppInstance data = 1;
+}
+
+message RemoveLabelFromAppInstanceRequest {
+    option deprecated = true;
+    // The ID of the app instance.
+    string app_instance_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The ID of the label to detach.
+    string label_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message RemoveLabelFromAppInstanceResponse {
+    option deprecated = true;
+    // The updated app instance.
+    pubapimodels.AppInstance data = 1;
+}
+
+message BulkAddLabelToAppInstancesRequest {
+    option deprecated = true;
+    // The ID of the label to attach.
+    string label_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The IDs of the app instances to attach the label to. Must all belong to
+    // the same workspace as the label.
+    repeated string app_instance_ids = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message BulkAddLabelToAppInstancesResponse {
+    option deprecated = true;
+    // The number of new attachments created (existing attachments are skipped).
+    int32 attached_count = 1;
+}
+
+message BulkRemoveLabelFromAppInstancesRequest {
+    option deprecated = true;
+    // The ID of the label to detach.
+    string label_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The IDs of the app instances to detach the label from.
+    repeated string app_instance_ids = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message BulkRemoveLabelFromAppInstancesResponse {
+    option deprecated = true;
+    // The number of attachments that were removed.
+    int32 detached_count = 1;
+}
+
+message TriggerWorkflowByWebhookRequest {
+    string webhook_id = 1;
+    // The entire request body as raw bytes (JSON or form-encoded) to be passed to the workflow
+    bytes payload = 2;
+    // The webhook secret normalized by svrelay from the secret query parameter or,
+    // when neither X-Webhook-Secret nor the query parameter is present, the
+    // Authorization bearer token. X-Webhook-Secret remains a header.
+    optional string secret = 3;
+    // The Content-Type of the payload (optional, defaults to "application/json")
+    // Supported values: "application/json", "application/x-www-form-urlencoded"
+    optional string content_type = 4;
+}
+
+message TriggerWorkflowByWebhookResponse {
+    // The unique identifier for the workflow run
+    string run_id = 1;
+    // The status of the workflow run
+    svflow.common.models.WorkflowRunStatus status = 2;
+    // The result content (JSON string for success, error message for failure)
+    string result = 3;
+}
+
+message TriggerIngestionWebhookRequest {
+    string webhook_id = 1;
+    // Raw vendor event payload (e.g. Okta event hook body); the ingestion
+    // dispatcher parses the vendor shape itself.
+    bytes payload = 2;
+    // Optional secret; X-Webhook-Secret header takes precedence.
+    optional string secret = 3;
+}
+
+// Ingestion webhooks are fire-and-forget: the event is parsed and fanned out to
+// targeted syncs, so there is no per-run result to return.
+message TriggerIngestionWebhookResponse {}
+
+// Custom Service requests and responses
+
+message GetCustomServiceRequest {
+    // The ID of the custom service.
+    string id = 1;
+}
+
+message GetCustomServiceResponse {
+    // The custom service.
+    pubapimodels.CustomService data = 1;
+}
+
+message CreateCustomServiceResponse {
+    // The created custom service.
+    pubapimodels.CustomService data = 1;
+}
+
+message UpdateCustomServiceResponse {
+    // The updated custom service.
+    pubapimodels.CustomService data = 1;
+}
+
+message DeleteCustomServiceRequest {
+    // The ID of the custom service.
+    string id = 1;
+}
+
+message DeleteCustomServiceResponse {}
+
+message ListCustomServicesRequest {
+    // The ID of the workspace.
+    string team_id = 1;
+    // Maximum number of results to return. Default is 10000, maximum is 10000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListCustomServicesResponse {
+    // The list of custom services.
+    repeated pubapimodels.CustomService data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// Package requests and responses
+
+message GetPackageRequest {
+    // The ID of the package.
+    string id = 1;
+}
+
+message GetPackageResponse {
+    // The package.
+    pubapimodels.Package data = 1;
+}
+
+message CreatePackageResponse {
+    // The created package.
+    pubapimodels.Package data = 1;
+}
+
+message UpdatePackageResponse {
+    // The updated package.
+    pubapimodels.Package data = 1;
+}
+
+message DeletePackageRequest {
+    // The ID of the package.
+    string id = 1;
+}
+
+message DeletePackageResponse {}
+
+message ListPackagesRequest {
+    // The ID of the workspace.
+    string team_id = 1;
+}
+
+message ListPackagesResponse {
+    // The workspace's packages, the default package first.
+    repeated pubapimodels.Package data = 1;
+}
+
+// Start Workflow Run requests and responses (async — returns immediately)
+
+message StartWorkflowRunRequest {
+    // The ID of the workflow to run.
+    string workflow_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Workflow arguments as a JSON object encoded into a string — NOT a raw
+    // JSON object. Example: "{\"app\":\"Zoom\",\"dryRun\":true}". Omit (or pass
+    // "{}") for no arguments. A value that is not valid JSON, or is valid JSON
+    // but not an object, is rejected with INVALID_ARGUMENT.
+    optional string arguments = 2;
+    // Optional: a specific version of the workflow to run. The version must
+    // belong to the workflow identified by workflow_id; it does not need to
+    // be published. If omitted, the workflow's currently-published version is
+    // used (and the call fails with INVALID_ARGUMENT if the workflow has no
+    // published version).
+    optional string workflow_version_id = 3;
+    // Optional user ID the workflow runs on behalf of. If omitted, requests with
+    // user context run on behalf of the authenticated user. Mutually exclusive
+    // with for_user_email.
+    optional string for_user_id = 4;
+    // Optional email of the user the workflow runs on behalf of. The user must
+    // belong to the workflow's workspace. Mutually exclusive with for_user_id.
+    optional string for_user_email = 5;
+}
+
+message StartWorkflowRunResponse {
+    // The workflow run, in its initial (pending/running) state.
+    pubapimodels.WorkflowRun data = 1;
+}
+
+// Await Workflow Run Result requests and responses (blocks up to wait_timeout_seconds)
+
+message AwaitWorkflowRunResultRequest {
+    // The ID of the workflow run (matches WorkflowRun.id from /v2/workflow-runs/{id}).
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+    // How long the server should wait for terminal status before returning timed_out=true.
+    // Default is 30 seconds, capped at 60 seconds.
+    optional int32 wait_timeout_seconds = 2;
+}
+
+message AwaitWorkflowRunResultResponse {
+    // The latest snapshot of the workflow run. If timed_out is false this reflects
+    // a terminal status; if true this is the most recent in-progress state.
+    pubapimodels.WorkflowRun data = 1;
+    // True if the wait expired before the workflow reached a terminal status.
+    bool timed_out = 2;
+}
+
+// Workflow Run requests and responses
+
+message GetWorkflowRunRequest {
+    // The ID of the workflow run.
+    string id = 1;
+}
+
+message GetWorkflowRunResponse {
+    // The workflow run.
+    pubapimodels.WorkflowRun data = 1;
+}
+
+message ListWorkflowRunsRequest {
+    // The ID of the workspace. Required.
+    string team_id = 1;
+    // Maximum number of results to return. Default is 50, maximum is 200.
+    // Larger values are silently coerced server-side; the actual value used
+    // is returned in the X-Served-Page-Size response header.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+    // When true (default), each returned run includes its `output` field
+    // (the full workflow result). For multi-row list responses this can be
+    // megabytes per row — set to false if you only need run metadata; you
+    // can then fetch full output per-run via GetWorkflowRun. Strongly
+    // recommended `false` for any caller that does not need `output`.
+    optional bool include_output = 4;
+}
+
+message ListWorkflowRunsResponse {
+    // The list of workflow runs.
+    repeated pubapimodels.WorkflowRun data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// Access Request requests and responses
+
+message CreateAccessRequestRequest {
+    // The ID of the workspace. Required.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The ID of the role (entitlement) to request access for. Required.
+    string role_id = 2 [(google.api.field_behavior) = REQUIRED];
+    // The ID of the user to request access for. Defaults to the authenticated user if omitted.
+    optional string target_user_id = 3;
+    // The duration of access in minutes. Must not exceed the role's max_access_minutes.
+    // Required unless the role has no maximum duration.
+    int32 access_minutes = 4;
+    // A business justification for the access request.
+    // Required if the role's access policy requires justification.
+    optional string business_justification = 5;
+    // An optional scheduled start time for provisioning (RFC3339 format).
+    // If omitted, access is provisioned immediately upon approval.
+    optional string scheduled_start_at = 6;
+    // The ID of an existing ticket on the same workspace to attach the access request to.
+    // If omitted, a new ticket is created for the access request.
+    optional string ticket_id = 7;
+}
+
+message CreateAccessRequestResponse {
+    // The created access request.
+    pubapimodels.AccessRequest data = 1;
+}
+
+message ListRequestableRolesRequest {
+    // The ID of the workspace. Required.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The ID of the user to check requestable roles for.
+    // Defaults to the authenticated user if omitted.
+    optional string target_user_id = 2;
+    reserved 3; // was: query (not implemented)
+    // Maximum number of results to return. Default is 100, maximum is 1000.
+    optional int32 page_size = 4;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 5;
+}
+
+message ListRequestableRolesResponse {
+    // The list of requestable roles with their access policies.
+    repeated pubapimodels.RequestableRole data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message GetAccessRequestRequest {
+    // The ID of the access request.
+    string id = 1;
+}
+
+message GetAccessRequestResponse {
+    // The access request.
+    pubapimodels.AccessRequest data = 1;
+}
+
+message ListAccessRequestsRequest {
+    // The ID of the workspace. Required.
+    string team_id = 1;
+    // Maximum number of results to return. Default is 1000, maximum is 5000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListAccessRequestsResponse {
+    // The list of access requests.
+    repeated pubapimodels.AccessRequest data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// Search Workflow Runs requests and responses
+
+message SearchWorkflowRunsRequest {
+    // The ID of the workspace. Required.
+    string team_id = 1;
+    // The workflow UUID. Not a wf_ scoped id.
+    optional string workflow_id = 2;
+    // Filter by statuses (multiple allowed).
+    repeated svflow.common.models.WorkflowRunStatus statuses = 3;
+    // Filter by the target user for the workflow run.
+    optional string target_user_id = 4;
+    // Filter by the user who initiated the workflow run.
+    optional string initiated_by_user_id = 5;
+    // Filter by runs created after this timestamp (RFC3339 format).
+    optional string created_after = 6;
+    // Filter by runs created before this timestamp (RFC3339 format).
+    optional string created_before = 7;
+    // Filter by linked ticket ID.
+    optional string linked_ticket_id = 8;
+    // Maximum number of results to return. Default is 50, maximum is 200.
+    // Larger values are silently coerced server-side; the actual value used
+    // is returned in the X-Served-Page-Size response header.
+    optional int32 page_size = 9;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 10;
+    // When true (default), each returned run includes its `output` field
+    // (the full workflow result). For multi-row search responses this can be
+    // megabytes per row — set to false if you only need run metadata; you
+    // can then fetch full output per-run via GetWorkflowRun. Strongly
+    // recommended `false` for any caller that does not need `output`.
+    optional bool include_output = 11;
+    // Filter to the direct child runs (sub-workflows) of this parent run.
+    // Pass a run ID here to list the runs it spawned one level deep; combine
+    // with `statuses` (e.g. FAILED) to find the failing children.
+    optional string parent_workflow_run_id = 12;
+    // Whether to include child runs (sub-workflows) in the results. Unset
+    // means true (all runs are returned — matches include_output's
+    // unset-means-true convention). Set explicitly to false to return only
+    // top-level runs; on journey-heavy workspaces child runs can be >90% of total
+    // rows, so this avoids paging them just to discard them client-side.
+    // include_child_runs=false is mutually exclusive with
+    // parent_workflow_run_id (a run cannot both have a given parent and no
+    // parent); combining them is a 400.
+    optional bool include_child_runs = 13;
+    // When true, return only runs that are linked to a ticket
+    // (linked_ticket_id set). Unset and explicit false are equivalent — no
+    // filter is applied. Useful for building per-ticket run indexes without
+    // fetching unlinked runs.
+    optional bool include_runs_with_linked_ticket = 14;
+}
+
+message SearchWorkflowRunsResponse {
+    // The list of workflow runs.
+    repeated pubapimodels.WorkflowRun data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// Same filter set as SearchWorkflowRunsRequest, minus pagination and
+// include_output — the two requests must stay filter-compatible so a caller
+// can count a result set and then page exactly that set.
+message CountWorkflowRunsRequest {
+    // The ID of the workspace. Required.
+    string team_id = 1;
+    // The workflow UUID. Not a wf_ scoped id.
+    optional string workflow_id = 2;
+    // Filter by statuses (multiple allowed).
+    repeated svflow.common.models.WorkflowRunStatus statuses = 3;
+    // Filter by the target user for the workflow run.
+    optional string target_user_id = 4;
+    // Filter by the user who initiated the workflow run.
+    optional string initiated_by_user_id = 5;
+    // Filter by runs created after this timestamp (RFC3339 format).
+    optional string created_after = 6;
+    // Filter by runs created before this timestamp (RFC3339 format).
+    optional string created_before = 7;
+    // Filter by linked ticket ID.
+    optional string linked_ticket_id = 8;
+    // Count only the direct child runs (sub-workflows) of this parent run.
+    optional string parent_workflow_run_id = 9;
+    // Whether to include child runs (sub-workflows) in the count. Unset
+    // means true (matches include_output's unset-means-true convention). Set
+    // explicitly to false to count only top-level runs.
+    // include_child_runs=false is mutually exclusive with
+    // parent_workflow_run_id; combining them is a 400.
+    optional bool include_child_runs = 10;
+    // When true, count only runs that are linked to a ticket
+    // (linked_ticket_id set). Unset and explicit false are equivalent — no
+    // filter is applied.
+    optional bool include_runs_with_linked_ticket = 11;
+}
+
+message CountWorkflowRunsResponse {
+    // The number of workflow runs matching the filters.
+    int64 count = 1;
+}
+
+message ListWorkflowRunTasksRequest {
+    // The ID of the workflow run whose tasks (steps) to list.
+    string workflow_run_id = 1;
+    // Maximum number of tasks to return. Default is 50, maximum is 200.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListWorkflowRunTasksResponse {
+    // The list of task summaries, ordered by step ascending.
+    repeated pubapimodels.WorkflowRunTaskSummary data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message GetWorkflowRunTaskRequest {
+    // The ID of the workflow run containing the task.
+    string workflow_run_id = 1;
+    // The step number of the task to fetch (from ListWorkflowRunTasks).
+    int64 step_number = 2;
+}
+
+message GetWorkflowRunTaskResponse {
+    // The task detail.
+    pubapimodels.WorkflowRunTask data = 1;
+}
+
+// Search Access Requests requests and responses
+
+message SearchAccessRequestsRequest {
+    // The ID of the workspace. Required.
+    string team_id = 1;
+    // Filter by requested role ID.
+    optional string requested_role_id = 2;
+    // Filter by app instance ID.
+    optional string app_instance_id = 3;
+    // Filter by statuses (multiple allowed).
+    repeated svflow.common.models.AccessRequestStatus statuses = 4;
+    // Filter by the target user for whom access was requested.
+    optional string target_user_id = 5;
+    // Filter by the user who requested access.
+    optional string requested_by_user_id = 6;
+    // Filter by requests created after this timestamp (RFC3339 format).
+    optional string created_after = 7;
+    // Filter by requests created before this timestamp (RFC3339 format).
+    optional string created_before = 8;
+    // Filter by linked ticket ID.
+    optional string linked_ticket_id = 9;
+    // Maximum number of results to return. Default is 1000, maximum is 5000.
+    optional int32 page_size = 10;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 11;
+}
+
+message SearchAccessRequestsResponse {
+    // The list of access requests.
+    repeated pubapimodels.AccessRequest data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message RevokeAccessRequestRequest {
+    // The ID of the access request to revoke.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message RevokeAccessRequestResponse {}
+
+// Access Profile Requests / Responses
+
+
+
+message CreateAccessProfileResponse {
+    pubapimodels.AccessProfile data = 1;
+}
+
+message GetAccessProfileRequest {
+    // The ID of the access profile.
+    string id = 1;
+}
+
+message GetAccessProfileResponse {
+    pubapimodels.AccessProfile data = 1;
+}
+
+
+
+message UpdateAccessProfileResponse {
+    pubapimodels.AccessProfile data = 1;
+}
+
+message DeleteAccessProfileRequest {
+    // The ID of the access profile.
+    string id = 1;
+}
+
+message CreateAccessProfileGrantRequest {
+    // The ID of the access profile the grant attaches to.
+    string access_profile_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Exactly one of the resource id fields below must be set; the field
+    // carries the resource kind. The resource must belong to the profile's
+    // workspace. Knowledge-item grants are read-only on this API (returned by the
+    // Get/List endpoints): knowledge gating is managed in-app, where grants
+    // inherit through the folder tree.
+    //
+    // The ID of the workflow to grant.
+    optional string workflow_id = 2;
+    // The ID of the app resource role to grant. A role belongs to at most
+    // one eligibility profile: granting it to an eligibility profile removes
+    // it from any other eligibility profile that currently holds it. A
+    // birthright profile's grant displaces nothing.
+    optional string app_resource_role_id = 3;
+    // The ID of the form to add this profile's users to the audience of.
+    optional string form_id = 4;
+    // The ID of the skill to add this profile's users to the audience of. A
+    // skill with no profiles linked can be loaded into the help-desk agent's
+    // context for anyone in the org; each linked profile narrows that.
+    optional string skill_id = 5;
+}
+
+message CreateAccessProfileGrantResponse {
+    pubapimodels.AccessProfileGrant data = 1;
+}
+
+message GetAccessProfileGrantRequest {
+    // The ID of the access profile grant.
+    string id = 1;
+}
+
+message GetAccessProfileGrantResponse {
+    pubapimodels.AccessProfileGrant data = 1;
+}
+
+message DeleteAccessProfileGrantRequest {
+    // The ID of the access profile grant.
+    string id = 1;
+}
+
+message DeleteAccessProfileGrantResponse {}
+
+message ListAccessProfileGrantsRequest {
+    // The ID of the workspace to list access profile grants for.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Maximum number of grants to return (default 1000, max 5000).
+    optional int32 page_size = 2;
+    // Page token for pagination.
+    optional string page_token = 3;
+    // When set, only return grants attached to this access profile.
+    optional string access_profile_id = 4;
+    // At most one of the resource filters below may be set; each returns
+    // only the grants attached to that resource.
+    //
+    // When set, only return grants for this workflow.
+    optional string workflow_id = 5;
+    // When set, only return grants for this app resource role.
+    optional string app_resource_role_id = 6;
+    // When set, only return grants for this form.
+    optional string form_id = 7;
+    // When set, only return grants for this knowledge item.
+    optional string knowledge_item_id = 8;
+    // When set, only return grants for this skill.
+    optional string skill_id = 9;
+}
+
+message ListAccessProfileGrantsResponse {
+    repeated pubapimodels.AccessProfileGrant data = 1;
+    optional string next_page_token = 2;
+}
+
+message DeleteAccessProfileResponse {}
+
+message ListAccessProfilesRequest {
+    // The ID of the workspace to list access profiles for.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Maximum number of access profiles to return (default 50, max 1000).
+    optional int32 page_size = 2;
+    // Page token for pagination.
+    optional string page_token = 3;
+    // When set, only return access profiles that gate this workflow
+    // (i.e. profiles whose grants include the workflow). The workflow must
+    // belong to the requested workspace.
+    optional string workflow_id = 4;
+}
+
+message ListAccessProfilesResponse {
+    repeated pubapimodels.AccessProfile data = 1;
+    optional string next_page_token = 2;
+}
+
+// Approval Delegation Messages
+
+message CreateApprovalDelegationRequest {
+    // The ID of the user who is delegating their approvals. When omitted, defaults to the authenticated user.
+    optional string delegator_user_id = 1;
+    // The delegates who can approve on behalf of the delegator.
+    repeated pubapimodels.ApprovalDelegate delegates = 2 [(google.api.field_behavior) = REQUIRED];
+    // The priority of the delegation rule (lower values are higher priority).
+    int32 priority = 3;
+    // A description of the delegation rule.
+    string description = 4;
+    // When the delegation rule becomes active. Unset means active immediately.
+    optional google.protobuf.Timestamp active_from = 5;
+    // When the delegation rule stops applying (exclusive). Unset means the rule
+    // never expires. Must be in the future and after active_from.
+    optional google.protobuf.Timestamp active_until = 6;
+}
+
+message CreateApprovalDelegationResponse {
+    pubapimodels.ApprovalDelegation data = 1;
+}
+
+message GetApprovalDelegationRequest {
+    // The ID of the approval delegation rule.
+    string id = 1;
+}
+
+message GetApprovalDelegationResponse {
+    pubapimodels.ApprovalDelegation data = 1;
+}
+
+message UpdateApprovalDelegationRequest {
+    // The ID of the approval delegation rule to update.
+    string id = 1;
+    // The delegates who can approve on behalf of the delegator.
+    repeated pubapimodels.ApprovalDelegate delegates = 2;
+    // The priority of the delegation rule (lower values are higher priority).
+    optional int32 priority = 3;
+    // A description of the delegation rule.
+    optional string description = 4;
+    // When the delegation rule becomes active. Unset leaves the current value
+    // unchanged; to remove the window, set clear_active_window.
+    optional google.protobuf.Timestamp active_from = 5;
+    // When the delegation rule stops applying (exclusive). Unset leaves the
+    // current value unchanged; to remove the window, set clear_active_window.
+    optional google.protobuf.Timestamp active_until = 6;
+    // Clears both active_from and active_until, making the rule permanent.
+    // Cannot be combined with active_from/active_until in the same request.
+    bool clear_active_window = 7;
+}
+
+message UpdateApprovalDelegationResponse {
+    pubapimodels.ApprovalDelegation data = 1;
+}
+
+message DeleteApprovalDelegationRequest {
+    // The ID of the approval delegation rule to delete.
+    string id = 1;
+}
+
+message DeleteApprovalDelegationResponse {}
+
+message ListApprovalDelegationsRequest {
+    // Optional user ID to list delegations for a specific user.
+    optional string delegator_user_id = 1;
+    // Maximum number of results to return.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListApprovalDelegationsResponse {
+    repeated pubapimodels.ApprovalDelegation data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+// Approval Request Requests / Responses
+
+message ListApprovalRequestsRequest {
+    // The ID of the workspace. Required.
+    string team_id = 1;
+    // Maximum number of results to return. Default is 1000, maximum is 5000.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListApprovalRequestsResponse {
+    repeated pubapimodels.ApprovalRequest data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+enum ApprovalRequestResourceType {
+    APPROVAL_REQUEST_RESOURCE_TYPE_UNSPECIFIED = 0;
+    APPROVAL_REQUEST_RESOURCE_TYPE_ACCESS_ALLOCATION = 1;
+    APPROVAL_REQUEST_RESOURCE_TYPE_WORKFLOW_RUN = 2;
+}
+
+message SearchApprovalRequestsRequest {
+    // The ID of the workspace. Required.
+    string team_id = 1;
+    // Filter by resource type (allocation or workflow run).
+    optional ApprovalRequestResourceType resource_type = 2;
+    // Filter by result statuses (multiple allowed).
+    repeated svflow.common.models.ApprovalRequestResult results = 3;
+    // Filter by requests created after this timestamp (RFC3339 format).
+    optional string created_after = 4;
+    // Filter by requests created before this timestamp (RFC3339 format).
+    optional string created_before = 5;
+    // Maximum number of results to return. Default is 1000, maximum is 5000.
+    optional int32 page_size = 6;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 7;
+}
+
+message SearchApprovalRequestsResponse {
+    repeated pubapimodels.ApprovalRequest data = 1;
+    // Token for retrieving the next page of results. Empty if no more results.
+    optional string next_page_token = 2;
+}
+
+message GetApprovalRequestRequest {
+    // The ID of the approval request.
+    string approval_request_id = 1;
+}
+
+message GetApprovalRequestResponse {
+    pubapimodels.ApprovalRequest data = 1;
+}
+
+// Approval Request Step Requests / Responses
+
+message ListApprovalRequestStepsRequest {
+    // The ID of the approval request.
+    string approval_request_id = 1;
+}
+
+message ListApprovalRequestStepsResponse {
+    repeated pubapimodels.ApprovalRequestStep data = 1;
+}
+
+message GetApprovalRequestStepRequest {
+    // The ID of the approval request.
+    string approval_request_id = 1;
+    // The ID of the approval step.
+    string step_id = 2;
+}
+
+message GetApprovalRequestStepResponse {
+    pubapimodels.ApprovalRequestStep data = 1;
+}
+
+message ListAppInstanceIntegrationsRequest {
+    // The ID of the app instance to list integrations for.
+    string app_instance_id = 1;
+}
+
+message ListAppInstanceIntegrationsResponse {
+    // The integrations for the app instance.
+    repeated pubapimodels.Integration data = 1;
+}
+
+// Knowledge search requests and responses
+
+message SearchKnowledgeRequest {
+    // The ID of the workspace whose knowledge corpus to search.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The search query.
+    string query = 2 [(google.api.field_behavior) = REQUIRED];
+    // Optional. User emails for permission filtering. When provided, results
+    // that enforce ingested permissions are filtered to chunks at least one of
+    // these users can access.
+    repeated string user_emails = 3;
+    // Optional. Treat the request as coming from a public channel — affects
+    // display mode for chunks marked public_channel_links_only.
+    optional bool is_public_channel = 4;
+    // Optional. Maximum number of result chunks to return, most relevant
+    // first. Unset means no cap on the count — max_response_tokens alone
+    // decides how many fit. Values above 200 are clamped.
+    optional int32 max_results = 5;
+    // Optional. Maximum characters of relevant_content per chunk. Unset means
+    // no per-chunk cap. Set it to trade depth for coverage: shorter chunks
+    // let more distinct documents fit inside the same token budget. Values
+    // above 8000 are clamped to 8000, the ingestion chunk size.
+    optional int32 max_content_chars = 6;
+    // Optional. Token budget for the entire response. Defaults to 24000.
+    // Values above 200000 are clamped to 200000, and values below 576 are
+    // raised to 576 — the smallest budget that can return one chunk with
+    // readable content, since a chunk's citation fields alone cost ~180
+    // tokens on the wire. Values below 1 fall back to the default. Chunks are
+    // added in relevance order until the budget is spent, so the response
+    // always fits and always carries as much as it can.
+    //
+    // The default is sized to the tool-result limit an MCP client applies by
+    // default (25000 tokens), because this endpoint's caller reads the whole
+    // response as one tool result. A response over that limit is not merely
+    // large — the client discards it, so the search returns nothing usable.
+    // Raise this only if the client's limit is also raised.
+    //
+    // Tokens are counted with an Anthropic-calibrated counter that
+    // deliberately overestimates, so the client's own count lands under the
+    // number requested here.
+    optional int32 max_response_tokens = 7;
+}
+
+message KnowledgeSearchResultItem {
+    // ID of the source knowledge item.
+    string id = 1;
+    // The source knowledge item's display name.
+    string name = 2;
+    // The application URL for the source knowledge item, when the source is
+    // configured to cite URLs. Empty otherwise.
+    string application_url = 3;
+    // The knowledge source (connector, custom ingestion, or native) this item
+    // was indexed from. Matches KnowledgeBase.knowledge_source_id in
+    // ListKnowledgeBases (include_external_sources), so a caller can look up
+    // the source's name and sync status for any result.
+    string knowledge_source_id = 4;
+    // When the item last changed at its origin (a Slack thread's timestamp,
+    // a page's last edit). Lets a caller see the time range its results
+    // actually span instead of assuming the whole source.
+    optional google.protobuf.Timestamp last_changed_at = 5;
+}
+
+// How a result chunk should be rendered to end users. Mirrors
+// svflow.private.KnowledgeDisplayMode.
+enum KnowledgeDisplayMode {
+    KNOWLEDGE_DISPLAY_MODE_UNSPECIFIED = 0;
+    KNOWLEDGE_DISPLAY_MODE_FULL = 1;
+    KNOWLEDGE_DISPLAY_MODE_LINK_ONLY = 2;
+    KNOWLEDGE_DISPLAY_MODE_HIDDEN = 3;
+}
+
+message KnowledgeSearchResultChunk {
+    // Stable chunk ID.
+    string id = 1;
+    // The relevant content snippet.
+    string relevant_content = 2;
+    // The source knowledge item this chunk belongs to.
+    KnowledgeSearchResultItem knowledge_item = 3;
+    // Display mode determined by permission filtering.
+    KnowledgeDisplayMode display_mode = 4;
+    // True when the source enforces ingested permissions.
+    bool has_permissions = 5;
+    // Fused/reranked relevance score in [0, 1]. Not calibrated across queries.
+    float similarity_score = 6;
+    // True when relevant_content was cut, either by max_content_chars or by
+    // the response token budget. The chunk's full text is not available
+    // through this endpoint; follow knowledge_item.application_url for the
+    // whole document.
+    bool content_truncated = 7;
+}
+
+message SearchKnowledgeResponse {
+    // Matching knowledge chunks, ordered by relevance.
+    repeated KnowledgeSearchResultChunk data = 1;
+    // How many chunks matched before max_results and the token budget were
+    // applied.
+    // A value greater than the length of data means the response is capped —
+    // narrow the query to reach the rest.
+    int32 total_results = 2;
+    // The response's measured token cost, by the same counter that enforced
+    // max_response_tokens. Never greater than max_response_tokens.
+    int32 response_tokens = 3;
+}
+
+// --- Native Knowledge Base ---
+
+message CreateKnowledgeBaseRequest {
+    // The ID of the workspace that will own the knowledge base.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The display name of the knowledge base.
+    string name = 2 [(google.api.field_behavior) = REQUIRED];
+    // An optional description.
+    optional string description = 3;
+}
+
+message CreateKnowledgeBaseResponse {
+    pubapimodels.KnowledgeBase data = 1;
+}
+
+message GetKnowledgeBaseRequest {
+    // The ID of the knowledge base.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetKnowledgeBaseResponse {
+    pubapimodels.KnowledgeBase data = 1;
+}
+
+message ListKnowledgeBasesRequest {
+    // The ID of the workspace whose knowledge bases to list.
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Maximum number of results to return.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+    // Set true to list everything SearchKnowledge can return results from:
+    // every connected external source (Slack, Notion, Confluence, Google
+    // Drive, ...) and custom ingestion source, each with its sync status, plus
+    // AI-context-only native bases. Unset lists only the curated Knowledge
+    // Base view shown to end users. An agent reasoning about how complete the
+    // workspace's knowledge is should set this.
+    optional bool include_external_sources = 4;
+}
+
+message ListKnowledgeBasesResponse {
+    repeated pubapimodels.KnowledgeBase data = 1;
+    // Token for retrieving the next page. Empty if there are no more results.
+    optional string next_page_token = 2;
+}
+
+message UpdateKnowledgeBaseRequest {
+    // The ID of the knowledge base to update.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+    // New name (omit to leave unchanged).
+    optional string name = 2;
+    // New description (omit to leave unchanged).
+    optional string description = 3;
+}
+
+message UpdateKnowledgeBaseResponse {
+    pubapimodels.KnowledgeBase data = 1;
+}
+
+message DeleteKnowledgeBaseRequest {
+    // The ID of the knowledge base to delete.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteKnowledgeBaseResponse {}
+
+// --- Native Knowledge Documents ---
+
+message CreateKnowledgeDocumentRequest {
+    // The ID of the knowledge base to create the document in.
+    string knowledge_base_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The ID of the parent document (a page or folder). Omit for a
+    // top-level document.
+    optional string parent_document_id = 2;
+    // Whether to create a page or a folder. Defaults to PAGE when unspecified.
+    pubapimodels.KnowledgeDocumentKind kind = 3;
+    // The document title.
+    string title = 4 [(google.api.field_behavior) = REQUIRED];
+    // The page body as Markdown. Ignored for folders.
+    optional string content = 5;
+}
+
+message CreateKnowledgeDocumentResponse {
+    pubapimodels.KnowledgeDocument data = 1;
+}
+
+message GetKnowledgeDocumentRequest {
+    // The ID of the document.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetKnowledgeDocumentResponse {
+    pubapimodels.KnowledgeDocument data = 1;
+}
+
+message ListKnowledgeDocumentsRequest {
+    // List documents that belong to this knowledge base.
+    string knowledge_base_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Maximum number of results to return.
+    optional int32 page_size = 2;
+    // Token for pagination. Leave empty for the first request.
+    optional string page_token = 3;
+}
+
+message ListKnowledgeDocumentsResponse {
+    repeated pubapimodels.KnowledgeDocumentSummary data = 1;
+    // Token for retrieving the next page. Empty if there are no more results.
+    optional string next_page_token = 2;
+}
+
+message UpdateKnowledgeDocumentRequest {
+    // The ID of the document to update.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+    // New title (omit to leave unchanged).
+    optional string title = 2;
+    // Replacement page body as Markdown. Omit to leave the body unchanged.
+    optional string content = 3;
+}
+
+message UpdateKnowledgeDocumentResponse {
+    pubapimodels.KnowledgeDocument data = 1;
+}
+
+message MoveKnowledgeDocumentRequest {
+    // The ID of the document to move. Its descendants move with it.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The document to nest it under, which must be another document in the
+    // same knowledge base. Omit to move it to the top level of that base. A
+    // FOLDER can only sit at the top level or under another folder, never
+    // under a page.
+    //
+    // The document is placed last among its new siblings. Ordering within a
+    // parent is not settable through the public API.
+    optional string parent_document_id = 2;
+}
+
+message MoveKnowledgeDocumentResponse {
+    pubapimodels.KnowledgeDocument data = 1;
+}
+
+message DeleteKnowledgeDocumentRequest {
+    // The ID of the document to delete.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteKnowledgeDocumentResponse {}
+
+message PublishKnowledgeDocumentRequest {
+    // The ID of the document to publish.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message PublishKnowledgeDocumentResponse {
+    pubapimodels.KnowledgeDocument data = 1;
+}
+
+message UnpublishKnowledgeDocumentRequest {
+    // The ID of the document to unpublish.
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message UnpublishKnowledgeDocumentResponse {
+    pubapimodels.KnowledgeDocument data = 1;
+}
+
+message GetAppInstanceHealthChecksRequest {
+    string app_instance_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetAppInstanceHealthChecksResponse {
+    repeated AppInstanceHealthCheck checks = 1;
+    bool scheduled_runs_enabled = 2;
+}
+
+message AppInstanceHealthCheck {
+    string workflow_id = 1;
+    string name = 2;
+    string description = 3;
+    bool disabled = 4;
+    AppInstanceHealthCheckStatus status = 5;
+    AppInstanceHealthCheckRun latest_run = 6;
+}
+
+message AppInstanceHealthCheckRun {
+    string workflow_run_id = 1;
+    google.protobuf.Timestamp created_at = 2;
+    string failure_message = 3;
+}
+
+enum AppInstanceHealthCheckStatus {
+    APP_INSTANCE_HEALTH_CHECK_STATUS_UNSPECIFIED = 0;
+    APP_INSTANCE_HEALTH_CHECK_STATUS_UNKNOWN = 1;
+    APP_INSTANCE_HEALTH_CHECK_STATUS_NEVER_RUN = 2;
+    APP_INSTANCE_HEALTH_CHECK_STATUS_RUNNING = 3;
+    APP_INSTANCE_HEALTH_CHECK_STATUS_PASSED = 4;
+    APP_INSTANCE_HEALTH_CHECK_STATUS_FAILED = 5;
+}
+
+message SearchCustomServiceEndpointsRequest {
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Natural-language description of the operation you need.
+    string query = 2 [(google.api.field_behavior) = REQUIRED];
+    // Optional. Omit to search every documented custom service in the workspace --
+    // usually the right call, since "which of my services can do X" is the
+    // common question when a workspace has a dozen internal services.
+    optional string custom_service_id = 3;
+    // Optional GET/POST/... filter.
+    optional string http_method = 4;
+    // Default 10, max 50.
+    optional int32 limit = 5;
+}
+
+message SearchCustomServiceEndpointsResponse {
+    repeated pubapimodels.CustomServiceEndpoint data = 1;
+}
+
+message GetCustomServiceEndpointRequest {
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // The endpoint id from a SearchCustomServiceEndpoints result.
+    string id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetCustomServiceEndpointResponse {
+    pubapimodels.CustomServiceEndpointDetail data = 1;
+}
+
+message CreateFormImageResponse {
+    pubapimodels.FormImage data = 1;
+}
+
+message ListFormImagesRequest {
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    // Restrict to these scoped ids; omit for the workspace's whole set.
+    repeated string scoped_ids = 2;
+    // Include the image bytes. Off by default: a listing is normally about the
+    // metadata, and the bytes are only wanted by the serializer building a
+    // portable document.
+    bool include_data = 3;
+}
+
+message ListFormImagesResponse {
+    repeated pubapimodels.FormImage data = 1;
+}
+
+message SearchAccessMembershipsRequest {
+    string team_id = 1 [(google.api.field_behavior) = REQUIRED];
+    string target_user_id = 2 [(google.api.field_behavior) = REQUIRED];
+    // Defaults to 50; maximum 200. Each item contains a whole role membership.
+    optional int32 page_size = 3;
+    optional string page_token = 4;
+}
+
+message SearchAccessMembershipsResponse {
+    repeated svflow.pubapimodels.AccessMembership data = 1;
+    optional string next_page_token = 2;
+}

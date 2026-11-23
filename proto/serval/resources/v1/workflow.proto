@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+// Nested workflow models shared by svflow's CreateWorkflowRequest, which is
+// the persisted `workflow` resource kind State, and svmeta's WorkflowPatch.
+package serval.resources.v1;
+
+import "buf/validate/validate.proto";
+import "serval/resources/v1/references.proto";
+
+message AgentWorkflowOrigin {
+  string integration_alias = 1;
+  string service_slug = 2;
+  string workflow_type = 3;
+  string external_id = 4;
+}
+
+message AccessProfileGating {
+  repeated string access_profile_scoped_ids = 1;
+}
+
+message WorkflowReference {
+  option (buf.validate.message).cel = {
+    id: "workflow_reference.exactly_one_id_form"
+    message: "exactly one of id or scoped_id must be set"
+    expression: "(this.id != '') != (this.scoped_id != '')"
+  };
+
+  string id = 1;
+  // Portable cross-environment form; exactly one of id / scoped_id is set.
+  string scoped_id = 2;
+}
+
+message ApprovalProcedure {
+  int32 timeout_seconds = 1;
+  repeated ApprovalStep steps = 2;
+}
+
+message ApprovalStep {
+  int32 step_number = 1;
+  bool allow_self_approval = 2;
+  string approver_justification_mode = 3;
+  ApproverSet primary = 4;
+  ApproverSet secondary = 5;
+  optional int32 stage_number = 6;
+  repeated ApprovalGroupRequirement group_requirements = 7;
+  bool suppress_notifications = 8;
+  // Optional so absent stays distinguishable from an explicit false and falls
+  // back to the DB default of TRUE (proto3 would otherwise default it false).
+  optional bool auto_approve_self = 9;
+}
+
+message ApprovalGroupRequirement {
+  GroupReference group = 1;
+  int32 min_approvals = 2;
+}
+
+message ApprovalChannelRequirement {
+  ChannelReference channel = 1;
+  int32 min_approvals = 2;
+}
+
+message ApproverSet {
+  repeated UserReference users = 1;
+  repeated GroupReference groups = 2;
+  bool include_user_manager = 3;
+  bool include_app_owner = 4;
+  bool include_team_owner = 5;
+  bool include_resource_owner = 6;
+  bool include_role_owner = 7;
+  // References another workflow by scoped_id (the portable form).
+  WorkflowReference custom_workflow = 8;
+}
