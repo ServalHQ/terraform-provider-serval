@@ -1,0 +1,29 @@
+
+## data source by id
+> GET /v2/groups/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["created_at":tftypes.String, "deleted_at":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "user_ids":tftypes.List[tftypes.String]]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "deleted_at":tftypes.String<null>, "id":tftypes.String<"id-1">, "name":tftypes.String<"eng">, "organization_id":tftypes.String<"org-1">, "user_ids":tftypes.List[tftypes.String]<tftypes.String<"u-1">, tftypes.String<"u-2">>>
+
+## data source lookup map[name:tftypes.String<"eng">]
+> GET /v2/groups?pageSize=1000
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["created_at":tftypes.String, "deleted_at":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "user_ids":tftypes.List[tftypes.String]]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "deleted_at":tftypes.String<null>, "id":tftypes.String<"id-1">, "name":tftypes.String<"eng">, "organization_id":tftypes.String<"org-1">, "user_ids":tftypes.List[tftypes.String]<tftypes.String<"u-1">, tftypes.String<"u-2">>>
+
+## data source lookup map[name:tftypes.String<"missing">]
+> GET /v2/groups?pageSize=1000
+  auth="Bearer tok" content-type=""
+  Error: group not found: No group found with name: missing
+  state=tftypes.Object["created_at":tftypes.String, "deleted_at":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "user_ids":tftypes.List[tftypes.String]]<null>
+
+## list data source, two pages
+> GET /v2/groups
+  auth="Bearer tok" content-type=""
+> GET /v2/groups?pageToken=page-2
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["items":tftypes.List[tftypes.Object["created_at":tftypes.String, "deleted_at":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "user_ids":tftypes.List[tftypes.String]]], "max_items":tftypes.Number]<"items":tftypes.List[tftypes.Object["created_at":tftypes.String, "deleted_at":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "user_ids":tftypes.List[tftypes.String]]]<tftypes.Object["created_at":tftypes.String, "deleted_at":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "user_ids":tftypes.List[tftypes.String]]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "deleted_at":tftypes.String<null>, "id":tftypes.String<"id-1">, "name":tftypes.String<"eng">, "organization_id":tftypes.String<"org-1">, "user_ids":tftypes.List[tftypes.String]<tftypes.String<"u-1">, tftypes.String<"u-2">>>, tftypes.Object["created_at":tftypes.String, "deleted_at":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "user_ids":tftypes.List[tftypes.String]]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "deleted_at":tftypes.String<null>, "id":tftypes.String<"id-1">, "name":tftypes.String<"eng">, "organization_id":tftypes.String<"org-1">, "user_ids":tftypes.List[tftypes.String]<tftypes.String<"u-1">, tftypes.String<"u-2">>>>, "max_items":tftypes.Number<null>>
+
+## list data source rejected
+> GET /v2/groups
+  auth="Bearer tok" content-type=""
+  Error: failed to make http request: GET "SERVER/v2/groups": 403 Forbidden {"error":"forbidden"}
+  state=tftypes.Object["items":tftypes.List[tftypes.Object["created_at":tftypes.String, "deleted_at":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "user_ids":tftypes.List[tftypes.String]]], "max_items":tftypes.Number]<null>

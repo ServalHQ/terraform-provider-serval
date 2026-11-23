@@ -1,0 +1,18 @@
+
+## prefetch two pages, then a server error
+> GET /v2/access-policies?pageSize=1000&teamId=team-1
+  auth="Bearer tok" content-type=""
+> GET /v2/access-policies?pageSize=1000&pageToken=page-2&teamId=team-1
+  auth="Bearer tok" content-type=""
+> GET /v2/access-policies?pageSize=1000&teamId=team-2
+  auth="Bearer tok" content-type=""
+> GET /v2/access-policies?pageSize=1000&teamId=team-2
+  auth="Bearer tok" content-type=""
+> GET /v2/access-policies?pageSize=1000&teamId=team-2
+  auth="Bearer tok" content-type=""
+  calls=3 err=<nil> cached=true
+
+## prefetch rejected
+> GET /v2/access-policies?pageSize=1000&teamId=team-1
+  auth="Bearer tok" content-type=""
+  calls=1 err=GET "SERVER/v2/access-policies?pageSize=1000&teamId=team-1": 403 Forbidden {"error":"forbidden"}

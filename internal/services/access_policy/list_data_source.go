@@ -67,28 +67,16 @@ func (d *AccessPoliciesDataSource) Read(ctx context.Context, req datasource.Read
 	if maxItems <= 0 {
 		maxItems = 1000
 	}
-	page, err := d.client.AccessPolicies.List(ctx, params)
-	if err != nil {
-		resp.Diagnostics.AddError("failed to make http request", err.Error())
-		return
-	}
-
-	for page != nil && len(page.Data) > 0 {
-		bytes := []byte(page.RawJSON())
-		err = apijson.UnmarshalComputed(bytes, &env)
-		if err != nil {
-			resp.Diagnostics.AddError("failed to unmarshal http request", err.Error())
-			return
+	err := d.client.EachPage(ctx, "v2/access-policies", params, func(raw []byte) (bool, error) {
+		if err := apijson.UnmarshalComputed(raw, &env); err != nil {
+			return false, err
 		}
 		acc = append(acc, env.Data.Elements()...)
-		if len(acc) >= maxItems {
-			break
-		}
-		page, err = page.GetNextPage()
-		if err != nil {
-			resp.Diagnostics.AddError("failed to fetch next page", err.Error())
-			return
-		}
+		return len(acc) < maxItems, nil
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(client.ListErrorSummary(err), err.Error())
+		return
 	}
 
 	acc = acc[:min(len(acc), maxItems)]

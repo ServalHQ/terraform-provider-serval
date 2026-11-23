@@ -1,0 +1,40 @@
+
+## create
+> POST /v2/workflows
+  auth="Bearer tok" content-type="application/json"
+  body={"content":"export default {}","executionScope":"TEAM_PRIVATE","name":"w","teamId":"team-1"}
+  state=tftypes.Object["content":tftypes.String, "description":tftypes.String, "execution_scope":tftypes.String, "has_unpublished_changes":tftypes.Bool, "id":tftypes.String, "is_published":tftypes.Bool, "name":tftypes.String, "require_form_confirmation":tftypes.Bool, "tag_ids":tftypes.List[tftypes.String], "team_id":tftypes.String]<"content":tftypes.String<"export default {}">, "description":tftypes.String<null>, "execution_scope":tftypes.String<"TEAM_PRIVATE">, "has_unpublished_changes":tftypes.Bool<"false">, "id":tftypes.String<"id-1">, "is_published":tftypes.Bool<"true">, "name":tftypes.String<"w">, "require_form_confirmation":tftypes.Bool<null>, "tag_ids":tftypes.List[tftypes.String]<null>, "team_id":tftypes.String<"team-1">>
+
+## read
+> GET /v2/workflows/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["content":tftypes.String, "description":tftypes.String, "execution_scope":tftypes.String, "has_unpublished_changes":tftypes.Bool, "id":tftypes.String, "is_published":tftypes.Bool, "name":tftypes.String, "require_form_confirmation":tftypes.Bool, "tag_ids":tftypes.List[tftypes.String], "team_id":tftypes.String]<"content":tftypes.String<"export default {}">, "description":tftypes.String<null>, "execution_scope":tftypes.String<"TEAM_PRIVATE">, "has_unpublished_changes":tftypes.Bool<"false">, "id":tftypes.String<"id-1">, "is_published":tftypes.Bool<"true">, "name":tftypes.String<"w">, "require_form_confirmation":tftypes.Bool<null>, "tag_ids":tftypes.List[tftypes.String]<null>, "team_id":tftypes.String<"team-1">>
+
+## update
+> PUT /v2/workflows/id-1
+  auth="Bearer tok" content-type="application/json"
+  body={"content":"export default {}","executionScope":null,"isPublished":true,"name":"w2","teamId":"team-1"}
+  state=tftypes.Object["content":tftypes.String, "description":tftypes.String, "execution_scope":tftypes.String, "has_unpublished_changes":tftypes.Bool, "id":tftypes.String, "is_published":tftypes.Bool, "name":tftypes.String, "require_form_confirmation":tftypes.Bool, "tag_ids":tftypes.List[tftypes.String], "team_id":tftypes.String]<"content":tftypes.String<"export default {}">, "description":tftypes.String<null>, "execution_scope":tftypes.String<null>, "has_unpublished_changes":tftypes.Bool<"false">, "id":tftypes.String<"id-1">, "is_published":tftypes.Bool<"true">, "name":tftypes.String<"w2">, "require_form_confirmation":tftypes.Bool<null>, "tag_ids":tftypes.List[tftypes.String]<null>, "team_id":tftypes.String<"team-1">>
+
+## read not found
+> GET /v2/workflows/id-1
+  auth="Bearer tok" content-type=""
+  Warning: Resource not found: The resource was not found on the server and will be removed from state.
+  state=tftypes.Object["content":tftypes.String, "description":tftypes.String, "execution_scope":tftypes.String, "has_unpublished_changes":tftypes.Bool, "id":tftypes.String, "is_published":tftypes.Bool, "name":tftypes.String, "require_form_confirmation":tftypes.Bool, "tag_ids":tftypes.List[tftypes.String], "team_id":tftypes.String]<null>
+
+## delete
+> DELETE /v2/workflows/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["content":tftypes.String, "description":tftypes.String, "execution_scope":tftypes.String, "has_unpublished_changes":tftypes.Bool, "id":tftypes.String, "is_published":tftypes.Bool, "name":tftypes.String, "require_form_confirmation":tftypes.Bool, "tag_ids":tftypes.List[tftypes.String], "team_id":tftypes.String]<"content":tftypes.String<"export default {}">, "description":tftypes.String<null>, "execution_scope":tftypes.String<"TEAM_PRIVATE">, "has_unpublished_changes":tftypes.Bool<"false">, "id":tftypes.String<"id-1">, "is_published":tftypes.Bool<"true">, "name":tftypes.String<"w">, "require_form_confirmation":tftypes.Bool<null>, "tag_ids":tftypes.List[tftypes.String]<null>, "team_id":tftypes.String<"team-1">>
+
+## import
+> GET /v2/workflows/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["content":tftypes.String, "description":tftypes.String, "execution_scope":tftypes.String, "has_unpublished_changes":tftypes.Bool, "id":tftypes.String, "is_published":tftypes.Bool, "name":tftypes.String, "require_form_confirmation":tftypes.Bool, "tag_ids":tftypes.List[tftypes.String], "team_id":tftypes.String]<"content":tftypes.String<"export default {}">, "description":tftypes.String<null>, "execution_scope":tftypes.String<"TEAM_PRIVATE">, "has_unpublished_changes":tftypes.Bool<"false">, "id":tftypes.String<"id-1">, "is_published":tftypes.Bool<"true">, "name":tftypes.String<"w">, "require_form_confirmation":tftypes.Bool<null>, "tag_ids":tftypes.List[tftypes.String]<null>, "team_id":tftypes.String<"team-1">>
+
+## create rejected
+> POST /v2/workflows
+  auth="Bearer tok" content-type="application/json"
+  body={"content":"export default {}","executionScope":"TEAM_PRIVATE","name":"w","teamId":"team-1"}
+  Error: failed to make http request: POST "SERVER/v2/workflows": 400 Bad Request {"error":"invalid name"}
+  state=tftypes.Object["content":tftypes.String, "description":tftypes.String, "execution_scope":tftypes.String, "has_unpublished_changes":tftypes.Bool, "id":tftypes.String, "is_published":tftypes.Bool, "name":tftypes.String, "require_form_confirmation":tftypes.Bool, "tag_ids":tftypes.List[tftypes.String], "team_id":tftypes.String]<null>

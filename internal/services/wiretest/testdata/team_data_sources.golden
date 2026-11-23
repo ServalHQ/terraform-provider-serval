@@ -1,0 +1,34 @@
+
+## data source by id
+> GET /v2/teams/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "description":tftypes.String<"d">, "id":tftypes.String<"id-1">, "name":tftypes.String<"it">, "organization_id":tftypes.String<"org-1">, "prefix":tftypes.String<"IT">>
+
+## data source lookup map[name:tftypes.String<"it">]
+> GET /v2/teams?pageSize=1000
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "description":tftypes.String<"d">, "id":tftypes.String<"id-1">, "name":tftypes.String<"it">, "organization_id":tftypes.String<"org-1">, "prefix":tftypes.String<"IT">>
+
+## data source lookup map[prefix:tftypes.String<"IT">]
+> GET /v2/teams?pageSize=1000
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "description":tftypes.String<"d">, "id":tftypes.String<"id-1">, "name":tftypes.String<"it">, "organization_id":tftypes.String<"org-1">, "prefix":tftypes.String<"IT">>
+
+## data source lookup map[prefix:tftypes.String<"missing">]
+> GET /v2/teams?pageSize=1000
+  auth="Bearer tok" content-type=""
+  Error: team not found: No team found with prefix: missing
+  state=tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]<null>
+
+## list data source, two pages
+> GET /v2/teams
+  auth="Bearer tok" content-type=""
+> GET /v2/teams?pageToken=page-2
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["items":tftypes.List[tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]], "max_items":tftypes.Number]<"items":tftypes.List[tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]]<tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "description":tftypes.String<"d">, "id":tftypes.String<"id-1">, "name":tftypes.String<"it">, "organization_id":tftypes.String<"org-1">, "prefix":tftypes.String<"IT">>, tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]<"created_at":tftypes.String<"2026-01-01T00:00:00Z">, "description":tftypes.String<"d">, "id":tftypes.String<"id-1">, "name":tftypes.String<"it">, "organization_id":tftypes.String<"org-1">, "prefix":tftypes.String<"IT">>>, "max_items":tftypes.Number<null>>
+
+## list data source rejected
+> GET /v2/teams
+  auth="Bearer tok" content-type=""
+  Error: failed to make http request: GET "SERVER/v2/teams": 403 Forbidden {"error":"forbidden"}
+  state=tftypes.Object["items":tftypes.List[tftypes.Object["created_at":tftypes.String, "description":tftypes.String, "id":tftypes.String, "name":tftypes.String, "organization_id":tftypes.String, "prefix":tftypes.String]], "max_items":tftypes.Number]<null>

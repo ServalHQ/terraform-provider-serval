@@ -5,8 +5,8 @@ package team
 import (
 	"context"
 
-	"github.com/ServalHQ/serval-go"
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
+	authapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svauth/public"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -21,8 +21,8 @@ type TeamsDataSourceModel struct {
 	Items    customfield.NestedObjectList[TeamsItemsDataSourceModel] `tfsdk:"items"`
 }
 
-func (m *TeamsDataSourceModel) toListParams(_ context.Context) (params serval.TeamListParams, diags diag.Diagnostics) {
-	params = serval.TeamListParams{}
+func (m *TeamsDataSourceModel) toListParams(_ context.Context) (params *authapi.ListTeamsRequest, diags diag.Diagnostics) {
+	params = &authapi.ListTeamsRequest{}
 
 	return
 }

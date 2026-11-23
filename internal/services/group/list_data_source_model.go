@@ -5,8 +5,8 @@ package group
 import (
 	"context"
 
-	"github.com/ServalHQ/serval-go"
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
+	authapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svauth/public"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -21,8 +21,8 @@ type GroupsDataSourceModel struct {
 	Items    customfield.NestedObjectList[GroupsItemsDataSourceModel] `tfsdk:"items"`
 }
 
-func (m *GroupsDataSourceModel) toListParams(_ context.Context) (params serval.GroupListParams, diags diag.Diagnostics) {
-	params = serval.GroupListParams{}
+func (m *GroupsDataSourceModel) toListParams(_ context.Context) (params *authapi.ListGroupsRequest, diags diag.Diagnostics) {
+	params = &authapi.ListGroupsRequest{}
 
 	return
 }
