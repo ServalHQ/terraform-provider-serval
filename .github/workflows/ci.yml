@@ -14,24 +14,14 @@ on:
       - 'stl-preview-head/**'
       - 'stl-preview-base/**'
 
-env:
-  GOPRIVATE: github.com/ServalHQ/serval-go,github.com/stainless-sdks/serval-go
-
 jobs:
   lint:
-    runs-on: ${{ github.repository == 'stainless-sdks/serval-terraform' && 'depot-ubuntu-24.04' || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event.pull_request.head.repo.fork
     steps:
       - uses: actions/checkout@v6
 
       - uses: ./.github/actions/setup-go
-        with:
-          stainless-api-key: ${{ secrets.STAINLESS_API_KEY }}
-
-      - name: Link staging branch
-        if: github.repository == 'stainless-sdks/serval-terraform'
-        run: |
-          ./scripts/link 'github.com/stainless-sdks/serval-go@${{ github.ref_name }}' || true
 
       - name: Bootstrap
         run: ./scripts/bootstrap
@@ -40,19 +30,12 @@ jobs:
         run: ./scripts/lint
 
   test:
-    runs-on: ${{ github.repository == 'stainless-sdks/serval-terraform' && 'depot-ubuntu-24.04' || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event.pull_request.head.repo.fork
     steps:
       - uses: actions/checkout@v6
 
       - uses: ./.github/actions/setup-go
-        with:
-          stainless-api-key: ${{ secrets.STAINLESS_API_KEY }}
-
-      - name: Link staging branch
-        if: github.repository == 'stainless-sdks/serval-terraform'
-        run: |
-          ./scripts/link 'github.com/stainless-sdks/serval-go@${{ github.ref_name }}' || true
 
       - name: Bootstrap
         run: ./scripts/bootstrap

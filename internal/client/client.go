@@ -13,8 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	serval "github.com/ServalHQ/serval-go"
 )
 
 const (
@@ -40,12 +38,9 @@ type Config struct {
 	HTTPClient *http.Client
 	// MaxRetries is the number of retries after the first attempt.
 	MaxRetries int
-	// Legacy serves the service calls that have not moved to Do yet.
-	Legacy *serval.Client
 }
 
 type Client struct {
-	*serval.Client
 	baseURL     *url.URL
 	bearerToken string
 	userAgent   string
@@ -71,7 +66,6 @@ func New(cfg Config) (*Client, error) {
 		httpClient = http.DefaultClient
 	}
 	c := &Client{
-		Client:      cfg.Legacy,
 		baseURL:     u,
 		bearerToken: cfg.BearerToken,
 		userAgent:   cfg.UserAgent,

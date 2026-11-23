@@ -4,7 +4,6 @@ go 1.24.0
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260825204119-511051f7f437.2
-	github.com/ServalHQ/serval-go v0.23.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/hashicorp/terraform-plugin-docs v0.24.0

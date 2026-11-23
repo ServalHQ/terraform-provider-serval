@@ -14,8 +14,6 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -49,8 +47,7 @@ func newRecorder(t *testing.T, fixture string) *recorder {
 	for _, env := range []string{"SERVAL_BASE_URL", "SERVAL_CLIENT_ID", "SERVAL_CLIENT_SECRET", "SERVAL_BEARER_TOKEN"} {
 		t.Setenv(env, "")
 	}
-	legacy := serval.NewClient(option.WithBaseURL(r.srv.URL+"/"), option.WithBearerToken("tok"))
-	c, err := client.New(client.Config{BaseURL: r.srv.URL + "/", BearerToken: "tok", MaxRetries: client.DefaultMaxRetries, Legacy: &legacy})
+	c, err := client.New(client.Config{BaseURL: r.srv.URL + "/", BearerToken: "tok", MaxRetries: client.DefaultMaxRetries})
 	if err != nil {
 		t.Fatal(err)
 	}
