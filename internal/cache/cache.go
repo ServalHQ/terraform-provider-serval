@@ -14,6 +14,7 @@ import (
 	"os"
 
 	serval "github.com/ServalHQ/serval-go"
+	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 )
 
 // PrefetchMode indicates whether the provider is operating in prefetch mode.
@@ -79,6 +80,10 @@ func IsServerError(err error) bool {
 	var apiErr *serval.Error
 	if errors.As(err, &apiErr) {
 		return apiErr.StatusCode >= 500
+	}
+	var clientErr *client.APIError
+	if errors.As(err, &clientErr) {
+		return clientErr.StatusCode >= 500
 	}
 	return false
 }

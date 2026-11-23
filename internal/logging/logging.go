@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ServalHQ/serval-go/option"
+	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -18,8 +18,8 @@ import (
 // with Go's HTTP transport under high concurrency.
 var LoggingEnabled = false
 
-func Middleware(ctx context.Context) option.Middleware {
-	return func(req *http.Request, next option.MiddlewareNext) (*http.Response, error) {
+func Middleware(ctx context.Context) client.Middleware {
+	return func(req *http.Request, next client.MiddlewareNext) (*http.Response, error) {
 		// Skip body logging to prevent HTTP transport hangs
 		if !LoggingEnabled {
 			return next(req)
