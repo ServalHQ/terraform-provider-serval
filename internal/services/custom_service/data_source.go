@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
@@ -65,13 +64,13 @@ func (d *CustomServiceDataSource) Read(ctx context.Context, req datasource.ReadR
 		}
 
 		env := CustomServicesDataListDataSourceEnvelope{}
-		page, err := d.client.CustomServices.List(ctx, params)
+		page, err := d.client.FirstPage(ctx, "v2/custom-services", params)
 		if err != nil {
 			resp.Diagnostics.AddError("failed to make http request", err.Error())
 			return
 		}
 
-		bytes := []byte(page.RawJSON())
+		bytes := page.Raw
 		err = apijson.UnmarshalComputed(bytes, &env)
 		if err != nil {
 			resp.Diagnostics.AddError("failed to unmarshal http request", err.Error())
@@ -87,14 +86,8 @@ func (d *CustomServiceDataSource) Read(ctx context.Context, req datasource.ReadR
 		data.ID = ts[0].ID
 	}
 
-	res := new(http.Response)
 	env := CustomServiceDataDataSourceEnvelope{*data}
-	_, err := d.client.CustomServices.Get(
-		ctx,
-		data.ID.ValueString(),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := d.client.DoID(ctx, http.MethodGet, "v2/custom-services", data.ID.ValueString(), nil, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

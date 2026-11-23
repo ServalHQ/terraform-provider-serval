@@ -1,0 +1,25 @@
+
+## data source by id
+> GET /v2/approval-delegations/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["created_at":tftypes.String, "delegates":tftypes.List[tftypes.Object["id":tftypes.String, "type":tftypes.String]], "delegator_user_id":tftypes.String, "description":tftypes.String, "find_one_by":tftypes.Object["delegator_user_id":tftypes.String], "id":tftypes.String, "priority":tftypes.Number]<"created_at":tftypes.String<null>, "delegates":tftypes.List[tftypes.Object["id":tftypes.String, "type":tftypes.String]]<tftypes.Object["id":tftypes.String, "type":tftypes.String]<"id":tftypes.String<"u-2">, "type":tftypes.String<"APPROVAL_DELEGATE_TYPE_USER">>>, "delegator_user_id":tftypes.String<"u-1">, "description":tftypes.String<"d">, "find_one_by":tftypes.Object["delegator_user_id":tftypes.String]<null>, "id":tftypes.String<"id-1">, "priority":tftypes.Number<null>>
+
+## data source find_one_by
+> GET /v2/approval-delegations?delegatorUserId=u-1
+  auth="Bearer tok" content-type=""
+> GET /v2/approval-delegations/id-1
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["created_at":tftypes.String, "delegates":tftypes.List[tftypes.Object["id":tftypes.String, "type":tftypes.String]], "delegator_user_id":tftypes.String, "description":tftypes.String, "find_one_by":tftypes.Object["delegator_user_id":tftypes.String], "id":tftypes.String, "priority":tftypes.Number]<"created_at":tftypes.String<null>, "delegates":tftypes.List[tftypes.Object["id":tftypes.String, "type":tftypes.String]]<tftypes.Object["id":tftypes.String, "type":tftypes.String]<"id":tftypes.String<"u-2">, "type":tftypes.String<"APPROVAL_DELEGATE_TYPE_USER">>>, "delegator_user_id":tftypes.String<"u-1">, "description":tftypes.String<"d">, "find_one_by":tftypes.Object["delegator_user_id":tftypes.String]<"delegator_user_id":tftypes.String<"u-1">>, "id":tftypes.String<"id-1">, "priority":tftypes.Number<null>>
+
+## list data source, two pages
+> GET /v2/approval-delegations?delegatorUserId=u-1
+  auth="Bearer tok" content-type=""
+> GET /v2/approval-delegations?delegatorUserId=u-1&pageToken=page-2
+  auth="Bearer tok" content-type=""
+  state=tftypes.Object["delegator_user_id":tftypes.String, "items":tftypes.List[tftypes.Object["created_at":tftypes.String, "delegates":tftypes.List[tftypes.Object["id":tftypes.String, "type":tftypes.String]], "delegator_user_id":tftypes.String, "description":tftypes.String, "id":tftypes.String, "priority":tftypes.Number]], "max_items":tftypes.Number]<"delegator_user_id":tftypes.String<"u-1">, "items":tftypes.List[tftypes.Object["created_at":tftypes.String, "delegates":tftypes.List[tftypes.Object["id":tftypes.String, "type":tftypes.String]], "delegator_user_id":tftypes.String, "description":tftypes.String, "id":tftypes.String, "priority":tftypes.Number]]<tftypes.Object["created_at":tftypes.String, "delegates":tftypes.List[tftypes.Object["id":tftypes.String, "type":tftypes.String]], "delegator_user_id":tftypes.String, "description":tftypes.String, "id":tftypes.String, "priority":tftypes.Number]<"created_at":tftypes.String<null>, "delegates":tftypes.List[tftypes.Object["id":tftypes.String, "type":tftypes.String]]<tftypes.Object["id":tftypes.String, "type":tftypes.String]<"id":tftypes.String<"u-2">, "type":tftypes.String<"APPROVAL_DELEGATE_TYPE_USER">>>, "delegator_user_id":tftypes.String<"u-1">, "description":tftypes.String<"d">, "id":tftypes.String<"id-1">, "priority":tftypes.Number<null>>, tftypes.Object["created_at":tftypes.String, "delegates":tftypes.List[tftypes.Object["id":tftypes.String, "type":tftypes.String]], "delegator_user_id":tftypes.String, "description":tftypes.String, "id":tftypes.String, "priority":tftypes.Number]<"created_at":tftypes.String<null>, "delegates":tftypes.List[tftypes.Object["id":tftypes.String, "type":tftypes.String]]<tftypes.Object["id":tftypes.String, "type":tftypes.String]<"id":tftypes.String<"u-2">, "type":tftypes.String<"APPROVAL_DELEGATE_TYPE_USER">>>, "delegator_user_id":tftypes.String<"u-1">, "description":tftypes.String<"d">, "id":tftypes.String<"id-1">, "priority":tftypes.Number<null>>>, "max_items":tftypes.Number<null>>
+
+## list data source rejected
+> GET /v2/approval-delegations?delegatorUserId=u-1
+  auth="Bearer tok" content-type=""
+  Error: failed to make http request: GET "SERVER/v2/approval-delegations?delegatorUserId=u-1": 403 Forbidden {"error":"forbidden"}
+  state=tftypes.Object["delegator_user_id":tftypes.String, "items":tftypes.List[tftypes.Object["created_at":tftypes.String, "delegates":tftypes.List[tftypes.Object["id":tftypes.String, "type":tftypes.String]], "delegator_user_id":tftypes.String, "description":tftypes.String, "id":tftypes.String, "priority":tftypes.Number]], "max_items":tftypes.Number]<null>

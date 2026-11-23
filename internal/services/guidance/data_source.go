@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ServalHQ/serval-go/option"
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/ServalHQ/terraform-provider-serval/internal/client"
 	"github.com/ServalHQ/terraform-provider-serval/internal/logging"
@@ -65,13 +64,13 @@ func (d *GuidanceDataSource) Read(ctx context.Context, req datasource.ReadReques
 		}
 
 		env := GuidancesDataListDataSourceEnvelope{}
-		page, err := d.client.Guidances.List(ctx, params)
+		page, err := d.client.FirstPage(ctx, "v2/guidances", params)
 		if err != nil {
 			resp.Diagnostics.AddError("failed to make http request", err.Error())
 			return
 		}
 
-		bytes := []byte(page.RawJSON())
+		bytes := page.Raw
 		err = apijson.UnmarshalComputed(bytes, &env)
 		if err != nil {
 			resp.Diagnostics.AddError("failed to unmarshal http request", err.Error())
@@ -87,14 +86,8 @@ func (d *GuidanceDataSource) Read(ctx context.Context, req datasource.ReadReques
 		data.ID = ts[0].ID
 	}
 
-	res := new(http.Response)
 	env := GuidanceDataDataSourceEnvelope{*data}
-	_, err := d.client.Guidances.Get(
-		ctx,
-		data.ID.ValueString(),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	res, err := d.client.DoID(ctx, http.MethodGet, "v2/guidances", data.ID.ValueString(), nil, logging.Middleware(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return

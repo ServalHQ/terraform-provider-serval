@@ -5,8 +5,9 @@ package approval_delegation
 import (
 	"context"
 
-	"github.com/ServalHQ/serval-go"
-	"github.com/ServalHQ/serval-go/packages/param"
+	flowapi "github.com/ServalHQ/terraform-provider-serval/internal/gen/proto/svflow/publicapi"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/ServalHQ/terraform-provider-serval/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -23,11 +24,11 @@ type ApprovalDelegationsDataSourceModel struct {
 	Items           customfield.NestedObjectList[ApprovalDelegationsItemsDataSourceModel] `tfsdk:"items"`
 }
 
-func (m *ApprovalDelegationsDataSourceModel) toListParams(_ context.Context) (params serval.ApprovalDelegationListParams, diags diag.Diagnostics) {
-	params = serval.ApprovalDelegationListParams{}
+func (m *ApprovalDelegationsDataSourceModel) toListParams(_ context.Context) (params *flowapi.ListApprovalDelegationsRequest, diags diag.Diagnostics) {
+	params = &flowapi.ListApprovalDelegationsRequest{}
 
 	if !m.DelegatorUserID.IsNull() {
-		params.DelegatorUserID = param.NewOpt(m.DelegatorUserID.ValueString())
+		params.DelegatorUserId = proto.String(m.DelegatorUserID.ValueString())
 	}
 
 	return

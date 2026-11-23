@@ -14,6 +14,9 @@ import (
 // parameters keyed by proto JSON name. Only populated fields are sent and
 // repeated fields are comma-joined, matching serval-go's query encoding.
 func QueryFromMessage(m proto.Message) (url.Values, error) {
+	if e, ok := m.(explicitFields); ok {
+		return e.query()
+	}
 	q := url.Values{}
 	var err error
 	m.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
@@ -57,4 +60,41 @@ func queryScalar(fd protoreflect.FieldDescriptor, v protoreflect.Value) (string,
 	default:
 		return "", fmt.Errorf("%s: %s fields cannot be sent as query parameters", fd.FullName(), fd.Kind())
 	}
+}
+
+type explicitFields struct {
+	proto.Message
+	jsonNames []string
+}
+
+// WithExplicit sends the named scalar fields even when they hold their zero
+// value, the way serval-go sends an optional parameter that was set.
+func WithExplicit(m proto.Message, jsonNames ...string) proto.Message {
+	if len(jsonNames) == 0 {
+		return m
+	}
+	return explicitFields{Message: m, jsonNames: jsonNames}
+}
+
+func (e explicitFields) query() (url.Values, error) {
+	q, err := QueryFromMessage(e.Message)
+	if err != nil {
+		return nil, err
+	}
+	msg := e.ProtoReflect()
+	for _, name := range e.jsonNames {
+		fd := msg.Descriptor().Fields().ByJSONName(name)
+		if fd == nil || fd.IsList() || fd.IsMap() {
+			return nil, fmt.Errorf("%s has no scalar field %q", msg.Descriptor().FullName(), name)
+		}
+		if q.Has(name) {
+			continue
+		}
+		s, err := queryScalar(fd, msg.Get(fd))
+		if err != nil {
+			return nil, err
+		}
+		q.Set(name, s)
+	}
+	return q, nil
 }
