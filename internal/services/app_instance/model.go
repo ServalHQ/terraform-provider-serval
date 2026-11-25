@@ -5,6 +5,7 @@ package app_instance
 import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/tidwall/sjson"
 )
 
 type AppInstanceDataEnvelope struct {
@@ -27,5 +28,9 @@ func (m AppInstanceModel) MarshalJSON() (data []byte, err error) {
 }
 
 func (m AppInstanceModel) MarshalJSONForUpdate(state AppInstanceModel) (data []byte, err error) {
-	return apijson.MarshalForUpdate(m, state)
+	data, err = apijson.MarshalForUpdate(m, state)
+	if err != nil {
+		return nil, err
+	}
+	return sjson.DeleteBytes(data, "teamId")
 }

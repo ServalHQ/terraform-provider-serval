@@ -5,6 +5,7 @@ package access_policy
 import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/tidwall/sjson"
 )
 
 type AccessPolicyDataEnvelope struct {
@@ -26,5 +27,9 @@ func (m AccessPolicyModel) MarshalJSON() (data []byte, err error) {
 }
 
 func (m AccessPolicyModel) MarshalJSONForUpdate(state AccessPolicyModel) (data []byte, err error) {
-	return apijson.MarshalForUpdate(m, state)
+	data, err = apijson.MarshalForUpdate(m, state)
+	if err != nil {
+		return nil, err
+	}
+	return sjson.DeleteBytes(data, "teamId")
 }

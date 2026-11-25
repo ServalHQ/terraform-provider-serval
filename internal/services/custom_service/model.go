@@ -5,6 +5,7 @@ package custom_service
 import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/tidwall/sjson"
 )
 
 type CustomServiceDataEnvelope struct {
@@ -23,5 +24,9 @@ func (m CustomServiceModel) MarshalJSON() (data []byte, err error) {
 }
 
 func (m CustomServiceModel) MarshalJSONForUpdate(state CustomServiceModel) (data []byte, err error) {
-	return apijson.MarshalForUpdate(m, state)
+	data, err = apijson.MarshalForUpdate(m, state)
+	if err != nil {
+		return nil, err
+	}
+	return sjson.DeleteBytes(data, "teamId")
 }

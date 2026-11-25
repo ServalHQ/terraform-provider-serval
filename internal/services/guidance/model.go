@@ -5,6 +5,7 @@ package guidance
 import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/tidwall/sjson"
 )
 
 type GuidanceDataEnvelope struct {
@@ -27,5 +28,9 @@ func (m GuidanceModel) MarshalJSON() (data []byte, err error) {
 }
 
 func (m GuidanceModel) MarshalJSONForUpdate(state GuidanceModel) (data []byte, err error) {
-	return apijson.MarshalForUpdate(m, state)
+	data, err = apijson.MarshalForUpdate(m, state)
+	if err != nil {
+		return nil, err
+	}
+	return sjson.DeleteBytes(data, "teamId")
 }

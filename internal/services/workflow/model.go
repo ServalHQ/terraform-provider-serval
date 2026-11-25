@@ -5,6 +5,7 @@ package workflow
 import (
 	"github.com/ServalHQ/terraform-provider-serval/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/tidwall/sjson"
 )
 
 type WorkflowDataEnvelope struct {
@@ -29,5 +30,9 @@ func (m WorkflowModel) MarshalJSON() (data []byte, err error) {
 }
 
 func (m WorkflowModel) MarshalJSONForUpdate(state WorkflowModel) (data []byte, err error) {
-	return apijson.MarshalForUpdate(m, state)
+	data, err = apijson.MarshalForUpdate(m, state)
+	if err != nil {
+		return nil, err
+	}
+	return sjson.DeleteBytes(data, "teamId")
 }
